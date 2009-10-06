@@ -2,20 +2,31 @@ var updateTime = 1000;
 
 var gCPUMonitor = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
 
-var gCPUTimeArray = initCPUArray();
+var gCPUTimeArray = initCPUArray(24);
 
 window.setInterval(function() {drawGraph()}, updateTime);
 
-function initCPUArray() {
-  var cpuArray = new Array(32)
+function initCPUArray(size) {
+  var cpuArray = new Array();
+
+  for (let i = 0; i < size; i++) {
+    cpuArray.push(undefined);
+  }
 
   return cpuArray;
 }
 
-function drawLine(context, color, x, y) {
+function drawLine(context, color, x, y_from, y_to) {
+  context.beginPath();
   context.strokeStyle = color;
-  Application.console.log(x + ":" + y);
-  context.lineTo(x, y);
+  context.lineWidth = 1.0;
+  context.lineCap = "square";
+  context.globalCompositeOperation = "copy";
+  context.moveTo(x, y_from);
+  context.lineTo(x, y_to);
+  context.closePath();
+  context.stroke();
+  return y_to;
 }
 
 function drawGraph() {
@@ -23,29 +34,35 @@ function drawGraph() {
   let context = canvasElement.getContext("2d")
   let y = canvasElement.height;
   let x = 0;
-  let ratio = 0.0;
 
-  context.save();
-  context.strokeStyle = "black";
-  context.lineWidth = 1.0;
-  context.lineCap = "square";
+  context.fillStyle = "black";
+  context.fillRect(0, 0, canvasElement.width, canvasElement.height);
+  context.globalCompositeOperation = "copy";
 
   cpuTime = gCPUMonitor.measure();
   gCPUTimeArray.shift();
   gCPUTimeArray.push(cpuTime);
 
-  context.beginPath();
+  context.save();
   gCPUTimeArray.forEach(function(aCPUTime) {
-    context.moveTo(x, y);
-    if (aCPUTime != undefined) {
-      drawLine(context, "blue", x, y * aCPUTime.user);
-      drawLine(context, "gray", x, y * aCPUTime.system);
-      drawLine(context, "black", x, y * aCPUTime.idle);
+    y_from = canvasElement.height;
+    y_to = y_from;
+    if (aCPUTime == undefined) {
+      drawLine(context, "black", x, y_from, 0);
+    } else {
+      y_to = y_to - (y * aCPUTime.user);
+      y_from = drawLine(context, "blue", x, y_from, y_to);
+      y_to = y_to - (y * aCPUTime.system);
+      y_from = drawLine(context, "green", x, y_from, y_to);
+      y_to = y_to - (y * aCPUTime.nice);
+      y_from = drawLine(context, "grey", x, y_from, y_to);
+      y_to = y_to - (y * aCPUTime.io_wait);
+      y_from = drawLine(context, "red", x, y_from, y_to);
+      y_to = y_to - (y * aCPUTime.idle);
+      drawLine(context, "black", x, y_from, y_to);
     }
-    x++;
+    x = x + 2;
   });
-  context.stroke();
   context.restore();
 }
-
 
