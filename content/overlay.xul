@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<overlay id="system-monitor"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+	 xmlns:html="http://www.w3.org/1999/xhtml">
+  <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
+  <toolbar id="toolbar-menubar">
+    <toolbaritem>
+      <html:canvas id="system-monitor-canvas" width="48" height="24"/>
+    </toolbaritem>
+  </toolbar>
+</overlay>
