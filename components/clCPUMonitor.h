@@ -1,5 +1,5 @@
-#ifndef __CPUMONITOR_H__
-#define __CPU_MONITOR_H__
+#ifndef __CL_CPU_MONITOR_H__
+#define __CL_CPU_MONITOR_H__
 
 #include "clICPUMonitor.h"
 #define HAVE_LIBGTOP
@@ -22,4 +22,4 @@ public:
 private:
 };
 
-#endif /* __CPU_MONITOR_H__ */
+#endif /* __CL_CPU_MONITOR_H__ */
