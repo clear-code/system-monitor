@@ -20,9 +20,6 @@ public:
 
   virtual ~clCPUMonitor();
 private:
-#ifdef HAVE_LIBGTOP
-  glibtop_cpu cpu;
-#endif
 };
 
 #endif /* __CPU_MONITOR_H__ */
