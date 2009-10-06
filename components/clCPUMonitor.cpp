@@ -9,7 +9,9 @@ NS_IMPL_ISUPPORTS1(clCPUMonitor, clICPUMonitor)
 
 clCPUMonitor::clCPUMonitor()
 {
+#ifdef HAVE_LIBGTOP
     glibtop_init();
+#endif /* HAVE_LIBGTOP */
 }
 
 clCPUMonitor::~clCPUMonitor()
