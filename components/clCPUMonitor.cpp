@@ -25,7 +25,7 @@ NS_IMETHODIMP clCPUMonitor::GetUser(float *aUser)
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
-    *aUser = cpu.user / cpu.total;
+    *aUser = ((float)cpu.user / cpu.total);
 
     return NS_OK;
 #else
@@ -40,7 +40,7 @@ NS_IMETHODIMP clCPUMonitor::GetSystem(float *aSystem)
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
-    *aSystem = cpu.sys / cpu.total;
+    *aSystem = ((float)cpu.sys / cpu.total);
 
     return NS_OK;
 #else
@@ -55,7 +55,7 @@ NS_IMETHODIMP clCPUMonitor::GetIdle(float *aIdle)
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
-    *aIdle = cpu.idle / cpu.total;
+    *aIdle = ((float)cpu.idle / cpu.total);
 
     return NS_OK;
 #else
