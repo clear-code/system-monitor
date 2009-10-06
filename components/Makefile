@@ -1,0 +1,47 @@
+XX = c++
+CXXFLAGS = -g -Wall -fno-rtti -fno-exceptions -shared
+
+XULRUNNER_PACKAGE_NAME = libxul
+PKG_CONFIG = pkg-config
+
+GECKO_SDK_PATH = `$(PKG_CONFIG) --variable=sdkdir $(XULRUNNER_PACKAGE_NAME)`
+GECKO_IDL_PATH = `$(PKG_CONFIG) --variable=idldir $(XULRUNNER_PACKAGE_NAME)`/stable
+GECKO_LIB_PATH = $(GECKO_SDK_PATH)/lib
+
+LIBGTOP_CFLAGS = `$(PKG_CONFIG) --cflags libgtop-2.0`
+LIBGTOP_LIBS = `$(PKG_CONFIG) --libs libgtop-2.0`
+
+XPIDL = $(GECKO_SDK_PATH)/bin/xpidl
+
+GECKO_INCLUDES = `$(PKG_CONFIG) --cflags $(XULRUNNER_PACKAGE_NAME)`
+GECKO_CFLAGS  = -DXPCOM_GLUE -DXPCOM_GLUE_USE_NSPR $(GECKO_INCLUDES)
+
+GECKO_LDFLAGS = `$(PKG_CONFIG) --libs-only-L $(XULRUNNER_PACKAGE_NAME)`
+GECKO_LIBS =	-lxpcomglue_s			\
+		-lnspr4				\
+		-lplds4
+
+OBJS = clCPUMonitor.o clSystemMonitorModule.o
+
+IDL = clICPUMonitor.idl
+XPT = clICPUMonitor.xpt
+IHEADER = clICPUMonitor.h
+SHARED = clSystemMonitor.so
+
+all: $(XPT) $(IHEADER) $(SHARED)
+
+$(XPT): $(IDL)
+	$(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $(IDL)
+
+$(IHEADER): $(IDL)
+	$(XPIDL) -m header -I$(GECKO_IDL_PATH) $(IDL)
+
+$(SHARED): $(IHEADER) $(OBJS)
+	$(CXX) $(CXXFLAGS) $(GECKO_LDFLAGS) -o $(SHARED) $(OBJS) $(GECKO_LIBS) $(LIBGTOP_LIBS)
+
+clean:
+	rm -f $(XPT) $(IHEADER) $(OBJS) $(SHARED)
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $(GECKO_CFLAGS) $(LIBGTOP_CFLAGS) -c $<
+
