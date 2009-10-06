@@ -1,0 +1,4 @@
+components/clICPUMonitor.h
+components/clICPUMonitor.xpt
+components/clSystemMonitor.so
+system-monitor-*.xpi
