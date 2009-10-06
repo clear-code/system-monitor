@@ -4,8 +4,10 @@
 	 xmlns:html="http://www.w3.org/1999/xhtml">
   <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
   <toolbar id="toolbar-menubar">
-    <toolbaritem>
-      <html:canvas id="system-monitor-canvas" width="48" height="24"/>
+    <toolbaritem flex="1">
+      <hbox flex="1" pack="end">
+        <html:canvas id="system-monitor-canvas" width="48" height="24"/>
+      </hbox>
     </toolbaritem>
   </toolbar>
 </overlay>
