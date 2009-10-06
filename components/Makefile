@@ -1,4 +1,4 @@
-XX = c++
+CXX = c++
 CXXFLAGS = -g -Wall -fno-rtti -fno-exceptions -shared
 
 XULRUNNER_PACKAGE_NAME = libxul
@@ -21,11 +21,23 @@ GECKO_LIBS =	-lxpcomglue_s			\
 		-lnspr4				\
 		-lplds4
 
-OBJS = clCPUMonitor.o clSystemMonitorModule.o
+OBJS = 				\
+	clCPUTime.o		\
+	clCPUMonitor.o		\
+	clSystemMonitorModule.o
 
-IDL = clICPUMonitor.idl
-XPT = clICPUMonitor.xpt
-IHEADER = clICPUMonitor.h
+IDL = 				\
+	clICPUTime.idl		\
+	clICPUMonitor.idl
+
+XPT = 				\
+	clICPUTime.xpt		\
+	clICPUMonitor.xpt
+
+IHEADER = 			\
+	clICPUTime.h		\
+	clICPUMonitor.h
+
 SHARED = clSystemMonitor.so
 
 all: $(XPT) $(IHEADER) $(SHARED)

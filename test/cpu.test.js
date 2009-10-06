@@ -1,6 +1,7 @@
 var description = 'CPU component tests'
 
-var gCPU;
+var gCPUMonitor;
+var gCPUTime;
 
 function setUp() {
 }
@@ -11,28 +12,36 @@ function tearDown() {
 testCreate.description = "create instance test";
 testCreate.priority = 'must';
 function testCreate() {
-  gCPU = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
-  assert.isDefined(gCPU);
+  gCPUMonitor = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
+  assert.isDefined(gCPUMonitor);
+}
+
+testMeasure.description = "user property test";
+testMeasure.priority = 'must';
+function testMeasure() {
+  testCreate();
+  gCPUTime = gCPUMonitor.measure();
+  assert.isDefined(gCPUTime);
 }
 
 testUser.description = "user property test";
 testUser.priority = 'must';
 function testUser() {
-  gCPU = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
-  assert.equal(0, gCPU.user);
+  testMeasure();
+  assert.isNumber(gCPUTime.user);
 }
 
 testSystem.description = "system property test";
 testSystem.priority = 'must';
 function testSystem() {
-  gCPU = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
-  assert.equal(0, gCPU.system);
+  testMeasure();
+  assert.isNumber(gCPUTime.system);
 }
 
 testIdle.description = "idle property test";
 testIdle.priority = 'must';
 function testIdle() {
-  gCPU = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
-  assert.equal(0, gCPU.idle);
+  testMeasure();
+  assert.isNumber(gCPUTime.idle);
 }
 

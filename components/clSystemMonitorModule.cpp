@@ -1,10 +1,11 @@
 #include "nsIGenericFactory.h"
 
 #include "clCPUMonitor.h"
+#include "clCPUTime.h"
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUMonitor)
 
-static nsModuleComponentInfo components[] =
+static nsModuleComponentInfo cpuMonitorComponents[] =
 {
     {
        "CPU Monitor",
@@ -14,4 +15,4 @@ static nsModuleComponentInfo components[] =
     }
 };
 
-NS_IMPL_NSGETMODULE(clCPUMonitorModule, components);
+NS_IMPL_NSGETMODULE(clCPUMonitorModule, cpuMonitorComponents);

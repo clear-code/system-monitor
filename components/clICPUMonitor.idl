@@ -1,10 +1,10 @@
 #include "nsISupports.idl"
 
+interface clICPUTime;
+
 [scriptable, uuid(43ffe74f-9a9e-493d-9201-49651adce38f)]
 
 interface clICPUMonitor : nsISupports
 {
-  readonly attribute float user;
-  readonly attribute float system;
-  readonly attribute float idle;
+  clICPUTime measure();
 };

@@ -1,0 +1,12 @@
+#include "nsISupports.idl"
+
+[scriptable, uuid(f85b3699-7675-4767-983d-fec8e04eee49)]
+
+interface clICPUTime : nsISupports
+{
+  readonly attribute float user;
+  readonly attribute float nice;
+  readonly attribute float system;
+  readonly attribute float idle;
+  readonly attribute float io_wait;
+};
