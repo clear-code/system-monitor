@@ -9,6 +9,7 @@ NS_IMPL_ISUPPORTS1(clCPUMonitor, clICPUMonitor)
 
 clCPUMonitor::clCPUMonitor()
 {
+    glibtop_init();
 }
 
 clCPUMonitor::~clCPUMonitor()
