@@ -1,5 +1,6 @@
 components/clICPUMonitor.h
 components/clICPUTime.h
 components/*.xpt
+components/*.o
 components/clSystemMonitor.so
 system-monitor-*.xpi
