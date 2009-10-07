@@ -10,12 +10,34 @@
 #endif
 
 #include "clCPUMonitor.h"
+#include "clSystem.h"
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUMonitor)
+NS_GENERIC_FACTORY_CONSTRUCTOR(clSystem)
+
+static NS_METHOD
+registerSystem(nsIComponentManager *aCompMgr,
+               nsIFile *aPath,
+               const char *registryLocation,
+               const char *componentType,
+               const nsModuleComponentInfo *info)
+{
+    nsresult rv;
+    nsCOMPtr<nsICategoryManager> catMan(do_GetService(NS_CATEGORYMANAGER_CONTRACTID, &rv));
+    if (NS_FAILED(rv))
+        return rv;
+
+    catMan->AddCategoryEntry(JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY,
+                             "system",
+                             CL_SYSTEM_CONTRACT_ID,
+                             PR_TRUE, PR_TRUE,
+                             nsnull);
+    return NS_OK;
+}
 
 static NS_METHOD
 registerCPUMonitor(nsIComponentManager *aCompMgr,
-		   nsIFile *aPath,
+                   nsIFile *aPath,
                    const char *registryLocation,
                    const char *componentType,
                    const nsModuleComponentInfo *info)
@@ -30,27 +52,6 @@ registerCPUMonitor(nsIComponentManager *aCompMgr,
                              CL_CPU_MONITOR_CONTRACT_ID,
                              PR_TRUE, PR_TRUE,
                              nsnull);
-#if 0
-    nsCOMPtr<nsIComponentRegistrar> compReg(do_QueryInterface(aCompMgr));
-    if (!compReg)
-      return NS_ERROR_UNEXPECTED;
-
-    PRBool registered;
-    rv = compReg->IsContractIDRegistered(CL_CPU_MONITOR_CONTRACT_ID,
-                                         &registered);
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    if (registered) {
-      return compReg->RegisterFactoryLocation(GetCID(),
-                                              "CPU Monitor",
-                                              nsnull, aPath, registryLocation, componentType);
-    }
-
-    return compReg->RegisterFactoryLocation(GetCID(),
-                                            "CPU Monitor",
-                                            CL_CPU_MONITOR_CONTRACT_ID,
-                                            aPath, registryLocation, componentType);
-#endif
     return NS_OK;
 }
 
@@ -58,6 +59,13 @@ NS_DECL_CLASSINFO(clCPUMonitor)
 
 static nsModuleComponentInfo systemComponents[] =
 {
+    {
+       "System Property",
+       CL_SYSTEM_CID,
+       CL_SYSTEM_CONTRACT_ID,
+       clSystemConstructor,
+       registerSystem,
+    },
     {
        "CPU Monitor",
        CL_CPU_MONITOR_CID,

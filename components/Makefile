@@ -1,7 +1,7 @@
 CXX = c++
 CXXFLAGS = -g -Wall -fno-rtti -fno-exceptions -shared
 
-XULRUNNER_PACKAGE_NAME = libxul
+XULRUNNER_PACKAGE_NAME = libxul-unstable
 PKG_CONFIG = pkg-config
 
 GECKO_SDK_PATH = `$(PKG_CONFIG) --variable=sdkdir $(XULRUNNER_PACKAGE_NAME)`
@@ -24,19 +24,23 @@ GECKO_LIBS =	-lxpcomglue_s			\
 OBJS = 				\
 	clCPUTime.o		\
 	clCPUMonitor.o		\
+	clSystem.o		\
 	clSystemMonitorModule.o
 
 IDL = 				\
 	clICPUTime.idl		\
-	clICPUMonitor.idl
+	clICPUMonitor.idl	\
+	clISystem.idl
 
 XPT = 				\
 	clICPUTime.xpt		\
-	clICPUMonitor.xpt
+	clICPUMonitor.xpt	\
+	clISystem.xpt
 
 IHEADER = 			\
 	clICPUTime.h		\
-	clICPUMonitor.h
+	clICPUMonitor.h		\
+	clISystem.h
 
 SHARED = clSystemMonitor.so
 
