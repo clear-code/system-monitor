@@ -1,0 +1,8 @@
+#include "nsISupports.idl"
+
+[scriptable, uuid(4d62df13-deee-4d5a-a7d9-2cabe54c7930)]
+
+interface clISystem : nsISupports
+{
+  readonly attribute double clock;
+};
