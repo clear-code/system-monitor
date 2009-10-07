@@ -56,7 +56,7 @@ registerCPUMonitor(nsIComponentManager *aCompMgr,
 
 NS_DECL_CLASSINFO(clCPUMonitor)
 
-static nsModuleComponentInfo cpuMonitorComponents[] =
+static nsModuleComponentInfo systemComponents[] =
 {
     {
        "CPU Monitor",
@@ -72,4 +72,4 @@ static nsModuleComponentInfo cpuMonitorComponents[] =
     }
 };
 
-NS_IMPL_NSGETMODULE(clCPUMonitorModule, cpuMonitorComponents);
+NS_IMPL_NSGETMODULE(clSystemMonitorModule, systemComponents);
