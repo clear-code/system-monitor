@@ -3,6 +3,12 @@
 #include <nsServiceManagerUtils.h>
 #include <nsIClassInfoImpl.h>
 
+/* This header file is unstable. */
+/* #include <nsIScriptNameSpaceManager.h> */
+#ifndef JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY
+#define JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY "JavaScript global property"
+#endif
+
 #include "clCPUMonitor.h"
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUMonitor)
@@ -19,7 +25,7 @@ registerCPUMonitor(nsIComponentManager *aCompMgr,
     if (NS_FAILED(rv))
         return rv;
 
-    catMan->AddCategoryEntry("JavaScript global property",
+    catMan->AddCategoryEntry(JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY,
                              "monitor",
                              CL_CPU_MONITOR_CONTRACT_ID,
                              PR_TRUE, PR_TRUE,
