@@ -40,13 +40,14 @@ IHEADER = 			\
 
 SHARED = clSystemMonitor.so
 
-all: $(XPT) $(IHEADER) $(SHARED)
+all: $(XPT) $(SHARED)
 
-$(XPT): $(IDL)
-	$(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $(IDL)
+.SUFFIXES:	.idl .xpt
+.idl.xpt:
+	$(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $<
 
-$(IHEADER): $(IDL)
-	$(XPIDL) -m header -I$(GECKO_IDL_PATH) $(IDL)
+.idl.h:
+	$(XPIDL) -m header -I$(GECKO_IDL_PATH) $<
 
 $(SHARED): $(IHEADER) $(OBJS)
 	$(CXX) $(CXXFLAGS) $(GECKO_LDFLAGS) -o $(SHARED) $(OBJS) $(GECKO_LIBS) $(LIBGTOP_LIBS)
