@@ -12,7 +12,7 @@
 #define CL_SYSTEM_CID {0x726fc5c0, 0xb822, 0x435d, {0x82, 0x67, 0xdf, 0x2f, 0xfc, 0x7b, 0xa2, 0x78}}
 
 class clSystem : public clISystem
-                 , public nsIScriptObjectOwner
+               , public nsIScriptObjectOwner
 {
 public:
   clSystem();
