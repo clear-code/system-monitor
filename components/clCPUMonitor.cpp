@@ -2,12 +2,13 @@
 
 #include "clCPUTime.h"
 
+#include <nsIClassInfoImpl.h>
+#include <nsMemory.h>
+
 #define HAVE_LIBGTOP
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
 #endif
-
-NS_IMPL_ISUPPORTS1(clCPUMonitor, clICPUMonitor)
 
 clCPUMonitor::clCPUMonitor()
 {
@@ -21,6 +22,8 @@ clCPUMonitor::clCPUMonitor()
 clCPUMonitor::~clCPUMonitor()
 {
 }
+
+NS_IMPL_ISUPPORTS1_CI(clCPUMonitor, clICPUMonitor)
 
 /* clICPUTime measure (); */
 NS_IMETHODIMP clCPUMonitor::Measure(clICPUTime **result NS_OUTPARAM)
