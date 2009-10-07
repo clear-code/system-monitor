@@ -44,6 +44,7 @@ NS_IMETHODIMP clCPUMonitor::Measure(clICPUTime **result NS_OUTPARAM)
                             (float)idle / total,
                             (float)io_wait / total);
 
+    NS_ADDREF(*result);
     memcpy(&mPreviousCPUTime, &cpu, sizeof(cpu));
     return NS_OK;
 #else
