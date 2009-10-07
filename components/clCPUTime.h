@@ -12,16 +12,16 @@ public:
   NS_DECL_ISUPPORTS
   NS_DECL_CLICPUTIME
 
-  clCPUTime(float aUser, float aNice, float aSystem, float aIdle, float aIOWait);
+  clCPUTime(double aUser, double aNice, double aSystem, double aIdle, double aIOWait);
 
   virtual ~clCPUTime();
 
 private:
-  float mUser;
-  float mNice;
-  float mSystem;
-  float mIdle;
-  float mIOWait;
+  double mUser;
+  double mNice;
+  double mSystem;
+  double mIdle;
+  double mIOWait;
 };
 
 #endif /* __CL_CPU_TIME_H__ */

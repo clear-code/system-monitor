@@ -2,7 +2,7 @@
 
 NS_IMPL_ISUPPORTS1(clCPUTime, clICPUTime)
 
-clCPUTime::clCPUTime(float aUser, float aNice, float aSystem, float aIdle, float aIOWait)
+clCPUTime::clCPUTime(double aUser, double aNice, double aSystem, double aIdle, double aIOWait)
     : mUser(aUser),
       mNice(aNice),
       mSystem(aSystem),
@@ -15,36 +15,36 @@ clCPUTime::~clCPUTime()
 {
 }
 
-/* readonly attribute float user; */
-NS_IMETHODIMP clCPUTime::GetUser(float *aUser)
+/* readonly attribute double user; */
+NS_IMETHODIMP clCPUTime::GetUser(double *aUser)
 {
     *aUser = mUser;
     return NS_OK;
 }
 
-/* readonly attribute float nice; */
-NS_IMETHODIMP clCPUTime::GetNice(float *aNice)
+/* readonly attribute double nice; */
+NS_IMETHODIMP clCPUTime::GetNice(double *aNice)
 {
     *aNice = mNice;
     return NS_OK;
 }
 
-/* readonly attribute float system; */
-NS_IMETHODIMP clCPUTime::GetSystem(float *aSystem)
+/* readonly attribute double system; */
+NS_IMETHODIMP clCPUTime::GetSystem(double *aSystem)
 {
     *aSystem = mSystem;
     return NS_OK;
 }
 
-/* readonly attribute float idle; */
-NS_IMETHODIMP clCPUTime::GetIdle(float *aIdle)
+/* readonly attribute double idle; */
+NS_IMETHODIMP clCPUTime::GetIdle(double *aIdle)
 {
     *aIdle = mIdle;
     return NS_OK;
 }
 
-/* readonly attribute float io_wait; */
-NS_IMETHODIMP clCPUTime::GetIo_wait(float *aIOWait)
+/* readonly attribute double io_wait; */
+NS_IMETHODIMP clCPUTime::GetIo_wait(double *aIOWait)
 {
     *aIOWait = mIOWait;
     return NS_OK;

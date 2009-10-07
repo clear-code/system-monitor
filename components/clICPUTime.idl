@@ -4,9 +4,9 @@
 
 interface clICPUTime : nsISupports
 {
-  readonly attribute float user;
-  readonly attribute float nice;
-  readonly attribute float system;
-  readonly attribute float idle;
-  readonly attribute float io_wait;
+  readonly attribute double user;
+  readonly attribute double nice;
+  readonly attribute double system;
+  readonly attribute double idle;
+  readonly attribute double io_wait;
 };
