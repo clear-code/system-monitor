@@ -10,8 +10,6 @@ testProperty.description = "property test";
 testProperty.priority = 'must';
 function testProperty() {
   assert.isDefined(window.system);
-  assert.isDefined(window.system.clock);
-  window.system.clock();
 }
 
 testClock.description = "clock test";
