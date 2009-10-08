@@ -36,16 +36,16 @@ NS_IMPL_THREADSAFE_ISUPPORTS2(clSystem,
                               clISystem)
 
 JSClass JSSystemGlobalClass = {
-  "System",
-  JSCLASS_HAS_PRIVATE,
-  JS_PropertyStub,
-  JS_PropertyStub,
-  JS_PropertyStub,
-  JS_PropertyStub,
-  JS_EnumerateStub,
-  JS_ResolveStub,
-  JS_ConvertStub,
-  FinalizeJSSystemGlobal
+    "System",
+    JSCLASS_HAS_PRIVATE,
+    JS_PropertyStub,
+    JS_PropertyStub,
+    JS_PropertyStub,
+    JS_PropertyStub,
+    JS_EnumerateStub,
+    JS_ResolveStub,
+    JS_ConvertStub,
+    FinalizeJSSystemGlobal
 };
 
 static JSBool
