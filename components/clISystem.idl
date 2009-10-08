@@ -5,4 +5,5 @@
 interface clISystem : nsISupports
 {
   readonly attribute double clock;
+  readonly attribute long three;
 };

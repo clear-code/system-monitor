@@ -48,9 +48,17 @@ JSClass JSSystemGlobalClass = {
   FinalizeJSSystemGlobal
 };
 
-static JSFunctionSpec JSSystemGlobalMethods[] =
+static JSBool
+three(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
-  {nsnull,nsnull,0,0,0}
+    *rval = INT_TO_JSVAL(3);
+
+    return JS_TRUE;
+}
+
+static JSFunctionSpec JSSystemGlobalMethods[] = {
+    {"three", three, 0, 0, 0},
+    JS_FS_END
 };
 
 static nsresult
@@ -136,3 +144,12 @@ clSystem::GetClock(double *aClock)
     *aClock = 0.0;
     return NS_OK;
 }
+
+/* readonly attribute long three; */
+NS_IMETHODIMP
+clSystem::GetThree(PRInt32 *aThree)
+{
+    *aThree = 3;
+    return NS_OK;
+}
+

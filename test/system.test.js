@@ -12,12 +12,13 @@ function testProperty() {
   assert.isDefined(window.system);
 }
 
-testClock.description = "clock test";
-testClock.priority = 'must';
-function testClock() {
+testThree.description = "three test";
+testThree.priority = 'must';
+function testThree() {
   testProperty();
-  assert.isDefined(window.system.clock);
-  assert.isNumber(window.system.clock());
+  assert.isDefined(window.system.three);
+  assert.isNumber(window.system.three());
+  assert.equal(3, window.system.three());
 }
 
 testGetService.description = "get service test";
