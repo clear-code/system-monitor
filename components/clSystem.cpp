@@ -74,17 +74,8 @@ clock(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
     return JS_TRUE;
 }
 
-static JSBool
-three(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
-{
-    *rval = INT_TO_JSVAL(3);
-
-    return JS_TRUE;
-}
-
 static JSFunctionSpec JSSystemGlobalMethods[] = {
     {"clock", clock, 0, 0, 0},
-    {"three", three, 0, 0, 0},
     JS_FS_END
 };
 
@@ -180,14 +171,6 @@ NS_IMETHODIMP
 clSystem::GetClock(double *aClock)
 {
     *aClock = 0.0;
-    return NS_OK;
-}
-
-/* readonly attribute long three; */
-NS_IMETHODIMP
-clSystem::GetThree(PRInt32 *aThree)
-{
-    *aThree = 3;
     return NS_OK;
 }
 

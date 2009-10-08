@@ -12,15 +12,6 @@ function testProperty() {
   assert.isDefined(system);
 }
 
-testThree.description = "three test";
-testThree.priority = 'must';
-function testThree() {
-  testProperty();
-  assert.isDefined(system.three);
-  assert.isNumber(system.three());
-  assert.equal(3, system.three());
-}
-
 testClock.description = "clock test";
 testClock.priority = 'must';
 function testClock() {
