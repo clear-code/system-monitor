@@ -2,6 +2,7 @@
 #include <nsIScriptGlobalObject.h>
 
 #include "clSystem.h"
+#include "clISystem.h"
 
 clSystem::clSystem()
     : mScriptObject(nsnull)
@@ -13,7 +14,7 @@ clSystem::~clSystem()
 }
 
 static void
-FinalizeJSSystemGlobal(JSContext *cx, JSObject *obj)
+FinalizeJSSystem(JSContext *cx, JSObject *obj)
 {
     nsISupports *nativeThis = (nsISupports*)JS_GetPrivate(cx, obj);
 
@@ -45,8 +46,33 @@ JSClass JSSystemGlobalClass = {
     JS_EnumerateStub,
     JS_ResolveStub,
     JS_ConvertStub,
-    FinalizeJSSystemGlobal
+    FinalizeJSSystem
 };
+
+static clISystem *
+getNative(JSContext *cx, JSObject *obj)
+{
+    if (!JS_InstanceOf(cx, obj, &JSSystemGlobalClass, nsnull))
+        return nsnull;
+
+    return (clISystem*)JS_GetPrivate(cx, obj);
+}
+
+static JSBool
+clock(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+{
+    jsdouble value;
+
+    clISystem *nativeThis = getNative(cx, obj);
+    if (!nativeThis)
+        return JS_FALSE;
+
+    nativeThis->GetClock(&value);
+
+    *rval = DOUBLE_TO_JSVAL(&value);
+
+    return JS_TRUE;
+}
 
 static JSBool
 three(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
@@ -57,6 +83,7 @@ three(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 }
 
 static JSFunctionSpec JSSystemGlobalMethods[] = {
+    {"clock", clock, 0, 0, 0},
     {"three", three, 0, 0, 0},
     JS_FS_END
 };
@@ -70,7 +97,7 @@ InitJSSystemGlobalClass(nsIScriptContext *aContext, void **aPrototype)
     JSObject *global = JS_GetGlobalObject(jscontext);
     jsval vp;
 
-    if ((PR_TRUE != JS_LookupProperty(jscontext, global, "JSSystemGlobal", &vp)) ||
+    if ((PR_TRUE != JS_LookupProperty(jscontext, global, "system", &vp)) ||
         !JSVAL_IS_OBJECT(vp) ||
         ((constructor = JSVAL_TO_OBJECT(vp)) == nsnull) ||
         (PR_TRUE != JS_LookupProperty(jscontext, JSVAL_TO_OBJECT(vp), "prototype", &vp)) ||
@@ -111,6 +138,8 @@ clSystem::GetScriptObject(nsIScriptContext *aContext, void** aScriptObject)
         JSObject *parent = nsnull;
         JSContext *jscontext = (JSContext *)aContext->GetNativeContext();
         nsISupports *aParent = aContext->GetGlobalObject();
+        clISystem *system;
+
         nsCOMPtr<nsIScriptObjectOwner> owner(do_QueryInterface(aParent));
         if (owner) {
             nsresult rv = owner->GetScriptObject(aContext, (void **)&parent);
@@ -123,7 +152,16 @@ clSystem::GetScriptObject(nsIScriptContext *aContext, void** aScriptObject)
 
         rv = InitJSSystemGlobalClass(aContext, (void **)&proto);
         NS_ENSURE_SUCCESS(rv, rv);
+        rv = CallQueryInterface(this, &system);
+        NS_ENSURE_SUCCESS(rv, rv);
+
         mScriptObject = JS_NewObject(jscontext, &JSSystemGlobalClass, proto, parent);
+        if (!mScriptObject) {
+            NS_RELEASE(system);
+            return NS_ERROR_FAILURE;
+        }
+        JS_SetGlobalObject(jscontext, (JSObject *)mScriptObject);
+        JS_SetPrivate(jscontext, (JSObject *)mScriptObject, system);
     }
 
     *aScriptObject = mScriptObject;

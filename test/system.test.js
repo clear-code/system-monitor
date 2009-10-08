@@ -9,16 +9,24 @@ function tearDown() {
 testProperty.description = "property test";
 testProperty.priority = 'must';
 function testProperty() {
-  assert.isDefined(window.system);
+  assert.isDefined(system);
 }
 
 testThree.description = "three test";
 testThree.priority = 'must';
 function testThree() {
   testProperty();
-  assert.isDefined(window.system.three);
-  assert.isNumber(window.system.three());
-  assert.equal(3, window.system.three());
+  assert.isDefined(system.three);
+  assert.isNumber(system.three());
+  assert.equal(3, system.three());
+}
+
+testClock.description = "clock test";
+testClock.priority = 'must';
+function testClock() {
+  testProperty();
+  assert.isDefined(system.clock);
+  assert.isNumber(system.clock());
 }
 
 testGetService.description = "get service test";
