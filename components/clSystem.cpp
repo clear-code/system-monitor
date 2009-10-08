@@ -36,7 +36,7 @@ NS_IMPL_THREADSAFE_ISUPPORTS2(clSystem,
                               clISystem)
 
 JSClass JSSystemGlobalClass = {
-    "System",
+    "system",
     JSCLASS_HAS_PRIVATE,
     JS_PropertyStub,
     JS_PropertyStub,
