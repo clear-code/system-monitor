@@ -2,9 +2,6 @@
 
 #include "clCPUTime.h"
 
-//#include <nsIClassInfoImpl.h>
-//#include <nsMemory.h>
-
 #define HAVE_LIBGTOP
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
