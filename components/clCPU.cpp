@@ -1,5 +1,8 @@
 #include "clCPU.h"
 
+#include <nsIClassInfoImpl.h>
+#include <nsMemory.h>
+
 #include "clCPUTime.h"
 
 #define HAVE_LIBGTOP
@@ -20,7 +23,7 @@ clCPU::~clCPU()
 {
 }
 
-NS_IMPL_ISUPPORTS1(clCPU, clICPU)
+NS_IMPL_ISUPPORTS1_CI(clCPU, clICPU)
 
 NS_IMETHODIMP
 clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
