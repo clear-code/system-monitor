@@ -1,6 +1,6 @@
 var updateTime = 1000;
 
-var gCPUMonitor = Cc["@clear-code.com/cpu/monitor;1"].getService(Ci.clICPUMonitor);
+var gCPU = Cc["@clear-code.com/system/cpu;1"].getService(Ci.clICPU);
 
 var gCPUTimeArray = initCPUArray(24);
 
@@ -39,7 +39,7 @@ function drawGraph() {
   context.fillRect(0, 0, canvasElement.width, canvasElement.height);
   context.globalCompositeOperation = "copy";
 
-  cpuTime = gCPUMonitor.measure();
+  cpuTime = gCPU.getCurrentTime();
   gCPUTimeArray.shift();
   gCPUTimeArray.push(cpuTime);
 
