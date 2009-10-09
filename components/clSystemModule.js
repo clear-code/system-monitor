@@ -12,10 +12,7 @@ function clSystem() {
 clSystem.prototype = {
     flags : nsIClassInfo.DOM_OBJECT,
     classDescription : "System",
-    
-    cpu : function() {
-        return Components.classes["@clear-code.com/system/cpu;1"].getService(clICPU);
-    },
+    cpu : Components.classes["@clear-code.com/system/cpu;1"].getService(clICPU),
 
     getInterfaces : function(count) {
         var interfaceList = [clISystem, nsIClassInfo];
