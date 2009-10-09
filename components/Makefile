@@ -24,26 +24,22 @@ GECKO_LIBS =	-lxpcomglue_s			\
 OBJS = 				\
 	clCPU.o			\
 	clCPUTime.o		\
-	clCPUMonitor.o		\
 	clSystem.o		\
 	clSystemMonitorModule.o
 
 IDL = 				\
 	clICPU.idl		\
 	clICPUTime.idl		\
-	clICPUMonitor.idl	\
 	clISystem.idl
 
 XPT = 				\
 	clICPU.xpt		\
 	clICPUTime.xpt		\
-	clICPUMonitor.xpt	\
 	clISystem.xpt
 
 IHEADER = 			\
 	clICPU.h		\
 	clICPUTime.h		\
-	clICPUMonitor.h		\
 	clISystem.h
 
 SHARED = clSystemMonitor.so
