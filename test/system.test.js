@@ -6,9 +6,9 @@ function setUp() {
 function tearDown() {
 }
 
-testProperty.description = "property test";
-testProperty.priority = 'must';
-function testProperty() {
+testDefined.description = "defined test";
+testDefined.priority = 'must';
+function testDefined() {
   assert.isDefined(system);
 }
 
