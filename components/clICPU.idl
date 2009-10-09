@@ -1,0 +1,10 @@
+#include "nsISupports.idl"
+
+interface clICPUTime;
+
+[scriptable, uuid(c98bfcd7-fa23-4d81-97a5-59eff0b2bacc)]
+
+interface clICPU : nsISupports
+{
+  clICPUTime getCurrentTime();
+};

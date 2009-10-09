@@ -9,9 +9,11 @@
 #define JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY "JavaScript global property"
 #endif
 
+#include "clCPU.h"
 #include "clCPUMonitor.h"
 #include "clSystem.h"
 
+NS_GENERIC_FACTORY_CONSTRUCTOR(clCPU)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUMonitor)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clSystem)
 
@@ -64,7 +66,13 @@ static nsModuleComponentInfo systemComponents[] =
        CL_SYSTEM_CID,
        CL_SYSTEM_CONTRACT_ID,
        clSystemConstructor,
-       registerSystem,
+       registerSystem
+    },
+    {
+       "CPU",
+       CL_CPU_CID,
+       CL_CPU_CONTRACT_ID,
+       clCPUConstructor
     },
     {
        "CPU Monitor",

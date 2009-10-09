@@ -9,6 +9,13 @@ function setUp() {
 function tearDown() {
 }
 
+testCreateCPU.description = "create instance test";
+testCreateCPU.priority = 'must';
+function testCreateCPU() {
+  let cpu = Cc["@clear-code.com/system/cpu;1"].getService(Ci.clICPU);
+  assert.isDefined(cpu);
+}
+
 testCreate.description = "create instance test";
 testCreate.priority = 'must';
 function testCreate() {
