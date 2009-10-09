@@ -15,14 +15,14 @@ function testDefined() {
 testCPU.description = "cpu property test";
 testCPU.priority = 'must';
 function testCPU() {
-  testProperty();
+  testDefined();
   assert.isDefined(system.cpu);
 }
 
 testClock.description = "clock test";
 testClock.priority = 'must';
 function testClock() {
-  testProperty();
+  testDefined();
   assert.isDefined(system.clock);
   assert.isNumber(system.clock());
 }
