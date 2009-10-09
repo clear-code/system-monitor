@@ -43,7 +43,7 @@ case `uname` in
     ;;
 esac
 
-component_xpt="components/clSystemIMonitor.xpt"
+component_xpt="components/*.xpt"
 components="$component_xpt $component_shared"
 
 xpi_contents="content $components chrome.manifest install.rdf"
