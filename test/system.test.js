@@ -12,6 +12,13 @@ function testProperty() {
   assert.isDefined(system);
 }
 
+testCPU.description = "cpu property test";
+testCPU.priority = 'must';
+function testCPU() {
+  testProperty();
+  assert.isDefined(system.cpu);
+}
+
 testClock.description = "clock test";
 testClock.priority = 'must';
 function testClock() {
