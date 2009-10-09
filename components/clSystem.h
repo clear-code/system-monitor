@@ -25,6 +25,7 @@ public:
   NS_IMETHOD SetScriptObject(void* aScriptObject);
 
 private:
+  clICPU *mCPU;
   void *mScriptObject;
 };
 

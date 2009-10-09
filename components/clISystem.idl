@@ -1,8 +1,11 @@
 #include "nsISupports.idl"
 
+interface clICPU;
+
 [scriptable, uuid(4d62df13-deee-4d5a-a7d9-2cabe54c7930)]
 
 interface clISystem : nsISupports
 {
+  readonly attribute clICPU cpu;
   readonly attribute double clock;
 };

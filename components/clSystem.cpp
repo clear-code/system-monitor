@@ -1,16 +1,19 @@
 #include <jsapi.h>
 #include <nsIScriptGlobalObject.h>
 
+#include "clCPU.h"
 #include "clSystem.h"
 #include "clISystem.h"
 
 clSystem::clSystem()
-    : mScriptObject(nsnull)
+    : mCPU(nsnull),
+      mScriptObject(nsnull)
 {
 }
 
 clSystem::~clSystem()
 {
+    delete mCPU;
 }
 
 static void
@@ -74,9 +77,30 @@ clock(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
     return JS_TRUE;
 }
 
-static JSFunctionSpec JSSystemGlobalMethods[] = {
+static JSBool
+getCPU(JSContext *cx, JSObject *obj, jsval id, jsval *rval)
+{
+    clICPU *cpu;
+
+    clISystem *nativeThis = getNative(cx, obj);
+    if (!nativeThis)
+        return JS_FALSE;
+
+    *rval = JSVAL_ONE;
+    nativeThis->GetCpu(&cpu);
+    *rval = OBJECT_TO_JSVAL(cpu);
+
+    return JS_TRUE;
+}
+
+static JSFunctionSpec JSSystemMethods[] = {
     {"clock", clock, 0, 0, 0},
     JS_FS_END
+};
+
+static JSPropertySpec JSSystemProperties[] = {
+    {"cpu", -1, JSPROP_READONLY | JSPROP_PERMANENT | JSPROP_SHARED, getCPU, nsnull},
+    {nsnull, 0, 0, nsnull, nsnull}
 };
 
 static nsresult
@@ -101,8 +125,8 @@ InitJSSystemGlobalClass(nsIScriptContext *aContext, void **aPrototype)
                              nsnull,
                              nsnull,
                              nsnull,
-                             nsnull,
-                             JSSystemGlobalMethods);
+                             JSSystemProperties,
+                             JSSystemMethods);
 
 
         if (nsnull == proto)
@@ -163,6 +187,19 @@ NS_IMETHODIMP
 clSystem::SetScriptObject(void* aScriptObject)
 {
     mScriptObject = aScriptObject;
+    return NS_OK;
+}
+
+/* readonly attribute clICPU cpu; */
+NS_IMETHODIMP
+clSystem::GetCpu(clICPU * *aCPU)
+{
+    if (!mCPU)
+        mCPU = new clCPU();
+
+    *aCPU = mCPU;
+    NS_ADDREF(*aCPU);
+
     return NS_OK;
 }
 
