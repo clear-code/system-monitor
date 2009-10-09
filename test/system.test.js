@@ -12,25 +12,18 @@ function testDefined() {
   assert.isDefined(system);
 }
 
-testCPU.description = "cpu property test";
+testCPU.description = "cpu attribute test";
 testCPU.priority = 'must';
 function testCPU() {
   testDefined();
   assert.isDefined(system.cpu);
 }
 
-testClock.description = "clock test";
-testClock.priority = 'must';
-function testClock() {
-  testDefined();
-  assert.isDefined(system.clock);
-  assert.isNumber(system.clock());
-}
-
 testGetService.description = "get service test";
 testGetService.priority = 'must';
 function testGetService() {
-  let system = Cc["@clear-code.com/system;1"].getService(Ci.clISystem);
-  assert.isDefined(system);
+  let systemService = Cc["@clear-code.com/system;1"].getService(Ci.clISystem);
+  assert.isDefined(systemService);
+  assert.isDefined(systemService.cpu);
 }
 
