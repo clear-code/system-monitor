@@ -57,6 +57,8 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     guint64 kernel = kernelTime - mPreviousKernelTime;
     guint64 idle = idleTime - mPreviousIdleTime;
 
+    guint64 total = user + kernel + idle;
+
     *result = new clCPUTime((float)user / total,
                             (float)0.0f,
                             (float)kernel / total,
