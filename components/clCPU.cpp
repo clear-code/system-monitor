@@ -49,6 +49,23 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     NS_ADDREF(*result);
     memcpy(&mPreviousCPUTime, &cpu, sizeof(cpu));
     return NS_OK;
+#elif CYGWIN
+    FILETIME idleTime, kernelTime, userTime;
+    GetSystemTimes(&idleTime, &kernelTime, &userTime);
+
+    guint64 user = userTime - mPreviousUserTime;
+    guint64 kernel = kernelTime - mPreviousKernelTime;
+    guint64 idle = idleTime - mPreviousIdleTime;
+
+    *result = new clCPUTime((float)user / total,
+                            (float)0.0f,
+                            (float)kernel / total,
+                            (float)idle / total,
+                            (float)0.0f);
+
+    NS_ADDREF(*result);
+
+    return NS_OK;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif

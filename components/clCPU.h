@@ -5,6 +5,8 @@
 
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
+#elif CYGWIN
+#include <windows.h>
 #endif
 
 #define CL_CPU_CONTRACT_ID "@clear-code.com/system/cpu;1"
@@ -22,6 +24,10 @@ public:
 private:
 #ifdef HAVE_LIBGTOP
   glibtop_cpu mPreviousCPUTime;
+#elif CYGWIN
+  FILETIME mPreviousIdleTime;
+  FILETIME mPreviousKernelTime;
+  FILETIME mPreviousUserTime;
 #endif /* HAVE_LIBGTOP */
 };
 
