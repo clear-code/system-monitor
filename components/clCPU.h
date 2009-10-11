@@ -2,7 +2,7 @@
 #define __CL_CPU_H__
 
 #include "clICPU.h"
-#define HAVE_LIBGTOP
+
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
 #endif

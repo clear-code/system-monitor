@@ -5,7 +5,6 @@
 
 #include "clCPUTime.h"
 
-#define HAVE_LIBGTOP
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
 #endif

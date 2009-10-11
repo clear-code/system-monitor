@@ -16,7 +16,7 @@ xpi=$xpcom_name-$version.xpi
 
 case `uname` in
   Linux)
-    (cd components && make) || exit 1
+    (cd components && CXXFLAGS=-DHAVE_LIBGTOP make) || exit 1
     component_shared="components/clSystemMonitor.so"
     ;;
   Darwin)
