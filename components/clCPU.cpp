@@ -5,16 +5,14 @@
 
 #include "clCPUTime.h"
 
-#ifdef HAVE_LIBGTOP
-#include <glibtop/cpu.h>
-#endif
-
 clCPU::clCPU()
 {
 #ifdef HAVE_LIBGTOP
     glibtop_init();
     memset(&mPreviousCPUTime, 0, sizeof(mPreviousCPUTime));
     glibtop_get_cpu(&mPreviousCPUTime);
+#elif CYGWIN
+    GetSystemTimes(&mPreviousIdleTime, &mPreviousKernelTime, &mPreviosUserTime);
 #endif /* HAVE_LIBGTOP */
 }
 
@@ -58,6 +56,10 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     guint64 idle = idleTime - mPreviousIdleTime;
 
     guint64 total = user + kernel + idle;
+
+    mPreviosUserTime = user;
+    mPreviosKernelTime = kernl;
+    mPreviosIdleTime = idle;
 
     *result = new clCPUTime((float)user / total,
                             (float)0.0f,
