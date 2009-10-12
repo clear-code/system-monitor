@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -g -Wall -fno-rtti -fno-exceptions -shared
+CXXFLAGS += -g -Wall -fno-rtti -fno-exceptions -shared
 
 XULRUNNER_PACKAGE_NAME = libxul-unstable
 PKG_CONFIG = pkg-config
