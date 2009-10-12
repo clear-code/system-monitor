@@ -24,7 +24,7 @@ GECKO_LIBS =	-lxpcomglue_s			\
 OBJS = 				\
 	clCPU.o			\
 	clCPUTime.o		\
-	clSystemMonitorModule.o
+	clSystemModule.o
 
 IDL = 				\
 	clISystem.idl		\
