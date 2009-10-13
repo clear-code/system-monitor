@@ -24,6 +24,7 @@ GECKO_LIBS =	-lxpcomglue_s			\
 OBJS = 				\
 	clCPU.o			\
 	clCPUTime.o		\
+	clSystem.o		\
 	clSystemModule.o
 
 IDL = 				\
@@ -37,6 +38,7 @@ XPT = 				\
 	clICPUTime.xpt
 
 IHEADER = 			\
+	clISystem.h		\
 	clICPU.h		\
 	clICPUTime.h
 
