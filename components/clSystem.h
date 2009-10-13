@@ -26,7 +26,7 @@ public:
   NS_IMETHOD GetScriptObject(nsIScriptContext *aContext, void** aScriptObject);
   NS_IMETHOD SetScriptObject(void* aScriptObject);
 
-  clICPU *mCPU;
+  nsCOMPtr<clICPU> mCPU;
 
 private:
   static clSystem *gSystem;
