@@ -3,7 +3,6 @@
 #include <nsServiceManagerUtils.h>
 #include <nsIClassInfoImpl.h>
 
-/* This header file is unstable. */
 #include <nsIScriptNameSpaceManager.h>
 
 #include "clCPU.h"
