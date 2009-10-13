@@ -4,10 +4,7 @@
 #include <nsIClassInfoImpl.h>
 
 /* This header file is unstable. */
-/* #include <nsIScriptNameSpaceManager.h> */
-#ifndef JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY
-#define JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY "JavaScript global property"
-#endif
+#include <nsIScriptNameSpaceManager.h>
 
 #include "clCPU.h"
 #include "clSystem.h"
