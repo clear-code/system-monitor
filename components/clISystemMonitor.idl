@@ -1,0 +1,8 @@
+#include "nsISupports.idl"
+
+[scriptable, function, uuid(c98bfcd7-fa23-4d81-97a5-59eff0b2bacc)]
+
+interface clISystemMonitor : nsISupports
+{
+  void monitor(in nsISupports aSubject);
+};
