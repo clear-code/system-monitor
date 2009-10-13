@@ -27,3 +27,12 @@ function testGetService() {
   assert.isDefined(systemService);
 }
 
+testMonitor.description = "monitoring test";
+testMonitor.priority = 'must';
+function testMonitor() {
+  testDefined();
+
+  assert.isDefined(system.addMonitor);
+  system.addMonitor("cpu-time", function(aCPUTime){}, 1000);
+}
+
