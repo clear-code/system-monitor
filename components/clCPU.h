@@ -15,13 +15,17 @@
 class clCPU : public clICPU
 {
 public:
+  static clCPU *GetInstance();
+  static clCPU *GetService();
+
+  clCPU();
+  virtual ~clCPU();
+
   NS_DECL_ISUPPORTS
   NS_DECL_CLICPU
 
-  clCPU();
-
-  virtual ~clCPU();
 private:
+  static clCPU *gCPU;
 #ifdef HAVE_LIBGTOP
   glibtop_cpu mPreviousCPUTime;
 #elif CYGWIN
