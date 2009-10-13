@@ -18,6 +18,7 @@ clSystem::clSystem()
 
 clSystem::~clSystem()
 {
+    NS_RELEASE(mCPU);
 }
 
 clSystem * clSystem::gSystem = nsnull;
