@@ -5,7 +5,6 @@
 #include <nsIXPConnect.h>
 #include <nsIClassInfoImpl.h>
 #include <nsServiceManagerUtils.h>
-#include <nsMemory.h>
 
 #include "clISystem.h"
 #include "clICPU.h"
