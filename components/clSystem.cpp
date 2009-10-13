@@ -18,8 +18,6 @@ clSystem::clSystem()
 
 clSystem::~clSystem()
 {
-    if (mCPU)
-        delete mCPU;
 }
 
 clSystem * clSystem::gSystem = nsnull;
@@ -48,6 +46,7 @@ nsresult
 clSystem::Init()
 {
     mCPU = new clCPU();
+    NS_ADDREF(mCPU);
 
     return NS_OK;
 }
