@@ -338,8 +338,8 @@ createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *
 
     data->system = system;
     data->topic = (PRUnichar*)nsMemory::Clone(aTopic, nsCRT::strlen(aTopic));
-    data->monitor = aMonitor;
-    data->timer = aTimer;
+    NS_ADDREF(data->monitor = aMonitor);
+    NS_ADDREF(data->timer = aTimer);
 
     return data;
 }
