@@ -408,7 +408,9 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 static nsresult
 getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsISupports **aObject)
 {
-    if (!NS_strcmp(NS_LITERAL_STRING("cpu-time").get(), aTopic)) {
+    const PRUnichar cpuTime[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
+
+    if (!NS_strcmp(cpuTime, aTopic)) {
         nsresult rv;
 
         nsCOMPtr<clICPUTime> cpuTime;
