@@ -322,7 +322,7 @@ clSystem::GetCpu(clICPU * *aCPU)
 
 struct MonitorData {
     clSystem *system;
-    char *topic;
+    PRUnichar *topic;
     clISystemMonitor *monitor;
     nsITimer *timer;
 };
@@ -337,7 +337,7 @@ createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *
         return NULL;
 
     data->system = system;
-    data->topic = (char*)nsMemory::Clone(aTopic, nsCRT::strlen(aTopic));
+    data->topic = (PRUnichar*)nsMemory::Clone(aTopic, nsCRT::strlen(aTopic));
     data->monitor = aMonitor;
     data->timer = aTimer;
 
@@ -406,9 +406,9 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 }
 
 static nsresult
-getMonitoringObject(clSystem *system, const char *aTopic, nsISupports **aObject)
+getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsISupports **aObject)
 {
-    if (!strcmp("cpu-time", aTopic)) {
+    if (!NS_strcmp(NS_LITERAL_STRING("cpu-time").get(), aTopic)) {
         nsresult rv;
 
         nsCOMPtr<clICPUTime> cpuTime;
