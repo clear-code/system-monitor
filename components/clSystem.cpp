@@ -5,20 +5,35 @@
 #include <nsIXPConnect.h>
 #include <nsIClassInfoImpl.h>
 #include <nsServiceManagerUtils.h>
+#include <nsComponentManagerUtils.h>
+#include <nsITimer.h>
+#include <nsCRT.h>
 
 #include "clISystem.h"
+#include "clISystemMonitor.h"
 #include "clICPU.h"
 #include "clCPU.h"
+#include "clCPUTime.h"
 
 clSystem::clSystem()
      : mCPU(nsnull)
      , mScriptObject(nsnull)
+     , mMonitors(nsnull)
 {
 }
 
 clSystem::~clSystem()
 {
     NS_RELEASE(mCPU);
+
+    if (mMonitors) {
+        PRInt32 count = mMonitors->Count();
+        for (PRInt32 i = 0; i < count; i++) {
+            mMonitors->RemoveElementAt(i);
+	}
+        delete mMonitors;
+        mMonitors = 0;
+    }
 }
 
 clSystem * clSystem::gSystem = nsnull;
@@ -72,8 +87,8 @@ FinalizeJSSystem(JSContext *cx, JSObject *obj)
 }
 
 NS_IMPL_THREADSAFE_ISUPPORTS2(clSystem,
-                              nsIScriptObjectOwner,
-                              clISystem)
+                              clISystem,
+                              nsIScriptObjectOwner)
 
 JSClass JSSystemClass = {
     "system",
@@ -134,6 +149,84 @@ static JSPropertySpec JSSystemProperties[] = {
     {0}
 };
 
+static JSBool
+addMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+{
+    nsresult rv;
+
+    if (argc != 3)
+        return JS_FALSE;
+
+    if (!JSVAL_IS_STRING(argv[0]) ||
+        (!JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1]))) ||
+	!JSVAL_IS_NUMBER(argv[2]))
+	return JS_FALSE;
+
+    clISystem *nativeThis = getNative(cx, obj);
+    if (!nativeThis)
+        return JS_FALSE;
+
+    clSystem *system = static_cast<clSystem*>(nativeThis);
+
+    JSString *js_topic = JSVAL_TO_STRING(argv[0]);
+    JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
+    PRInt32 interval = JSVAL_TO_INT(argv[2]);
+
+    const PRUnichar *topic = JS_GetStringChars(js_topic);
+
+    nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
+    NS_ENSURE_SUCCESS(rv, JS_FALSE);
+
+    nsCOMPtr<clISystemMonitor> monitor;
+    rv = xpc->WrapJS(cx, js_monitor, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
+    NS_ENSURE_SUCCESS(rv, JS_FALSE);
+
+    system->AddMonitor(topic, monitor, interval);
+
+    return JS_TRUE;
+}
+
+static JSBool
+removeMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+{
+    nsresult rv;
+
+    if (argc != 2)
+        return JS_FALSE;
+
+    if (!JSVAL_IS_STRING(argv[0]) ||
+        (!JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1]))) ||
+        !JSVAL_IS_OBJECT(argv[1]))
+	return JS_FALSE;
+
+    clISystem *nativeThis = getNative(cx, obj);
+    if (!nativeThis)
+        return JS_FALSE;
+
+    clSystem *system = static_cast<clSystem*>(nativeThis);
+    JSString *js_topic = JSVAL_TO_STRING(argv[0]);
+    JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
+
+    const PRUnichar *topic = JS_GetStringChars(js_topic);
+
+    nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
+    NS_ENSURE_SUCCESS(rv, JS_FALSE);
+
+    nsCOMPtr<clISystemMonitor> monitor;
+    rv = xpc->WrapJS(cx, js_monitor, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
+    NS_ENSURE_SUCCESS(rv, JS_FALSE);
+
+    system->RemoveMonitor(topic, monitor);
+
+    return JS_TRUE;
+}
+
+static JSFunctionSpec JSSystemMethods[] = {
+    {"addMonitor", addMonitor, 3, 0, 0},
+    {"removeMonitor", removeMonitor, 2, 0, 0},
+    {0}
+};
+
 static nsresult
 InitJSSystemClass(nsIScriptContext *aContext, void **aPrototype)
 {
@@ -157,7 +250,7 @@ InitJSSystemClass(nsIScriptContext *aContext, void **aPrototype)
                              nsnull,
                              nsnull,
                              JSSystemProperties,
-                             nsnull);
+                             JSSystemMethods);
 
         if (nsnull == proto)
             return NS_ERROR_FAILURE;
@@ -226,5 +319,134 @@ clSystem::GetCpu(clICPU * *aCPU)
     NS_ADDREF(*aCPU);
 
     return NS_OK;
+}
+
+struct MonitorData {
+    clSystem *system;
+    char *topic;
+    clISystemMonitor *monitor;
+    nsITimer *timer;
+};
+
+static MonitorData *
+createMonitorData (clSystem *system, const char *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
+{
+    MonitorData *data;
+
+    data = (MonitorData *)nsMemory::Alloc(sizeof(MonitorData));
+    if (!data)
+        return NULL;
+
+    data->system = system;
+    data->topic = (char*)nsMemory::Clone(aTopic, nsCRT::strlen(aTopic));
+    data->monitor = aMonitor;
+    data->timer = aTimer;
+
+    return data;
+}
+
+static void
+freeMonitorData (MonitorData *data)
+{
+    if (!data)
+        return;
+
+    data->timer->Cancel();
+    nsMemory::Free(data->topic);
+    NS_RELEASE(data->monitor);
+    NS_RELEASE(data->timer);
+
+    nsMemory::Free(data);
+}
+
+NS_IMETHODIMP
+clSystem::AddMonitor(const char *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+{
+    MonitorData *data;
+
+    if (!mMonitors) {
+        mMonitors = new nsAutoVoidArray();
+        if (nsnull == mMonitors)
+            return NS_ERROR_OUT_OF_MEMORY;
+    }
+
+    nsresult rv;
+    nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    data = createMonitorData(this, aTopic, aMonitor, timer);
+    mMonitors->AppendElement(data);
+
+    rv = timer->InitWithFuncCallback(clSystem::Timeout,
+                                     (void*)data,
+                                     aInterval,
+                                     nsITimer::TYPE_REPEATING_SLACK);
+
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::RemoveMonitor(const char *aTopic, clISystemMonitor *aMonitor)
+{
+    if (!mMonitors)
+        return NS_OK;
+
+    PRInt32 count = mMonitors->Count();
+    if (count == 0)
+        return NS_OK;
+
+    for (PRInt32 i = 0; i < count; i++) {
+        MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
+        if (data->monitor == aMonitor) {
+            mMonitors->RemoveElementAt(i);
+	    freeMonitorData(data);
+        }
+    }
+
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+{
+    // temporary fix. XPCOM module can not be loaded whenever we use NS_ConvertXX.
+    //return AddMonitor(NS_ConvertUTF16toUTF8(aTopic).get(), aMonitor, aInterval);
+    return AddMonitor("cpu-time", aMonitor, aInterval);
+}
+
+NS_IMETHODIMP
+clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
+{
+    // temporary fix. XPCOM module can not be loaded whenever we use NS_ConvertXX.
+    //return RemoveMonitor(NS_ConvertUTF16toUTF8(aTopic).get(), aMonitor);
+    return RemoveMonitor("cpu-time", aMonitor);
+}
+
+static nsresult
+getMonitoringObject(clSystem *system, const char *aTopic, nsISupports **aObject)
+{
+    if (!strcmp("cpu-time", aTopic)) {
+        nsresult rv;
+
+        nsCOMPtr<clICPUTime> cpuTime;
+        system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
+	nsCOMPtr<nsISupports> supports(do_QueryInterface(cpuTime, &rv));
+        NS_IF_ADDREF(*aObject = cpuTime);
+
+        return NS_OK;
+    }
+
+    return NS_ERROR_FAILURE;
+}
+
+void
+clSystem::Timeout(nsITimer *aTimer, void *aClosure)
+{
+    MonitorData *data = static_cast<MonitorData*>(aClosure);
+
+    nsCOMPtr<nsISupports> object;
+    getMonitoringObject(data->system, data->topic, getter_AddRefs(object));
+
+    data->monitor->Monitor(object);
 }
 
