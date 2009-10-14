@@ -10,7 +10,6 @@
 #include <nsCRT.h>
 
 #include "clISystem.h"
-#include "clISystemMonitor.h"
 #include "clICPU.h"
 #include "clCPU.h"
 #include "clCPUTime.h"

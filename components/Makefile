@@ -29,19 +29,16 @@ OBJS = 				\
 
 IDL = 				\
 	clISystem.idl		\
-	clISystemMonitor.idl	\
 	clICPU.idl		\
 	clICPUTime.idl
 
 XPT = 				\
 	clISystem.xpt		\
-	clISystemMonitor.xpt	\
 	clICPU.xpt		\
 	clICPUTime.xpt
 
 IHEADER = 			\
 	clISystem.h		\
-	clISystemMonitor.h	\
 	clICPU.h		\
 	clICPUTime.h
 
