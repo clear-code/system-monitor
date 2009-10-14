@@ -328,7 +328,7 @@ struct MonitorData {
 };
 
 static MonitorData *
-createMonitorData (clSystem *system, const char *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
+createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
 {
     MonitorData *data;
 
@@ -359,7 +359,7 @@ freeMonitorData (MonitorData *data)
 }
 
 NS_IMETHODIMP
-clSystem::AddMonitor(const char *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
 {
     MonitorData *data;
 
@@ -385,7 +385,7 @@ clSystem::AddMonitor(const char *aTopic, clISystemMonitor *aMonitor, PRInt32 aIn
 }
 
 NS_IMETHODIMP
-clSystem::RemoveMonitor(const char *aTopic, clISystemMonitor *aMonitor)
+clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 {
     if (!mMonitors)
         return NS_OK;
@@ -403,22 +403,6 @@ clSystem::RemoveMonitor(const char *aTopic, clISystemMonitor *aMonitor)
     }
 
     return NS_OK;
-}
-
-NS_IMETHODIMP
-clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
-{
-    // temporary fix. XPCOM module can not be loaded whenever we use NS_ConvertXX.
-    //return AddMonitor(NS_ConvertUTF16toUTF8(aTopic).get(), aMonitor, aInterval);
-    return AddMonitor("cpu-time", aMonitor, aInterval);
-}
-
-NS_IMETHODIMP
-clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
-{
-    // temporary fix. XPCOM module can not be loaded whenever we use NS_ConvertXX.
-    //return RemoveMonitor(NS_ConvertUTF16toUTF8(aTopic).get(), aMonitor);
-    return RemoveMonitor("cpu-time", aMonitor);
 }
 
 static nsresult

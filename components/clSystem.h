@@ -30,9 +30,6 @@ public:
   NS_IMETHOD GetScriptObject(nsIScriptContext *aContext, void** aScriptObject);
   NS_IMETHOD SetScriptObject(void* aScriptObject);
 
-  NS_IMETHOD AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval);
-  NS_IMETHOD RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor);
-
   nsCOMPtr<clICPU> mCPU;
 
 private:
