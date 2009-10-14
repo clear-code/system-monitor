@@ -1,7 +1,6 @@
 var updateTime = 1000;
 
 var gCPU = Cc["@clear-code.com/system/cpu;1"].getService(Ci.clICPU);
-
 var gCPUTimeArray = initCPUArray(24);
 
 window.setInterval(function() {drawGraph()}, updateTime);
@@ -39,14 +38,14 @@ function drawGraph() {
   context.fillRect(0, 0, canvasElement.width, canvasElement.height);
   context.globalCompositeOperation = "copy";
 
-  cpuTime = gCPU.getCurrentTime();
+  let cpuTime = gCPU.getCurrentTime();
   gCPUTimeArray.shift();
   gCPUTimeArray.push(cpuTime);
 
   context.save();
   gCPUTimeArray.forEach(function(aCPUTime) {
-    y_from = canvasElement.height;
-    y_to = y_from;
+    let y_from = canvasElement.height;
+    let y_to = y_from;
     if (aCPUTime == undefined) {
       drawLine(context, "black", x, y_from, 0);
     } else {
