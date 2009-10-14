@@ -337,7 +337,7 @@ createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *
         return NULL;
 
     data->system = system;
-    data->topic = (PRUnichar*)nsMemory::Clone(aTopic, nsCRT::strlen(aTopic));
+    data->topic = NS_strdup(aTopic);
     NS_ADDREF(data->monitor = aMonitor);
     NS_ADDREF(data->timer = aTimer);
 
