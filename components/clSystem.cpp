@@ -380,6 +380,7 @@ clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt3
                                      (void*)data,
                                      aInterval,
                                      nsITimer::TYPE_REPEATING_SLACK);
+    NS_ENSURE_SUCCESS(rv, rv);
 
     return NS_OK;
 }
