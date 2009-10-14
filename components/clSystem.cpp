@@ -430,7 +430,7 @@ getMonitoringObject(clSystem *system, const char *aTopic, nsISupports **aObject)
 
         nsCOMPtr<clICPUTime> cpuTime;
         system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
-	nsCOMPtr<nsISupports> supports(do_QueryInterface(cpuTime, &rv));
+        nsCOMPtr<nsISupports> supports(do_QueryInterface(cpuTime, &rv));
         NS_IF_ADDREF(*aObject = cpuTime);
 
         return NS_OK;
