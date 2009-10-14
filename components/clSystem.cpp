@@ -406,18 +406,14 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 }
 
 static nsresult
-getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsISupports **aObject)
+getMonitoringObject(clSystem *system, const PRUnichar *aTopic, clICPUTime **aObject)
 {
-    const PRUnichar cpuTime[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
+    const PRUnichar cpuTimeString[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
 
     if (!NS_strcmp(cpuTime, aTopic)) {
-        nsresult rv;
-
         nsCOMPtr<clICPUTime> cpuTime;
         system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
-        nsCOMPtr<nsISupports> supports(do_QueryInterface(cpuTime, &rv));
         NS_IF_ADDREF(*aObject = cpuTime);
-
         return NS_OK;
     }
 
@@ -429,7 +425,7 @@ clSystem::Timeout(nsITimer *aTimer, void *aClosure)
 {
     MonitorData *data = static_cast<MonitorData*>(aClosure);
 
-    nsCOMPtr<nsISupports> object;
+    nsCOMPtr<clICPUTime> object;
     getMonitoringObject(data->system, data->topic, getter_AddRefs(object));
 
     data->monitor->Monitor(object);
