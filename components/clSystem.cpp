@@ -21,6 +21,44 @@ clSystem::clSystem()
 {
 }
 
+struct MonitorData {
+    clSystem *system;
+    PRUnichar *topic;
+    clISystemMonitor *monitor;
+    nsITimer *timer;
+};
+
+static MonitorData *
+createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
+{
+    MonitorData *data;
+
+    data = (MonitorData *)nsMemory::Alloc(sizeof(MonitorData));
+    if (!data)
+        return NULL;
+
+    data->system = system;
+    data->topic = NS_strdup(aTopic);
+    NS_ADDREF(data->monitor = aMonitor);
+    NS_ADDREF(data->timer = aTimer);
+
+    return data;
+}
+
+static void
+freeMonitorData (MonitorData *data)
+{
+    if (!data)
+        return;
+
+    data->timer->Cancel();
+    nsMemory::Free(data->topic);
+    NS_RELEASE(data->monitor);
+    NS_RELEASE(data->timer);
+
+    nsMemory::Free(data);
+}
+
 clSystem::~clSystem()
 {
     NS_RELEASE(mCPU);
@@ -28,8 +66,10 @@ clSystem::~clSystem()
     if (mMonitors) {
         PRInt32 count = mMonitors->Count();
         for (PRInt32 i = 0; i < count; i++) {
+            MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
+            freeMonitorData(data);
             mMonitors->RemoveElementAt(i);
-	}
+        }
         delete mMonitors;
         mMonitors = 0;
     }
@@ -318,44 +358,6 @@ clSystem::GetCpu(clICPU * *aCPU)
     NS_ADDREF(*aCPU);
 
     return NS_OK;
-}
-
-struct MonitorData {
-    clSystem *system;
-    PRUnichar *topic;
-    clISystemMonitor *monitor;
-    nsITimer *timer;
-};
-
-static MonitorData *
-createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
-{
-    MonitorData *data;
-
-    data = (MonitorData *)nsMemory::Alloc(sizeof(MonitorData));
-    if (!data)
-        return NULL;
-
-    data->system = system;
-    data->topic = NS_strdup(aTopic);
-    NS_ADDREF(data->monitor = aMonitor);
-    NS_ADDREF(data->timer = aTimer);
-
-    return data;
-}
-
-static void
-freeMonitorData (MonitorData *data)
-{
-    if (!data)
-        return;
-
-    data->timer->Cancel();
-    nsMemory::Free(data->topic);
-    NS_RELEASE(data->monitor);
-    NS_RELEASE(data->timer);
-
-    nsMemory::Free(data);
 }
 
 NS_IMETHODIMP
