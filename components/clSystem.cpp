@@ -196,8 +196,8 @@ addMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 
     if (!JSVAL_IS_STRING(argv[0]) ||
         (!JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1]))) ||
-	!JSVAL_IS_NUMBER(argv[2]))
-	return JS_FALSE;
+        !JSVAL_IS_NUMBER(argv[2]))
+        return JS_FALSE;
 
     clSystem *system = getNative(cx, obj);
 
@@ -230,7 +230,7 @@ removeMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval
     if (!JSVAL_IS_STRING(argv[0]) ||
         (!JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1]))) ||
         !JSVAL_IS_OBJECT(argv[1]))
-	return JS_FALSE;
+        return JS_FALSE;
 
     clSystem *system = getNative(cx, obj);
     if (!system)
