@@ -41,7 +41,9 @@ clCPU::GetService()
     return cpu;
 }
 
-NS_IMPL_ISUPPORTS1_CI(clCPU, clICPU)
+NS_IMPL_ISUPPORTS2_CI(clCPU,
+                      clICPU,
+                      nsISecurityCheckedComponent)
 
 NS_IMETHODIMP
 clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
@@ -96,3 +98,37 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 #endif
 }
 
+static char *
+cloneAllAccessString (void)
+{
+    static const char allAccessString[] = "allAccess";
+    return (char*)nsMemory::Clone(allAccessString, sizeof(allAccessString));
+}
+
+NS_IMETHODIMP
+clCPU::CanCreateWrapper(const nsIID * iid, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clCPU::CanCallMethod(const nsIID * iid, const PRUnichar *methodName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clCPU::CanGetProperty(const nsIID * iid, const PRUnichar *propertyName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clCPU::CanSetProperty(const nsIID * iid, const PRUnichar *propertyName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}

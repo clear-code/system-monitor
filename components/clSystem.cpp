@@ -1,10 +1,6 @@
 #include "clSystem.h"
 
-#include <jsapi.h>
-#include <nsIScriptGlobalObject.h>
-#include <nsIXPConnect.h>
 #include <nsIClassInfoImpl.h>
-#include <nsServiceManagerUtils.h>
 #include <nsComponentManagerUtils.h>
 #include <nsITimer.h>
 #include <nsCRT.h>
@@ -16,7 +12,6 @@
 
 clSystem::clSystem()
      : mCPU(nsnull)
-     , mScriptObject(nsnull)
      , mMonitors(nsnull)
 {
 }
@@ -106,244 +101,10 @@ clSystem::Init()
     return NS_OK;
 }
 
-static void
-FinalizeJSSystem(JSContext *cx, JSObject *obj)
-{
-    nsISupports *nativeThis = (nsISupports*)JS_GetPrivate(cx, obj);
+NS_IMPL_ISUPPORTS2_CI(clSystem,
+                      clISystem,
+                      nsISecurityCheckedComponent)
 
-    if (nsnull != nativeThis) {
-        // get the js object
-        nsIScriptObjectOwner *owner = nsnull;
-        if (NS_OK == nativeThis->QueryInterface(NS_GET_IID(nsIScriptObjectOwner),
-                                                (void**)&owner)) {
-            owner->SetScriptObject(nsnull);
-            NS_RELEASE(owner);
-        }
-
-        // The addref was part of JSObject construction
-        NS_RELEASE(nativeThis);
-    }
-}
-
-NS_IMPL_THREADSAFE_ISUPPORTS2(clSystem,
-                              clISystem,
-                              nsIScriptObjectOwner)
-
-JSClass JSSystemClass = {
-    "system",
-    JSCLASS_HAS_PRIVATE,
-    JS_PropertyStub,
-    JS_PropertyStub,
-    JS_PropertyStub,
-    JS_PropertyStub,
-    JS_EnumerateStub,
-    JS_ResolveStub,
-    JS_ConvertStub,
-    FinalizeJSSystem
-};
-
-static clSystem *
-getNative(JSContext *cx, JSObject *obj)
-{
-    if (!JS_InstanceOf(cx, obj, &JSSystemClass, nsnull))
-        return nsnull;
-
-    return (clSystem*)JS_GetPrivate(cx, obj);
-}
-
-static JSBool
-cpu(JSContext *cx, JSObject *obj, jsval id, jsval *rval)
-{
-    nsresult rv;
-
-    clSystem *system = getNative(cx, obj);
-    if (!system)
-        return JS_FALSE;
-
-    nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    nsCOMPtr<nsIXPConnectJSObjectHolder> wrapper;
-    xpc->WrapNative(cx, obj, system->mCPU,
-                    NS_GET_IID(clICPU),
-                    getter_AddRefs(wrapper));
-
-    if (!wrapper) {
-        *rval = JSVAL_ZERO;
-        return JS_FALSE;
-    }
-
-    JSObject* wrapper_jsobj = nsnull;
-    wrapper->GetJSObject(&wrapper_jsobj);
-
-    *rval = OBJECT_TO_JSVAL(wrapper_jsobj);
-
-    return JS_TRUE;
-}
-
-static JSPropertySpec JSSystemProperties[] = {
-    {"cpu", -1, JSPROP_READONLY | JSPROP_PERMANENT | JSPROP_SHARED, cpu, NULL},
-    {0}
-};
-
-static JSBool
-addMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
-{
-    nsresult rv;
-
-    if (argc != 3)
-        return JS_FALSE;
-
-    if (!JSVAL_IS_STRING(argv[0]) ||
-        (!JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1]))) ||
-        !JSVAL_IS_NUMBER(argv[2]))
-        return JS_FALSE;
-
-    clSystem *system = getNative(cx, obj);
-
-    JSString *js_topic = JSVAL_TO_STRING(argv[0]);
-    JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
-    PRInt32 interval = JSVAL_TO_INT(argv[2]);
-
-    const PRUnichar *topic = reinterpret_cast<const PRUnichar*>(JS_GetStringChars(js_topic));
-
-    nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
-    NS_ENSURE_SUCCESS(rv, JS_FALSE);
-
-    nsCOMPtr<clISystemMonitor> monitor;
-    rv = xpc->WrapJS(cx, js_monitor, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
-    NS_ENSURE_SUCCESS(rv, JS_FALSE);
-
-    system->AddMonitor(topic, monitor, interval);
-
-    return JS_TRUE;
-}
-
-static JSBool
-removeMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
-{
-    nsresult rv;
-
-    if (argc != 2)
-        return JS_FALSE;
-
-    if (!JSVAL_IS_STRING(argv[0]) ||
-        (!JSVAL_IS_OBJECT(argv[1]) && JS_ObjectIsFunction(cx, JSVAL_TO_OBJECT(argv[1]))) ||
-        !JSVAL_IS_OBJECT(argv[1]))
-        return JS_FALSE;
-
-    clSystem *system = getNative(cx, obj);
-    if (!system)
-        return JS_FALSE;
-
-    JSString *js_topic = JSVAL_TO_STRING(argv[0]);
-    JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
-
-    const PRUnichar *topic = reinterpret_cast<const PRUnichar*>(JS_GetStringChars(js_topic));
-
-    nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
-    NS_ENSURE_SUCCESS(rv, JS_FALSE);
-
-    nsCOMPtr<clISystemMonitor> monitor;
-    rv = xpc->WrapJS(cx, js_monitor, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
-    NS_ENSURE_SUCCESS(rv, JS_FALSE);
-
-    system->RemoveMonitor(topic, monitor);
-
-    return JS_TRUE;
-}
-
-static JSFunctionSpec JSSystemMethods[] = {
-    {"addMonitor", addMonitor, 3, 0, 0},
-    {"removeMonitor", removeMonitor, 2, 0, 0},
-    {0}
-};
-
-static nsresult
-InitJSSystemClass(nsIScriptContext *aContext, void **aPrototype)
-{
-    JSContext *jscontext = (JSContext *)aContext->GetNativeContext();
-    JSObject *proto = nsnull;
-    JSObject *constructor = nsnull;
-    JSObject *global = JS_GetGlobalObject(jscontext);
-    jsval vp;
-
-    if ((PR_TRUE != JS_LookupProperty(jscontext, global, "system", &vp)) ||
-        !JSVAL_IS_OBJECT(vp) ||
-        ((constructor = JSVAL_TO_OBJECT(vp)) == nsnull) ||
-        (PR_TRUE != JS_LookupProperty(jscontext, JSVAL_TO_OBJECT(vp), "prototype", &vp)) ||
-        !JSVAL_IS_OBJECT(vp)) {
-        proto = JS_InitClass(jscontext,
-                             global,
-                             nsnull,
-                             &JSSystemClass,
-                             nsnull,
-                             nsnull,
-                             nsnull,
-                             nsnull,
-                             JSSystemProperties,
-                             JSSystemMethods);
-
-        if (nsnull == proto)
-            return NS_ERROR_FAILURE;
-    } else if ((nsnull != constructor) && JSVAL_IS_OBJECT(vp)) {
-        proto = JSVAL_TO_OBJECT(vp);
-    } else {
-        return NS_ERROR_FAILURE;
-    }
-
-    if (aPrototype)
-        *aPrototype = proto;
-
-    return NS_OK;
-}
-
-NS_IMETHODIMP
-clSystem::GetScriptObject(nsIScriptContext *aContext, void** aScriptObject)
-{
-    if (!mScriptObject) {
-        nsresult rv;
-        JSObject *proto;
-        JSObject *parent = nsnull;
-        JSContext *jscontext = (JSContext *)aContext->GetNativeContext();
-        nsISupports *aParent = aContext->GetGlobalObject();
-        clISystem *system;
-
-        nsCOMPtr<nsIScriptObjectOwner> owner(do_QueryInterface(aParent));
-        if (owner) {
-            nsresult rv = owner->GetScriptObject(aContext, (void **)&parent);
-            NS_ENSURE_SUCCESS(rv, rv);
-        } else {
-            nsCOMPtr<nsIScriptGlobalObject> sgo(do_QueryInterface(aParent, &rv));
-            NS_ENSURE_SUCCESS(rv, rv);
-            parent = sgo->GetGlobalJSObject();
-        }
-
-        rv = InitJSSystemClass(aContext, (void **)&proto);
-        NS_ENSURE_SUCCESS(rv, rv);
-        rv = CallQueryInterface(this, &system);
-        NS_ENSURE_SUCCESS(rv, rv);
-
-        mScriptObject = JS_NewObject(jscontext, &JSSystemClass, proto, parent);
-        if (!mScriptObject) {
-            NS_RELEASE(system);
-            return NS_ERROR_FAILURE;
-        }
-        JS_SetPrivate(jscontext, (JSObject *)mScriptObject, system);
-    }
-
-    *aScriptObject = mScriptObject;
-    return NS_OK;
-}
-
-NS_IMETHODIMP
-clSystem::SetScriptObject(void* aScriptObject)
-{
-    mScriptObject = aScriptObject;
-    return NS_OK;
-}
-
-/* readonly attribute clICPU cpu; */
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU * *aCPU)
 {
@@ -427,3 +188,37 @@ clSystem::Timeout(nsITimer *aTimer, void *aClosure)
     data->monitor->Monitor(object);
 }
 
+static char *
+cloneAllAccessString (void)
+{
+    static const char allAccessString[] = "allAccess";
+    return (char*)nsMemory::Clone(allAccessString, sizeof(allAccessString));
+}
+
+NS_IMETHODIMP
+clSystem::CanCreateWrapper(const nsIID * iid, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::CanCallMethod(const nsIID * iid, const PRUnichar *methodName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::CanGetProperty(const nsIID * iid, const PRUnichar *propertyName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::CanSetProperty(const nsIID * iid, const PRUnichar *propertyName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}

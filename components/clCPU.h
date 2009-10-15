@@ -3,6 +3,7 @@
 
 #include "clICPU.h"
 
+#include <nsISecurityCheckedComponent.h>
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
 #elif CYGWIN
@@ -13,6 +14,7 @@
 #define CL_CPU_CID {0x7465c6a6, 0xaa0d, 0x42b6, {0xb4, 0x44, 0x95, 0x24, 0xb7, 0x95, 0xd5, 0x0e}}
 
 class clCPU : public clICPU
+            , public nsISecurityCheckedComponent
 {
 public:
   static clCPU *GetInstance();
@@ -23,6 +25,7 @@ public:
 
   NS_DECL_ISUPPORTS
   NS_DECL_CLICPU
+  NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
 private:
   static clCPU *gCPU;
