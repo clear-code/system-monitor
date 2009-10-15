@@ -142,26 +142,24 @@ JSClass JSSystemClass = {
     FinalizeJSSystem
 };
 
-static clISystem *
+static clSystem *
 getNative(JSContext *cx, JSObject *obj)
 {
     if (!JS_InstanceOf(cx, obj, &JSSystemClass, nsnull))
         return nsnull;
 
-    return (clISystem*)JS_GetPrivate(cx, obj);
+    return (clSystem*)JS_GetPrivate(cx, obj);
 }
 
 static JSBool
 cpu(JSContext *cx, JSObject *obj, jsval id, jsval *rval)
 {
     nsresult rv;
-    clSystem *system;
 
-    clISystem *nativeThis = getNative(cx, obj);
-    if (!nativeThis)
+    clSystem *system = getNative(cx, obj);
+    if (!system)
         return JS_FALSE;
 
-    system = static_cast<clSystem*>(nativeThis);
     nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
     NS_ENSURE_SUCCESS(rv, rv);
 
@@ -201,11 +199,7 @@ addMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 	!JSVAL_IS_NUMBER(argv[2]))
 	return JS_FALSE;
 
-    clISystem *nativeThis = getNative(cx, obj);
-    if (!nativeThis)
-        return JS_FALSE;
-
-    clSystem *system = static_cast<clSystem*>(nativeThis);
+    clSystem *system = getNative(cx, obj);
 
     JSString *js_topic = JSVAL_TO_STRING(argv[0]);
     JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
@@ -238,11 +232,10 @@ removeMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval
         !JSVAL_IS_OBJECT(argv[1]))
 	return JS_FALSE;
 
-    clISystem *nativeThis = getNative(cx, obj);
-    if (!nativeThis)
+    clSystem *system = getNative(cx, obj);
+    if (!system)
         return JS_FALSE;
 
-    clSystem *system = static_cast<clSystem*>(nativeThis);
     JSString *js_topic = JSVAL_TO_STRING(argv[0]);
     JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
 
