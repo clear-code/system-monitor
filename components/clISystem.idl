@@ -1,7 +1,6 @@
 #include "nsISupports.idl"
-
-interface clICPU;
-interface clICPUTime;
+#include "clICPU.idl"
+#include "clICPUTime.idl"
 
 [scriptable, function, uuid(f2d40ab4-7d4a-4626-a0b6-e6c8acc6f170)]
 interface clISystemMonitor : nsISupports

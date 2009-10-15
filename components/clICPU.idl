@@ -1,6 +1,5 @@
 #include "nsISupports.idl"
-
-interface clICPUTime;
+#include "clICPUTime.idl"
 
 [scriptable, uuid(c98bfcd7-fa23-4d81-97a5-59eff0b2bacc)]
 
