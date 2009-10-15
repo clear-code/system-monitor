@@ -171,7 +171,7 @@ addMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
     JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
     PRInt32 interval = JSVAL_TO_INT(argv[2]);
 
-    const PRUnichar *topic = JS_GetStringChars(js_topic);
+    const PRUnichar *topic = reinterpret_cast<const PRUnichar*>(JS_GetStringChars(js_topic));
 
     nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
     NS_ENSURE_SUCCESS(rv, JS_FALSE);
@@ -206,7 +206,7 @@ removeMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval
     JSString *js_topic = JSVAL_TO_STRING(argv[0]);
     JSObject *js_monitor = JSVAL_TO_OBJECT(argv[1]);
 
-    const PRUnichar *topic = JS_GetStringChars(js_topic);
+    const PRUnichar *topic = reinterpret_cast<const PRUnichar*>(JS_GetStringChars(js_topic));
 
     nsCOMPtr<nsIXPConnect> xpc = do_GetService(nsIXPConnect::GetCID(), &rv);
     NS_ENSURE_SUCCESS(rv, JS_FALSE);
