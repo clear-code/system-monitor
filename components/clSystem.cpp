@@ -4,6 +4,7 @@
 #include <nsComponentManagerUtils.h>
 #include <nsITimer.h>
 #include <nsCRT.h>
+#include <nsIVariant.h>
 
 #include "clISystem.h"
 #include "clICPU.h"
@@ -163,14 +164,25 @@ clSystem::UnregisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 }
 
 static nsresult
-getMonitoringObject(clSystem *system, const PRUnichar *aTopic, clICPUTime **aObject)
+getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aObject)
 {
     const PRUnichar cpuTimeString[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
+    const PRUnichar cpuUsageString[] = {'c', 'p', 'u', '-', 'u', 's', 'a', 'g', 'e', '\0'};
 
-    if (!NS_strcmp(cpuTimeString, aTopic)) {
+    if (!NS_strcmp(cpuUsageString, aTopic)) {
+        double usage;
+        system->mCPU->GetUsage(&usage);
+        nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
+        value->SetAsDouble(usage);
+        NS_IF_ADDREF(*aObject = value);
+        return NS_OK;
+    } else if (!NS_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
         system->mCPU->GetCurrentCPUTime(getter_AddRefs(cpuTime));
-        NS_IF_ADDREF(*aObject = cpuTime);
+        nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
+        const nsIID iid = cpuTime->GetIID();
+        value->SetAsInterface(iid, cpuTime);
+        NS_IF_ADDREF(*aObject = value);
         return NS_OK;
     }
 
@@ -182,10 +194,10 @@ clSystem::Timeout(nsITimer *aTimer, void *aClosure)
 {
     MonitorData *data = static_cast<MonitorData*>(aClosure);
 
-    nsCOMPtr<clICPUTime> object;
-    getMonitoringObject(data->system, data->topic, getter_AddRefs(object));
+    nsCOMPtr<nsIVariant> value;
+    getMonitoringObject(data->system, data->topic, getter_AddRefs(value));
 
-    data->monitor->Monitor(object);
+    data->monitor->Monitor(value);
 }
 
 static char *

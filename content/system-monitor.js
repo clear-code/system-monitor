@@ -1,7 +1,8 @@
 var updateTime = 1000;
 var gCPUTimeArray = initCPUArray(24);
 
-system.registerMonitor("cpu-time", drawGraph, updateTime);
+//system.registerMonitor("cpu-time", drawCPUTimeGraph, updateTime);
+system.registerMonitor("cpu-usage", drawCPUUsageGraph, updateTime);
 
 function initCPUArray(size) {
   var cpuArray = new Array();
@@ -23,10 +24,39 @@ function drawLine(context, color, x, y_from, y_to) {
   context.lineTo(x, y_to);
   context.closePath();
   context.stroke();
-  return y_to;
+  return y_to - 1;
 }
 
-function drawGraph(cpuTime) {
+function drawCPUUsageGraph(usage) {
+  var canvasElement = document.getElementById("system-monitor-canvas");
+  let context = canvasElement.getContext("2d")
+  let y = canvasElement.height;
+  let x = 0;
+
+  context.fillStyle = "black";
+  context.fillRect(0, 0, canvasElement.width, canvasElement.height);
+  context.globalCompositeOperation = "copy";
+
+  gCPUTimeArray.shift();
+  gCPUTimeArray.push(usage);
+
+  context.save();
+  gCPUTimeArray.forEach(function(aUsage) {
+    let y_from = canvasElement.height;
+    let y_to = y_from;
+    if (aUsage == undefined) {
+      drawLine(context, "black", x, y_from, 0);
+    } else {
+      y_to = y_to - (y * aUsage);
+      y_from = drawLine(context, "green", x, y_from, y_to);
+      drawLine(context, "black", x, y_from, y_to);
+    }
+    x = x + 2;
+  });
+  context.restore();
+}
+/*
+function drawCPUTimeGraph(cpuTime) {
   var canvasElement = document.getElementById("system-monitor-canvas");
   let context = canvasElement.getContext("2d")
   let y = canvasElement.height;
@@ -61,4 +91,4 @@ function drawGraph(cpuTime) {
   });
   context.restore();
 }
-
+*/

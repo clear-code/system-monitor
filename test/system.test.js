@@ -34,5 +34,6 @@ function testMonitor() {
 
   assert.isDefined(system.registerMonitor);
   system.registerMonitor("cpu-time", function(aCPUTime){}, 1000);
+  system.registerMonitor("cpu-usage", function(usage){}, 1000);
 }
 

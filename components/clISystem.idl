@@ -1,11 +1,11 @@
 #include "nsISupports.idl"
+#include "nsIVariant.idl"
 #include "clICPU.idl"
-#include "clICPUTime.idl"
 
 [scriptable, function, uuid(f2d40ab4-7d4a-4626-a0b6-e6c8acc6f170)]
 interface clISystemMonitor : nsISupports
 {
-  void monitor(in clICPUTime aSubject);
+  void monitor(in nsIVariant value);
 };
 
 [scriptable, uuid(4d62df13-deee-4d5a-a7d9-2cabe54c7930)]

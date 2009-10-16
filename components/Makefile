@@ -5,7 +5,7 @@ XULRUNNER_PACKAGE_NAME = libxul-unstable
 PKG_CONFIG = pkg-config
 
 GECKO_SDK_PATH = `$(PKG_CONFIG) --variable=sdkdir $(XULRUNNER_PACKAGE_NAME)`
-GECKO_IDL_PATH = `$(PKG_CONFIG) --variable=idldir $(XULRUNNER_PACKAGE_NAME)`/stable
+GECKO_IDL_PATH = `$(PKG_CONFIG) --variable=idldir $(XULRUNNER_PACKAGE_NAME)`/unstable
 GECKO_LIB_PATH = $(GECKO_SDK_PATH)/lib
 
 LIBGTOP_CFLAGS = `$(PKG_CONFIG) --cflags libgtop-2.0`
