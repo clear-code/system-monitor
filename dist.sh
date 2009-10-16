@@ -44,6 +44,7 @@ case `uname` in
 esac
 
 component_xpt="components/*.xpt"
+component_shared="platform"
 components="$component_xpt $component_shared"
 
 xpi_contents="content $components chrome.manifest install.rdf"
