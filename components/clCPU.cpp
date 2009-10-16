@@ -4,17 +4,46 @@
 #include <nsMemory.h>
 #include <nsCOMPtr.h>
 
+#ifdef HAVE_LIBGTOP
+#include <glibtop/cpu.h>
+#elif XP_WIN
+#include <windows.h>
+#undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
+#undef AddMonitor /* CAUTION! Use AddMonitorW instead */
+#define FILETIME_TO_UINT64(v) (v.dwLowDateTime + ((UINT64)v.dwHighDateTime << 32))
+#endif
+
 #include "clCPUTime.h"
 
+#ifdef HAVE_LIBGTOP
+void
+clCPU::setPreviousCPUTime (void *gtop_cpu)
+{
+    glibtop_cpu *cpu = (glibtop_cpu*)gtop_cpu;
+    mPreviousUserTime = cpu->user;
+    mPreviousSystemTime = cpu->sys;
+    mPreviousNiceTime = cpu->nice;
+    mPreviousIdleTime = cpu->idle;
+    mPreviousIOWaitTime = cpu->iowait + cpu->irq + cpu->softirq;
+}
+
+#endif /* HAVE_LIBGTOP */
 clCPU::clCPU()
 {
 #ifdef HAVE_LIBGTOP
+    glibtop_cpu cpu;
     glibtop_init();
-    memset(&mPreviousCPUTime, 0, sizeof(mPreviousCPUTime));
-    glibtop_get_cpu(&mPreviousCPUTime);
+    glibtop_get_cpu(&cpu);
+    setPreviousCPUTime(&cpu);
 #elif XP_WIN
-    GetSystemTimes(&mPreviousIdleTime, &mPreviousKernelTime, &mPreviousUserTime);
-#endif /* HAVE_LIBGTOP */
+    FILETIME idleTime, kernelTime, userTime;
+    GetSystemTimes(&idleTime, &kernelTime, &userTime);
+    mPreviousUserTime = FILETIME_TO_UINT64(userTime);
+    mPreviousSystemTime = FILETIME_TO_UINT64(kernelTime);
+    mPreviousIdleTime = FILETIME_TO_UINT64(idleTime);
+    mPreviousNiceTime = 0;
+    mPreviousIOWaitTime = 0;
+#endif
 }
 
 clCPU::~clCPU()
@@ -53,12 +82,11 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
-    guint64 user = cpu.user - mPreviousCPUTime.user;
-    guint64 system = cpu.sys - mPreviousCPUTime.sys;
-    guint64 nice = cpu.nice - mPreviousCPUTime.nice;
-    guint64 idle = cpu.idle - mPreviousCPUTime.idle;
-    guint64 io_wait = cpu.iowait + cpu.irq + cpu.softirq -
-                      (mPreviousCPUTime.iowait + mPreviousCPUTime.irq + mPreviousCPUTime.softirq);
+    guint64 user = cpu.user - mPreviousUserTime;
+    guint64 system = cpu.sys - mPreviousSystemTime;
+    guint64 nice = cpu.nice - mPreviousNiceTime;
+    guint64 idle = cpu.idle - mPreviousIdleTime;
+    guint64 io_wait = cpu.iowait + cpu.irq + cpu.softirq - mPreviousIOWaitTime;
 
     guint64 total = user + system + nice + idle + io_wait;
 
@@ -69,12 +97,9 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
                             (double)io_wait / total);
 
     NS_ADDREF(*result);
-    memcpy(&mPreviousCPUTime, &cpu, sizeof(cpu));
+    setPreviousCPUTime(&cpu);
     return NS_OK;
 #elif XP_WIN
-#define FILETIME_TO_UINT64(v) \
-    (v.dwLowDateTime + ((UINT64)v.dwHighDateTime << 32))
-
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
