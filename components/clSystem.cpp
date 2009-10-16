@@ -24,6 +24,51 @@ struct MonitorData {
     nsITimer *timer;
 };
 
+PRUint32
+CL_strlen(const PRUnichar *aString)
+{
+    const PRUnichar *end;
+
+    for (end = aString; *end; ++end) {
+        // empty loop
+    }
+
+    return end - aString;
+}
+
+static int
+CL_strcmp(const PRUnichar *a, const PRUnichar *b)
+{
+    while (*b) {
+        int r = *a - *b;
+        if (r)
+            return r;
+
+        ++a;
+        ++b;
+    }
+
+    return *a != '\0';
+}
+
+static PRUnichar *
+CL_strndup(const PRUnichar *aString, PRUint32 aLen)
+{
+    PRUnichar *newBuf = (PRUnichar*) NS_Alloc((aLen + 1) * sizeof(PRUnichar));
+    if (newBuf) {
+        memcpy(newBuf, aString, aLen * sizeof(PRUnichar));
+        newBuf[aLen] = '\0';
+    }
+    return newBuf;
+}
+
+static PRUnichar *
+CL_strdup(const PRUnichar *aString)
+{
+    PRUint32 len = CL_strlen(aString);
+    return CL_strndup(aString, len);
+}
+
 static MonitorData *
 createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
 {
@@ -34,7 +79,7 @@ createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *
         return NULL;
 
     data->system = system;
-    data->topic = NS_strdup(aTopic);
+    data->topic = CL_strdup(aTopic);
     NS_ADDREF(data->monitor = aMonitor);
     NS_ADDREF(data->timer = aTimer);
 
@@ -170,12 +215,12 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aVal
     const PRUnichar cpuUsageString[] = {'c', 'p', 'u', '-', 'u', 's', 'a', 'g', 'e', '\0'};
     nsCOMPtr<nsIWritableVariant> value;
 
-    if (!NS_strcmp(cpuUsageString, aTopic)) {
+    if (!CL_strcmp(cpuUsageString, aTopic)) {
         double usage;
         system->mCPU->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
-    } else if (!NS_strcmp(cpuTimeString, aTopic)) {
+    } else if (!CL_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
         system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");
