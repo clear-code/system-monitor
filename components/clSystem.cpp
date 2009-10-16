@@ -78,7 +78,7 @@ clSystem::GetInstance()
 {
     if (!clSystem::gSystem) {
         clSystem::gSystem = new clSystem();
-	clSystem::gSystem->Init();
+        clSystem::gSystem->Init();
     }
 
     return clSystem::gSystem;
@@ -156,7 +156,7 @@ clSystem::UnregisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
         MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
         if (data->monitor == aMonitor) {
             mMonitors->RemoveElementAt(i);
-	    freeMonitorData(data);
+            freeMonitorData(data);
         }
     }
 
