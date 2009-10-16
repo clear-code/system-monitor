@@ -61,11 +61,11 @@ clCPU::GetCurrentCPUTime(clICPUTime **result NS_OUTPARAM)
 
     guint64 total = user + system + nice + idle + io_wait;
 
-    *result = new clCPUTime((float)user / total,
-                            (float)nice / total,
-                            (float)system / total,
-                            (float)idle / total,
-                            (float)io_wait / total);
+    *result = new clCPUTime((double)user / total,
+                            (double)nice / total,
+                            (double)system / total,
+                            (double)idle / total,
+                            (double)io_wait / total);
 
     NS_ADDREF(*result);
     memcpy(&mPreviousCPUTime, &cpu, sizeof(cpu));
@@ -87,11 +87,11 @@ clCPU::GetCurrentCPUTime(clICPUTime **result NS_OUTPARAM)
     mPreviousKernelTime = kernelTime;
     mPreviousIdleTime = idleTime;
 
-    *result = new clCPUTime((float)user / total,
-                            (float)0.0f,
-                            (float)kernel / total,
-                            (float)idle / total,
-                            (float)0.0f);
+    *result = new clCPUTime((double)user / total,
+                            (double)0.0f,
+                            (double)kernel / total,
+                            (double)idle / total,
+                            (double)0.0f);
 
     NS_ADDREF(*result);
 
