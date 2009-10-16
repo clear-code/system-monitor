@@ -2,6 +2,7 @@
 
 #include <nsIClassInfoImpl.h>
 #include <nsMemory.h>
+#include <nsCOMPtr.h>
 
 #include "clCPUTime.h"
 
@@ -112,6 +113,21 @@ clCPU::GetCurrentCPUTime(clICPUTime **result NS_OUTPARAM)
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
+}
+
+NS_IMETHODIMP
+clCPU::GetUsage(double *aUsage)
+{
+    nsCOMPtr<clICPUTime> cpuTime;
+    nsresult rv = GetCurrentCPUTime(getter_AddRefs(cpuTime));
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    double user, system;
+    cpuTime->GetUser(&user);
+    cpuTime->GetSystem(&system);
+    *aUsage = user + system;
+
+    return NS_OK;
 }
 
 static char *
