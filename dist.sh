@@ -17,14 +17,15 @@ xpi=$xpcom_name-$version.xpi
 case `uname` in
   Linux)
     (cd components && CXXFLAGS=-DHAVE_LIBGTOP make) || exit 1
-    component_shared="components/clSystemMonitor.so"
+    build_libraries="components/clSystemMonitor.so"
+    platform_component_directory="Linux_x86-gcc3"
     ;;
   Darwin)
     build_type=Release
     xcodebuild_args="-project clSystemMonitor.xcodeproj -configuration $build_type"
     (cd components && xcodebuild $xcodebuild_args) || exit 1
-    component_shared="components/libclSystemMonitor.dylib"
-    cp components/build/$build_type/libclSystemMonitor.dylib $component_shared
+    build_libraries="components/build/$build_type/libclSystemMonitor.dylib"
+    platform_component_directory="Darwin_x86"
     ;;
   CYGWIN*)
     build_type=Release
@@ -33,9 +34,9 @@ case `uname` in
     else
     DEVENV="/cygdrive/c/Program Files/Microsoft Visual Studio 8/Common7/IDE/devenv.exe"
     fi
-    "$DEVENV" /Build $build_type components/clSystemMonitor/systemMonitor.sln || exit 1
-    component_shared="components/clSystemMonitor.dll"
-    cp components/systemMonitor/$build_type/clSystemMonitor.dll $component_shared
+    "$DEVENV" /Build $build_type components/SystemMonitor/SystemMonitor.sln || exit 1
+    build_libraries="components/SystemMonitor/$build_type/SystemMonitor.dll"
+    platform_component_directory="WINNT_x86-msvc"
     ;;
   *)
     echo "Unknown environment"
@@ -43,11 +44,10 @@ case `uname` in
     ;;
 esac
 
+cp -f $build_libraries platform/$platform_component_directory/components/
 component_xpt="components/*.xpt"
-component_shared="platform"
-components="$component_xpt $component_shared"
 
-xpi_contents="content $components chrome.manifest install.rdf"
+xpi_contents="content $component_xpt platform chrome.manifest install.rdf"
 
 rm -f $xpi
 zip -q -r -9 $xpi $xpi_contents -x \*/.git/\* || exit 1
