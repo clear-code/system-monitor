@@ -6,7 +6,7 @@
 #include <nsISecurityCheckedComponent.h>
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
-#elif CYGWIN
+#elif XP_WIN
 #include <windows.h>
 #endif
 
@@ -31,7 +31,7 @@ private:
   static clCPU *gCPU;
 #ifdef HAVE_LIBGTOP
   glibtop_cpu mPreviousCPUTime;
-#elif CYGWIN
+#elif XP_WIN
   FILETIME mPreviousIdleTime;
   FILETIME mPreviousKernelTime;
   FILETIME mPreviousUserTime;

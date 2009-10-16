@@ -11,7 +11,7 @@ clCPU::clCPU()
     glibtop_init();
     memset(&mPreviousCPUTime, 0, sizeof(mPreviousCPUTime));
     glibtop_get_cpu(&mPreviousCPUTime);
-#elif CYGWIN
+#elif XP_WIN
     GetSystemTimes(&mPreviousIdleTime, &mPreviousKernelTime, &mPreviousUserTime);
 #endif /* HAVE_LIBGTOP */
 }
@@ -70,7 +70,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     NS_ADDREF(*result);
     memcpy(&mPreviousCPUTime, &cpu, sizeof(cpu));
     return NS_OK;
-#elif CYGWIN
+#elif XP_WIN
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
