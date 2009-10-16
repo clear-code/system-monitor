@@ -32,7 +32,7 @@ case `uname` in
     if which devenv > /dev/null; then
     DEVENV="devenv"
     else
-    DEVENV="/cygdrive/c/Program Files/Microsoft Visual Studio 8/Common7/IDE/devenv.exe"
+    DEVENV="/cygdrive/c/Program Files/Microsoft Visual Studio 9.0/Common7/IDE/devenv.exe"
     fi
     "$DEVENV" /Build $build_type components/SystemMonitor/SystemMonitor.sln || exit 1
     build_libraries="components/SystemMonitor/$build_type/SystemMonitor.dll"
