@@ -14,7 +14,14 @@ testCreate.priority = 'must';
 function testCreate() {
   gCPU = Cc["@clear-code.com/system/cpu;1"].getService(Ci.clICPU);
   assert.isDefined(gCPU);
-  assert.isDefined(gCPU.getCurrentCPUTime);
+}
+
+testUsage.description = "usage property test";
+testUsage.priority = 'must';
+function testUser() {
+  testCreate();
+  assert.isNumber(gCPU.usage);
+  assert.isNumber(gCPU.usage);
 }
 
 testGetCurrentCPUTime.description = "user property test";
