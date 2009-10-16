@@ -164,7 +164,7 @@ clSystem::UnregisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 }
 
 static nsresult
-getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aObject)
+getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aValue)
 {
     const PRUnichar cpuTimeString[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
     const PRUnichar cpuUsageString[] = {'c', 'p', 'u', '-', 'u', 's', 'a', 'g', 'e', '\0'};
@@ -174,7 +174,7 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aObj
         system->mCPU->GetUsage(&usage);
         nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
-        NS_IF_ADDREF(*aObject = value);
+        NS_IF_ADDREF(*aValue = value);
         return NS_OK;
     } else if (!NS_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
@@ -182,7 +182,7 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aObj
         nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);
-        NS_IF_ADDREF(*aObject = value);
+        NS_IF_ADDREF(*aValue = value);
         return NS_OK;
     }
 
