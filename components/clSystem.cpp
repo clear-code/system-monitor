@@ -115,7 +115,7 @@ clSystem::GetCpu(clICPU * *aCPU)
 }
 
 NS_IMETHODIMP
-clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+clSystem::RegisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
 {
     MonitorData *data;
 
@@ -142,7 +142,7 @@ clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt3
 }
 
 NS_IMETHODIMP
-clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
+clSystem::UnregisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 {
     if (!mMonitors)
         return NS_OK;

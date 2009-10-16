@@ -32,7 +32,7 @@ testMonitor.priority = 'must';
 function testMonitor() {
   testDefined();
 
-  assert.isDefined(system.addMonitor);
-  system.addMonitor("cpu-time", function(aCPUTime){}, 1000);
+  assert.isDefined(system.registerMonitor);
+  system.registerMonitor("cpu-time", function(aCPUTime){}, 1000);
 }
 

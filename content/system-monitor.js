@@ -1,7 +1,7 @@
 var updateTime = 1000;
 var gCPUTimeArray = initCPUArray(24);
 
-system.addMonitor("cpu-time", drawGraph, updateTime);
+system.registerMonitor("cpu-time", drawGraph, updateTime);
 
 function initCPUArray(size) {
   var cpuArray = new Array();
