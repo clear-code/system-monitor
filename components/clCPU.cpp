@@ -78,8 +78,8 @@ clCPU::GetCurrentCPUTime(clICPUTime **result NS_OUTPARAM)
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
     UINT64 user = FILETIME_TO_UINT64(userTime) - FILETIME_TO_UINT64(mPreviousUserTime);
-    UINT64 kernel = FILETIME_TO_UINT64(kernelTime) - FILETIME_TO_UINT64(mPreviousUserTime);
-    UINT64 idle = FILETIME_TO_UINT64(idleTime) - FILETIME_TO_UINT64(mPreviousUserTime);
+    UINT64 kernel = FILETIME_TO_UINT64(kernelTime) - FILETIME_TO_UINT64(mPreviousKernelTime);
+    UINT64 idle = FILETIME_TO_UINT64(idleTime) - FILETIME_TO_UINT64(mPreviousIdleTime);
 
     UINT64 total = user + kernel + idle;
 
