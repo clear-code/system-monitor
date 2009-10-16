@@ -71,14 +71,17 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     memcpy(&mPreviousCPUTime, &cpu, sizeof(cpu));
     return NS_OK;
 #elif XP_WIN
+#define FILETIME_TO_UINT64(v) \
+    (v.dwLowDateTime + ((UINT64)v.dwHighDateTime << 32))
+
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
-    guint64 user = userTime - mPreviousUserTime;
-    guint64 kernel = kernelTime - mPreviousKernelTime;
-    guint64 idle = idleTime - mPreviousIdleTime;
+    UINT64 user = FILETIME_TO_UINT64(userTime) - FILETIME_TO_UINT64(mPreviousUserTime);
+    UINT64 kernel = FILETIME_TO_UINT64(kernelTime) - FILETIME_TO_UINT64(mPreviousUserTime);
+    UINT64 idle = FILETIME_TO_UINT64(idleTime) - FILETIME_TO_UINT64(mPreviousUserTime);
 
-    guint64 total = user + kernel + idle;
+    UINT64 total = user + kernel + idle;
 
     mPreviousUserTime = user;
     mPreviousKernelTime = kernel;
