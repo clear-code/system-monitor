@@ -18,7 +18,7 @@ function testCreate() {
 
 testUsage.description = "usage property test";
 testUsage.priority = 'must';
-function testUser() {
+function testUsage() {
   testCreate();
   assert.isDefined(gCPU.usage);
   assert.isNumber(gCPU.usage);
