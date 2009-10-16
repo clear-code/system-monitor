@@ -169,7 +169,7 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, clICPUTime **aObj
 
     if (!NS_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
-        system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
+        system->mCPU->GetCurrentCPUTime(getter_AddRefs(cpuTime));
         NS_IF_ADDREF(*aObject = cpuTime);
         return NS_OK;
     }
