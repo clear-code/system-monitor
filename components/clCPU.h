@@ -8,6 +8,8 @@
 #include <glibtop/cpu.h>
 #elif XP_WIN
 #include <windows.h>
+#undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
+#undef AddMonitor /* CAUTION! Use AddMonitorW instead */
 #endif
 
 #define CL_CPU_CONTRACT_ID "@clear-code.com/system/cpu;1"

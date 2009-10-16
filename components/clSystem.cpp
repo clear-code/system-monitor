@@ -116,7 +116,7 @@ clSystem::GetCpu(clICPU * *aCPU)
 }
 
 NS_IMETHODIMP
-clSystem::RegisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
 {
     MonitorData *data;
 
@@ -143,7 +143,7 @@ clSystem::RegisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, P
 }
 
 NS_IMETHODIMP
-clSystem::UnregisterMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
+clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 {
     if (!mMonitors)
         return NS_OK;
@@ -177,7 +177,7 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aVal
         value->SetAsDouble(usage);
     } else if (!NS_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
-        system->mCPU->GetCurrentCPUTime(getter_AddRefs(cpuTime));
+        system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);

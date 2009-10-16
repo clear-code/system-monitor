@@ -47,7 +47,7 @@ NS_IMPL_ISUPPORTS2_CI(clCPU,
                       nsISecurityCheckedComponent)
 
 NS_IMETHODIMP
-clCPU::GetCurrentCPUTime(clICPUTime **result NS_OUTPARAM)
+clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 {
 #ifdef HAVE_LIBGTOP
     glibtop_cpu cpu;
@@ -119,7 +119,7 @@ NS_IMETHODIMP
 clCPU::GetUsage(double *aUsage)
 {
     nsCOMPtr<clICPUTime> cpuTime;
-    nsresult rv = GetCurrentCPUTime(getter_AddRefs(cpuTime));
+    nsresult rv = GetCurrentTime(getter_AddRefs(cpuTime));
     NS_ENSURE_SUCCESS(rv, rv);
 
     double user, system;

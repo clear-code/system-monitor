@@ -24,32 +24,32 @@ function testUsage() {
   assert.isNumber(gCPU.usage);
 }
 
-testGetCurrentCPUTime.description = "user property test";
-testGetCurrentCPUTime.priority = 'must';
-function testGetCurrentCPUTime() {
+testGetCurrentTime.description = "user property test";
+testGetCurrentTime.priority = 'must';
+function testGetCurrentTime() {
   testCreate();
-  gCPUTime = gCPU.getCurrentCPUTime();
+  gCPUTime = gCPU.getCurrentTime();
   assert.isDefined(gCPUTime);
 }
 
 testUser.description = "user property test";
 testUser.priority = 'must';
 function testUser() {
-  testGetCurrentCPUTime();
+  testGetCurrentTime();
   assert.isNumber(gCPUTime.user);
 }
 
 testSystem.description = "system property test";
 testSystem.priority = 'must';
 function testSystem() {
-  testGetCurrentCPUTime();
+  testGetCurrentTime();
   assert.isNumber(gCPUTime.system);
 }
 
 testIdle.description = "idle property test";
 testIdle.priority = 'must';
 function testIdle() {
-  testGetCurrentCPUTime();
+  testGetCurrentTime();
   assert.isNumber(gCPUTime.idle);
 }
 
