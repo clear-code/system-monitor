@@ -5,5 +5,5 @@
 
 interface clICPU : nsISupports
 {
-  clICPUTime getCurrentTime();
+  clICPUTime getCurrentCPUTime();
 };

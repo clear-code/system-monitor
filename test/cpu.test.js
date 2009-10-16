@@ -14,35 +14,35 @@ testCreate.priority = 'must';
 function testCreate() {
   gCPU = Cc["@clear-code.com/system/cpu;1"].getService(Ci.clICPU);
   assert.isDefined(gCPU);
-  assert.isDefined(gCPU.getCurrentTime);
+  assert.isDefined(gCPU.getCurrentCPUTime);
 }
 
-testGetCurrentTime.description = "user property test";
-testGetCurrentTime.priority = 'must';
-function testGetCurrentTime() {
+testGetCurrentCPUTime.description = "user property test";
+testGetCurrentCPUTime.priority = 'must';
+function testGetCurrentCPUTime() {
   testCreate();
-  gCPUTime = gCPU.getCurrentTime();
+  gCPUTime = gCPU.getCurrentCPUTime();
   assert.isDefined(gCPUTime);
 }
 
 testUser.description = "user property test";
 testUser.priority = 'must';
 function testUser() {
-  testGetCurrentTime();
+  testGetCurrentCPUTime();
   assert.isNumber(gCPUTime.user);
 }
 
 testSystem.description = "system property test";
 testSystem.priority = 'must';
 function testSystem() {
-  testGetCurrentTime();
+  testGetCurrentCPUTime();
   assert.isNumber(gCPUTime.system);
 }
 
 testIdle.description = "idle property test";
 testIdle.priority = 'must';
 function testIdle() {
-  testGetCurrentTime();
+  testGetCurrentCPUTime();
   assert.isNumber(gCPUTime.idle);
 }
 
