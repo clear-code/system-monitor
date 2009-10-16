@@ -168,25 +168,24 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aVal
 {
     const PRUnichar cpuTimeString[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
     const PRUnichar cpuUsageString[] = {'c', 'p', 'u', '-', 'u', 's', 'a', 'g', 'e', '\0'};
+    nsCOMPtr<nsIWritableVariant> value;
 
     if (!NS_strcmp(cpuUsageString, aTopic)) {
         double usage;
         system->mCPU->GetUsage(&usage);
-        nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
+        value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
-        NS_IF_ADDREF(*aValue = value);
-        return NS_OK;
     } else if (!NS_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
         system->mCPU->GetCurrentCPUTime(getter_AddRefs(cpuTime));
-        nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
+        value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);
-        NS_IF_ADDREF(*aValue = value);
-        return NS_OK;
     }
 
-    return NS_ERROR_FAILURE;
+    NS_IF_ADDREF(*aValue = value);
+
+    return value ? NS_OK : NS_ERROR_FAILURE;
 }
 
 void
