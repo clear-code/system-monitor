@@ -81,13 +81,26 @@ clCPU::GetCurrentCPUTime(clICPUTime **result NS_OUTPARAM)
     UINT64 kernel = FILETIME_TO_UINT64(kernelTime) - FILETIME_TO_UINT64(mPreviousKernelTime);
     UINT64 idle = FILETIME_TO_UINT64(idleTime) - FILETIME_TO_UINT64(mPreviousIdleTime);
 
-    UINT64 total = user + kernel + idle;
+    UINT64 total = user + kernel;
+
+    /*
+      Trick!!
+      On windows, we can not calcurate kernel and user times without idle time respectively,
+      because the kernel and user times which returned by GetSystemTimes are including
+      idle times.
+      kernel time = (cpu usage time in kernel) + (cpu idle time in kernel)
+      user time = (cpu usage time in user space) + (cpu idle time in user space)
+      idle time = (cpu idle time in kernel) + (cpu idle time in user space)
+      So we set (cpu usage time in kernel) + (cpu usage time in user space) value as
+      kernel time for the convinience. This value is used in GetUsage.
+    */
+    kernel = total - idle;
 
     mPreviousUserTime = userTime;
     mPreviousKernelTime = kernelTime;
     mPreviousIdleTime = idleTime;
 
-    *result = new clCPUTime((double)user / total,
+    *result = new clCPUTime((double)0.0f,
                             (double)0.0f,
                             (double)kernel / total,
                             (double)idle / total,
