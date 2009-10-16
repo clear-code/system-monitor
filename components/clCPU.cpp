@@ -43,6 +43,26 @@ clCPU::clCPU()
     mPreviousIdleTime = FILETIME_TO_UINT64(idleTime);
     mPreviousNiceTime = 0;
     mPreviousIOWaitTime = 0;
+#elif XP_MACOSX
+    natural_t nProcessers;
+    mach_msg_type_number_t nProcessorInfos;
+    processor_cpu_load_info_data_t *processorInfos;
+
+    if (host_processor_info(mach_host_self(),
+                            PROCESSOR_CPU_LOAD_INFO,
+                            &nProcessors,
+                            (processor_info_array_t*)&processorInfos,
+                            &nProcessorInfos)) {
+        return NS_ERROR_FAILURE;
+    }
+
+    PRUint64 user, nice, system, idle, total;
+    for (int i; i < nProcessors; i++) {
+        mPreviousUserTime += processorInfos[i].cpu_ticks[CPU_STATE_USER];
+        mPreviousNiceTime += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
+        mPreviousSystemTime += processorInfos[i].cpu_ticks[CPU_STATE_SYSTEM];
+        mPreviousIdleTime += processorInfos[i].cpu_ticks[CPU_STATE_IDLE];
+    }
 #endif
 }
 
@@ -132,6 +152,40 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
                             (double)idle / total,
                             (double)0.0f);
 
+    NS_ADDREF(*result);
+
+    return NS_OK;
+#elif XP_MACOSX
+    natural_t nProcessers;
+    mach_msg_type_number_t nProcessorInfos;
+    processor_cpu_load_info_data_t *processorInfos;
+
+    if (host_processor_info(mach_host_self(),
+                            PROCESSOR_CPU_LOAD_INFO,
+                            &nProcessors,
+                            (processor_info_array_t*)&processorInfos,
+                            &nProcessorInfos)) {
+        return NS_ERROR_FAILURE;
+    }
+
+    PRUint64 user, nice, system, idle, total;
+    for (int i; i < nProcessors; i++) {
+        user += processorInfos[i].cpu_ticks[CPU_STATE_USER];
+        nice += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
+        system += processorInfos[i].cpu_ticks[CPU_STATE_SYSTEM];
+        idle += processorInfos[i].cpu_ticks[CPU_STATE_IDLE];
+    }
+    total = user + nice + system + idle;
+    mPreviousUserTime = user;
+    mPreviousNiceTime = nice;
+    mPreviousSystemTime = system;
+    mPreviousIdleTime = idle;
+
+    *result = new clCPUTime((double)user / total,
+                            (double)nice / total,
+                            (double)system / total,
+                            (double)idle / total,
+                            (double)0.0f);
     NS_ADDREF(*result);
 
     return NS_OK;
