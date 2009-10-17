@@ -123,9 +123,9 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
-    UINT64 user = FILETIME_TO_UINT64(userTime) - FILETIME_TO_UINT64(mPreviousUserTime);
-    UINT64 kernel = FILETIME_TO_UINT64(kernelTime) - FILETIME_TO_UINT64(mPreviousKernelTime);
-    UINT64 idle = FILETIME_TO_UINT64(idleTime) - FILETIME_TO_UINT64(mPreviousIdleTime);
+    UINT64 user = FILETIME_TO_UINT64(userTime) - mPreviousUserTime;
+    UINT64 kernel = FILETIME_TO_UINT64(kernelTime) - mPreviousSystemTime;
+    UINT64 idle = FILETIME_TO_UINT64(idleTime) - mPreviousIdleTime;
 
     UINT64 total = user + kernel;
 
@@ -142,9 +142,9 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     */
     kernel = total - idle;
 
-    mPreviousUserTime = userTime;
-    mPreviousKernelTime = kernelTime;
-    mPreviousIdleTime = idleTime;
+    mPreviousUserTime = FILETIME_TO_UINT64(userTime);
+    mPreviousSystemTime = FILETIME_TO_UINT64(kernelTime);
+    mPreviousIdleTime = FILETIME_TO_UINT64(idleTime);
 
     *result = new clCPUTime((double)0.0f,
                             (double)0.0f,
