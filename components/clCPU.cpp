@@ -56,7 +56,7 @@ clCPU::clCPU()
                             &nProcessors,
                             (processor_info_array_t*)&processorInfos,
                             &nProcessorInfos)) {
-        return NS_ERROR_FAILURE;
+        return;
     }
 
     PRUint64 user, nice, system, idle, total;
