@@ -32,6 +32,11 @@ clCPU::setPreviousCPUTime (void *gtop_cpu)
 
 #endif /* HAVE_LIBGTOP */
 clCPU::clCPU()
+    : mPreviousUserTime(0)
+    , mPreviousNiceTime(0)
+    , mPreviousSystemTime(0)
+    , mPreviousIdleTime(0)
+    , mPreviousIOWaitTime(0)
 {
 #ifdef HAVE_LIBGTOP
     glibtop_cpu cpu;
@@ -170,7 +175,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
         return NS_ERROR_FAILURE;
     }
 
-    PRUint64 user, nice, system, idle, total;
+    PRUint64 user = 0, nice = 0, system = 0, idle = 0, total = 0;
     for (unsigned int i; i < nProcessors; i++) {
         user += processorInfos[i].cpu_ticks[CPU_STATE_USER];
         nice += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
