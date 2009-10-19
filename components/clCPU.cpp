@@ -6,7 +6,7 @@
 
 #ifdef HAVE_LIBGTOP
 #include <glibtop/cpu.h>
-#elif XP_WIN
+#elif defined(XP_WIN)
 #include <windows.h>
 #undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
 #undef AddMonitor /* CAUTION! Use AddMonitorW instead */
