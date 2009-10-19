@@ -1,7 +1,6 @@
 var updateTime = 1000;
 var gCPUTimeArray = initCPUArray(24);
 
-//system.addMonitor("cpu-time", drawCPUTimeGraph, updateTime);
 system.addMonitor("cpu-usage", drawCPUUsageGraph, updateTime);
 
 function initCPUArray(size) {
@@ -55,40 +54,3 @@ function drawCPUUsageGraph(usage) {
   });
   context.restore();
 }
-/*
-function drawCPUTimeGraph(cpuTime) {
-  var canvasElement = document.getElementById("system-monitor-canvas");
-  let context = canvasElement.getContext("2d")
-  let y = canvasElement.height;
-  let x = 0;
-
-  context.fillStyle = "black";
-  context.fillRect(0, 0, canvasElement.width, canvasElement.height);
-  context.globalCompositeOperation = "copy";
-
-  gCPUTimeArray.shift();
-  gCPUTimeArray.push(cpuTime);
-
-  context.save();
-  gCPUTimeArray.forEach(function(aCPUTime) {
-    let y_from = canvasElement.height;
-    let y_to = y_from;
-    if (aCPUTime == undefined) {
-      drawLine(context, "black", x, y_from, 0);
-    } else {
-      y_to = y_to - (y * aCPUTime.user);
-      y_from = drawLine(context, "blue", x, y_from, y_to);
-      y_to = y_to - (y * aCPUTime.system);
-      y_from = drawLine(context, "green", x, y_from, y_to);
-      y_to = y_to - (y * aCPUTime.nice);
-      y_from = drawLine(context, "grey", x, y_from, y_to);
-      y_to = y_to - (y * aCPUTime.io_wait);
-      y_from = drawLine(context, "red", x, y_from, y_to);
-      y_to = y_to - (y * aCPUTime.idle);
-      drawLine(context, "black", x, y_from, y_to);
-    }
-    x = x + 2;
-  });
-  context.restore();
-}
-*/
