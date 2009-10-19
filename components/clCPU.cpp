@@ -47,7 +47,7 @@ clCPU::clCPU()
     mPreviousNiceTime = 0;
     mPreviousIOWaitTime = 0;
 #elif defined(XP_MACOSX)
-    natural_t nProcessers;
+    natural_t nProcessors;
     mach_msg_type_number_t nProcessorInfos;
     processor_cpu_load_info_data_t *processorInfos;
 
@@ -159,7 +159,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 
     return NS_OK;
 #elif defined(XP_MACOSX)
-    natural_t nProcessers;
+    natural_t nProcessors;
     mach_msg_type_number_t nProcessorInfos;
     processor_cpu_load_info_data_t *processorInfos;
 
