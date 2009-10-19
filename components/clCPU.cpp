@@ -35,7 +35,7 @@ clCPU::clCPU()
     glibtop_init();
     glibtop_get_cpu(&cpu);
     setPreviousCPUTime(&cpu);
-#elif XP_WIN
+#elif defined(XP_WIN)
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
     mPreviousUserTime = FILETIME_TO_UINT64(userTime);
@@ -43,7 +43,7 @@ clCPU::clCPU()
     mPreviousIdleTime = FILETIME_TO_UINT64(idleTime);
     mPreviousNiceTime = 0;
     mPreviousIOWaitTime = 0;
-#elif XP_MACOSX
+#elif defined(XP_MACOSX)
     natural_t nProcessers;
     mach_msg_type_number_t nProcessorInfos;
     processor_cpu_load_info_data_t *processorInfos;
@@ -119,7 +119,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     NS_ADDREF(*result);
     setPreviousCPUTime(&cpu);
     return NS_OK;
-#elif XP_WIN
+#elif defined(XP_WIN)
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
@@ -155,7 +155,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     NS_ADDREF(*result);
 
     return NS_OK;
-#elif XP_MACOSX
+#elif defined(XP_MACOSX)
     natural_t nProcessers;
     mach_msg_type_number_t nProcessorInfos;
     processor_cpu_load_info_data_t *processorInfos;
