@@ -11,6 +11,9 @@
 #undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
 #undef AddMonitor /* CAUTION! Use AddMonitorW instead */
 #define FILETIME_TO_UINT64(v) (v.dwLowDateTime + ((UINT64)v.dwHighDateTime << 32))
+#elif defined(XP_MACOSX)
+#include <mach/mach_host.h>
+#include <mach/vm_map.h>
 #endif
 
 #include "clCPUTime.h"
