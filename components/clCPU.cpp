@@ -59,7 +59,6 @@ clCPU::clCPU()
         return;
     }
 
-    PRUint64 user, nice, system, idle, total;
     for (int i; i < nProcessors; i++) {
         mPreviousUserTime += processorInfos[i].cpu_ticks[CPU_STATE_USER];
         mPreviousNiceTime += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
