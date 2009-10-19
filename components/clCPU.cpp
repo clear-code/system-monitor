@@ -59,7 +59,7 @@ clCPU::clCPU()
         return;
     }
 
-    for (int i; i < nProcessors; i++) {
+    for (unsigned int i; i < nProcessors; i++) {
         mPreviousUserTime += processorInfos[i].cpu_ticks[CPU_STATE_USER];
         mPreviousNiceTime += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
         mPreviousSystemTime += processorInfos[i].cpu_ticks[CPU_STATE_SYSTEM];
@@ -171,7 +171,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     }
 
     PRUint64 user, nice, system, idle, total;
-    for (int i; i < nProcessors; i++) {
+    for (unsigned int i; i < nProcessors; i++) {
         user += processorInfos[i].cpu_ticks[CPU_STATE_USER];
         nice += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
         system += processorInfos[i].cpu_ticks[CPU_STATE_SYSTEM];
