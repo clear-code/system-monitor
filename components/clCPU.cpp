@@ -175,18 +175,31 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
         return NS_ERROR_FAILURE;
     }
 
+    PRUint64 currentUser = 0;
+    PRUint64 currentNice = 0;
+    PRUint64 currentSystem = 0;
+    PRUint64 currentIdle = 0;
+
     PRUint64 user = 0, nice = 0, system = 0, idle = 0, total = 0;
     for (unsigned int i = 0; i < nProcessors; i++) {
-        user += processorInfos[i].cpu_ticks[CPU_STATE_USER];
-        nice += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
-        system += processorInfos[i].cpu_ticks[CPU_STATE_SYSTEM];
-        idle += processorInfos[i].cpu_ticks[CPU_STATE_IDLE];
+        currentUser += processorInfos[i].cpu_ticks[CPU_STATE_USER];
+        currentNice += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
+        currentSystem += processorInfos[i].cpu_ticks[CPU_STATE_SYSTEM];
+        currentIdle += processorInfos[i].cpu_ticks[CPU_STATE_IDLE];
     }
+
+    PRUint64 user, nice, system, idle, total;
+    user = currentUser - mPreviousUserTime;
+    nice = currentNice - mPreviousNiceTime;
+    system = currentSystem - mPreviousSystemTime;
+    idle = currentIdle - mPreviousIdleTime;
+
+    mPreviousUserTime = currentUser;
+    mPreviousNiceTime = currentNice;
+    mPreviousSystemTime = currentSystem;
+    mPreviousIdleTime = currentIdle;
+
     total = user + nice + system + idle;
-    mPreviousUserTime = user;
-    mPreviousNiceTime = nice;
-    mPreviousSystemTime = system;
-    mPreviousIdleTime = idle;
 
     *result = new clCPUTime((double)user / total,
                             (double)nice / total,
