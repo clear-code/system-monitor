@@ -1,2 +1,5 @@
 content system-monitor content/
 overlay chrome://browser/content/browser.xul chrome://system-monitor/content/overlay.xul
+
+locale	system-monitor	en-US	locale/en-US/
+locale	system-monitor	ja	locale/ja/

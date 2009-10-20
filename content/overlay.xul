@@ -1,13 +1,21 @@
 <?xml version="1.0"?>
 <overlay id="system-monitor"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	 xmlns:html="http://www.w3.org/1999/xhtml">
+         xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <script type="application/x-javascript" src="chrome://system-monitor/content/prefs.js"/>
   <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
-  <toolbar id="toolbar-menubar">
-    <toolbaritem flex="1">
-      <hbox flex="1" pack="end">
-        <html:canvas id="system-monitor-canvas" width="48" height="24"/>
-      </hbox>
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="system-monitor-bundle" src="chrome://system-monitor/locale/system-monitor.properties"/>
+  </stringbundleset>
+
+  <toolbarpalette id="BrowserToolbarPalette">
+    <toolbaritem id="system-monitor-graph">
+      <html:canvas id="system-monitor-graph-canvas"
+                   width="48"
+                   height="24"/>
     </toolbaritem>
-  </toolbar>
+  </toolbarpalette>
+
 </overlay>
