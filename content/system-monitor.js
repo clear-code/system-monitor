@@ -1,6 +1,6 @@
 var SystemMonitorService = {
-  updateTime : 1000,
-  cpuUsageSize  : 48,
+  CPUUsageUpdateInterval : 1000,
+  CPUUsageSize : 48,
   CPUTimeArray : [],
 
   init : function() {
@@ -18,11 +18,42 @@ var SystemMonitorService = {
   },
 
 
+  // CPU usage graph
+  get CPUUsageItem() {
+    return document.getElementById("system-monitor-cpu-usage");
+  },
+
+  get CPUUsageCanvas() {
+    return document.getElementById("system-monitor-cpu-usage-canvas");
+  },
+
+  initCPUUsageItem : function() {
+    var item = this.CPUUsageItem;
+    if (!item) return;
+
+    var canvas = this.CPUUsageCanvas;
+    canvas.style.width = (canvas.width = this.CPUUsageSize)+"px";
+    this.initCPUArray();
+    window.system.addMonitor("cpu-usage", this, this.CPUUsageUpdateInterval);
+  },
+
+  destroyCPUUsageItem : function() {
+    var item = this.CPUUsageItem;
+    if (!item) return;
+
+    window.system.removeMonitor("cpu-usage", this);
+  },
+
+  updateCPUUsageItem : function() {
+    this.destroyCPUUsageItem();
+    this.initCPUUsageItem();
+  },
+
   initCPUArray : function() {
-    var arraySize = parseInt(this.cpuUsageSize / 2);
+    var arraySize = parseInt(this.CPUUsageSize / 2);
     if (this.CPUTimeArray.length < arraySize) {
       while (this.CPUTimeArray.length < arraySize) {
-        this.CPUTimeArray.push(undefined);
+        this.CPUTimeArray.unshift(undefined);
       }
     } else {
       this.CPUTimeArray = this.CPUTimeArray.slice(-arraySize);
@@ -43,7 +74,7 @@ var SystemMonitorService = {
   },
 
   drawCPUUsageGraph : function(aUsage) {
-    var canvasElement = document.getElementById("system-monitor-cpu-usage-canvas");
+    var canvasElement = this.CPUUsageCanvas;
     let context = canvasElement.getContext("2d")
     let y = canvasElement.height;
     let x = 0;
@@ -71,12 +102,13 @@ var SystemMonitorService = {
     context.restore();
   },
 
-
-  // toolbar customize
-  get cpuUsageItem() {
-    return document.getElementById("system-monitor-cpu-usage");
+  // clISystemMonitor
+  monitor : function(aUsage) {
+    this.drawCPUUsageGraph(aUsage);
   },
 
+
+  // toolbar customize
   updateToolbarMethods : function() {
     if ("BrowserCustomizeToolbar" in window) {
       eval("window.BrowserCustomizeToolbar = "+
@@ -104,18 +136,11 @@ var SystemMonitorService = {
   },
 
   initToolbarItems : function() {
-    var item = this.cpuUsageItem;
-    if (item) {
-      this.initCPUArray();
-      window.system.addMonitor("cpu-usage", this, this.updateTime);
-    }
+    this.initCPUUsageItem();
   },
 
   destroyToolbarItems : function() {
-    var item = this.cpuUsageItem;
-    if (item) {
-      window.system.removeMonitor("cpu-usage", this);
-    }
+    this.destroyCPUUsageItem();
   },
 
   initialShow : function() 
@@ -156,9 +181,20 @@ var SystemMonitorService = {
   },
 
 
-  // clISystemMonitor
-  monitor : function(aUsage) {
-    this.drawCPUUsageGraph(aUsage);
+  // preferences listener
+  domain : "extensions.system-monitor@clear-code.com",
+  observe : function(aSubject, aTopic, aData) {
+    if (aTopic != 'nsPref:changed') return;
+    switch (aData) {
+      case "extensions.system-monitor@clear-code.com.cpu-usage.size":
+        this.CPUUsageSize = this.getPref(aData);
+        this.updateCPUUsageItem();
+        break;
+      case "extensions.system-monitor@clear-code.com.cpu-usage.interval":
+        this.CPUUsageUpdateInterval = this.getPref(aData);
+        this.updateCPUUsageItem();
+        break;
+    }
   },
 
   // nsIDOMEventListener
