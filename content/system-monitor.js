@@ -182,8 +182,7 @@ var SystemMonitorService = {
     this.removeSplitters();
   },
 
-  initialShow : function() 
-  {
+  initialShow : function() {
     var bar = document.getElementById(this.getPref(this.domain+".defaultTargetToolbar"));
     if (bar && bar.currentSet) {
       var bundle = document.getElementById("system-monitor-bundle");
