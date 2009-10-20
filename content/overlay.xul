@@ -14,16 +14,17 @@
   <toolbarpalette id="BrowserToolbarPalette">
     <toolbaritem id="system-monitor-graph"
                  class="system-monitor-item"
-                 tooltiptext="&toolbar.graph.tooltip;">
-      <vbox align="center">
-        <hbox>
-          <html:canvas id="system-monitor-graph-canvas"
-                       width="48"
-                       height="24"/>
-        </hbox>
-        <label class="toolbarbutton-text"
-               value="&toolbar.graph.label;"/>
-      </vbox>
+                 tooltiptext="&toolbar.graph.tooltip;"
+                 orient="vertical">
+      <stack>
+        <hbox class="system-monitor-graph-background"
+              flex="1"/>
+        <html:canvas id="system-monitor-graph-canvas"
+                     width="48"
+                     height="24"/>
+      </stack>
+      <label class="toolbarbutton-text"
+             value="&toolbar.graph.label;"/>
     </toolbaritem>
   </toolbarpalette>
 
