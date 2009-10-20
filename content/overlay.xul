@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!DOCTYPE overlay SYSTEM "chrome://system-monitor/locale/">
 <overlay id="system-monitor"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
          xmlns:html="http://www.w3.org/1999/xhtml">
@@ -11,10 +12,18 @@
   </stringbundleset>
 
   <toolbarpalette id="BrowserToolbarPalette">
-    <toolbaritem id="system-monitor-graph">
-      <html:canvas id="system-monitor-graph-canvas"
-                   width="48"
-                   height="24"/>
+    <toolbaritem id="system-monitor-graph"
+                 class="system-monitor-item"
+                 tooltiptext="&toolbar.graph.tooltip;">
+      <vbox align="center">
+        <hbox>
+          <html:canvas id="system-monitor-graph-canvas"
+                       width="48"
+                       height="24"/>
+        </hbox>
+        <label class="toolbarbutton-text"
+               value="&toolbar.graph.label;"/>
+      </vbox>
     </toolbaritem>
   </toolbarpalette>
 
