@@ -184,7 +184,7 @@ var SystemMonitorService = {
 
   initialShow : function() 
   {
-    var bar = document.getElementById("toolbar-menubar");
+    var bar = document.getElementById(this.getPref(this.domain+".defaultTargetToolbar"));
     if (bar && bar.currentSet) {
       var bundle = document.getElementById("system-monitor-bundle");
       var PromptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
