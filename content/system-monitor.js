@@ -1,4 +1,6 @@
 var SystemMonitorService = {
+  initialized : false,
+
   CPUUsageUpdateInterval : 1000,
   CPUUsageSize : 48,
   CPUTimeArray : [],
@@ -7,7 +9,13 @@ var SystemMonitorService = {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
 
+    this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.size");
+    this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.interval");
+
     this.updateToolbarMethods();
+
+    this.initialized = true;
+
     this.initToolbarItems();
     this.initialShow();
   },
@@ -28,6 +36,8 @@ var SystemMonitorService = {
   },
 
   initCPUUsageItem : function() {
+    if (!this.initialized) return;
+
     var item = this.CPUUsageItem;
     if (!item) return;
 
@@ -38,6 +48,8 @@ var SystemMonitorService = {
   },
 
   destroyCPUUsageItem : function() {
+    if (!this.initialized) return;
+
     var item = this.CPUUsageItem;
     if (!item) return;
 
@@ -183,8 +195,7 @@ var SystemMonitorService = {
 
   // preferences listener
   domain : "extensions.system-monitor@clear-code.com",
-  observe : function(aSubject, aTopic, aData) {
-    if (aTopic != 'nsPref:changed') return;
+  onChangePref : function(aData) {
     switch (aData) {
       case "extensions.system-monitor@clear-code.com.cpu-usage.size":
         this.CPUUsageSize = this.getPref(aData);
@@ -193,6 +204,15 @@ var SystemMonitorService = {
       case "extensions.system-monitor@clear-code.com.cpu-usage.interval":
         this.CPUUsageUpdateInterval = this.getPref(aData);
         this.updateCPUUsageItem();
+        break;
+    }
+  },
+
+  // nsIObserver
+  observe : function(aSubject, aTopic, aData) {
+    switch (aTopic) {
+      case "nsPref:changed":
+        this.onChangePref(aData);
         break;
     }
   },
