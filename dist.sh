@@ -47,7 +47,7 @@ esac
 cp -f $build_libraries platform/$platform_component_directory/components/
 component_xpt="components/*.xpt"
 
-xpi_contents="content $component_xpt platform chrome.manifest install.rdf"
+xpi_contents="content $component_xpt platform locale skin chrome.manifest install.rdf"
 
 rm -f $xpi
 zip -q -r -9 $xpi $xpi_contents -x \*/.git/\* || exit 1
