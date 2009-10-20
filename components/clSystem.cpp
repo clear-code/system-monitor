@@ -197,13 +197,17 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
     if (count == 0)
         return NS_OK;
 
+    PRInt32 found = -1;
     for (PRInt32 i = 0; i < count; i++) {
         MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
         if (data->monitor == aMonitor) {
-            mMonitors->RemoveElementAt(i);
             freeMonitorData(data);
+            found = i;
+            break;
         }
     }
+    if (found >= 0)
+        mMonitors->RemoveElementAt(found);
 
     return NS_OK;
 }
