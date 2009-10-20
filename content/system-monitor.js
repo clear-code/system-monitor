@@ -9,6 +9,9 @@ var SystemMonitorService = {
     this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.size");
     this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.interval");
 
+    this.ObserverService.addObserver(this, "system-monitor:toolbar-item-begin-resize", false);
+    this.ObserverService.addObserver(this, "system-monitor:toolbar-item-end-resize", false);
+
     this.updateToolbarMethods();
 
     this.initialized = true;
@@ -20,18 +23,22 @@ var SystemMonitorService = {
   destroy : function() {
     window.removeEventListener("unload", this, false);
     this.removePrefListener(this);
+    this.ObserverService.removeObserver(this, "system-monitor:toolbar-item-begin-resize");
+    this.ObserverService.removeObserver(this, "system-monitor:toolbar-item-end-resize");
     this.destroyToolbarItems();
   },
 
 
   // CPU usage graph
+  CPU_USAGE_ITEM : "system-monitor-cpu-usage",
+
   CPUUsageListening : false,
   CPUUsageUpdateInterval : 1000,
   CPUUsageSize : 48,
   CPUTimeArray : [],
 
   get CPUUsageItem() {
-    return document.getElementById("system-monitor-cpu-usage");
+    return document.getElementById(this.CPU_USAGE_ITEM);
   },
 
   get CPUUsageCanvas() {
@@ -46,7 +53,7 @@ var SystemMonitorService = {
         return;
 
     var canvas = this.CPUUsageCanvas;
-    canvas.style.width = (canvas.width = this.CPUUsageSize)+"px";
+    canvas.style.width = (canvas.width = item.width = this.CPUUsageSize)+"px";
     this.initCPUArray();
     window.system.addMonitor("cpu-usage", this, this.CPUUsageUpdateInterval);
     this.CPUUsageListening = true;
@@ -179,12 +186,12 @@ var SystemMonitorService = {
       var buttons = currentset.replace(/__empty/, "").split(',');
 
       if (!this.getPref(PREFROOT+".initialshow.cpu-usage")) {
-        if (currentset.indexOf("system-monitor-cpu-usage") < 0) {
+        if (currentset.indexOf(this.CPU_USAGE_ITEM) < 0) {
           if (currentset.indexOf("spring") < 0 &&
               currentset.indexOf("urlbar-container") < 0 &&
               currentset.indexOf("search-container") < 0)
             buttons.push("spring");
-          buttons.push("system-monitor-cpu-usage");
+          buttons.push(this.CPU_USAGE_ITEM);
         }
         this.setPref(PREFROOT+".initialshow.cpu-usage", true);
       }
@@ -224,6 +231,8 @@ var SystemMonitorService = {
   insertSplitterBefore : function(aNode) {
     var splitter = document.createElement("splitter");
     splitter.setAttribute("class", this.SPLITTER_CLASS);
+    splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
+    splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
     aNode.parentNode.insertBefore(splitter, aNode);
   },
 
@@ -232,6 +241,41 @@ var SystemMonitorService = {
       .forEach(function(aNode) {
         aNode.parentNode.removeChild(aNode);
       });
+  },
+
+  onSplitterMouseDown : function(aSplitter, aEvent) {
+    this.ObserverService.notifyObservers(
+      window,
+      "system-monitor:toolbar-item-begin-resize",
+      aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
+    );
+    /* canvasを非表示にしたのと同じタイミングでリサイズを行うと、
+       まだ内部的にcanvasの大きさが残ったままなので、その大きさ以下に
+       タブバーの幅を縮められなくなる。手動でイベントを再送してやると
+       この問題を防ぐことができる。 */
+    aEvent.preventDefault();
+    aEvent.stopPropagation();
+    var flags = 0;
+    const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
+    if (aEvent.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
+    if (aEvent.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
+    if (aEvent.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
+    if (aEvent.metaKey) flags |= nsIDOMNSEvent.META_MASK;
+    window.setTimeout(function(aX, aY, aButton, aDetail) {
+      window
+        .QueryInterface(Ci.nsIInterfaceRequestor)
+        .getInterface(Ci.nsIDOMWindowUtils)
+        .sendMouseEvent('mousedown', aX, aY, aButton, aDetail, flags);
+      flags = null;
+    }, 0, aEvent.clientX, aEvent.clientY, aEvent.button, aEvent.detail);
+  },
+
+  onSplitterMouseUp : function(aSplitter, aEvent) {
+    this.ObserverService.notifyObservers(
+      window,
+      "system-monitor:toolbar-item-end-resize",
+      aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
+    );
   },
 
 
@@ -256,8 +300,28 @@ var SystemMonitorService = {
       case "nsPref:changed":
         this.onChangePref(aData);
         break;
+
+      case "system-monitor:toolbar-item-begin-resize":
+        if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
+          this.destroyCPUUsageItem();
+          let canvas = this.CPUUsageCanvas;
+          canvas.style.width = (canvas.width = 1)+"px";
+        }
+        break;
+
+      case "system-monitor:toolbar-item-end-resize":
+        if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
+          this.setPref(
+            "extensions.system-monitor@clear-code.com.cpu-usage.size",
+            this.CPUUsageCanvas.parentNode.boxObject.width
+          );
+        }
+        break;
     }
   },
+
+  ObserverService : Cc["@mozilla.org/observer-service;1"]
+                      .getService(Ci.nsIObserverService),
 
   // nsIDOMEventListener
   handleEvent : function(aEvent) {
