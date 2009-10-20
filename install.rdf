@@ -5,7 +5,7 @@
 <RDF:Description RDF:about="urn:mozilla:install-manifest"
                  em:id="system-monitor@clear-code.com"
                  em:name="System Monitor"
-                 em:version="0.1+"
+                 em:version="0.2"
                  em:iconURL="chrome://system-monitor/content/icon.png"
                  em:optionsURL="chrome://system-monitor/content/config.xul">
   <em:localized>
@@ -24,7 +24,7 @@
   <em:targetApplication>
     <RDF:Description em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                      em:minVersion="3.5"
-                     em:maxVersion="3.5.*"/>
+                     em:maxVersion="3.7a1pre"/>
   </em:targetApplication>
   <em:targetPlatform>WINNT_x86-msvc</em:targetPlatform>
   <em:targetPlatform>Linux_x86-gcc3</em:targetPlatform>
