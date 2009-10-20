@@ -187,6 +187,22 @@ clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt3
     return NS_OK;
 }
 
+static PRInt32
+findMonitorIndex(nsAutoVoidArray *monitors, clISystemMonitor *aMonitor)
+{
+    PRInt32 count = monitors->Count();
+    if (count == 0)
+        return -1;
+
+    for (PRInt32 i = 0; i < count; i++) {
+        MonitorData *data = static_cast<MonitorData*>(monitors->ElementAt(i));
+        if (data->monitor == aMonitor) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 NS_IMETHODIMP
 clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 {
@@ -197,17 +213,13 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
     if (count == 0)
         return NS_OK;
 
-    PRInt32 found = -1;
-    for (PRInt32 i = 0; i < count; i++) {
-        MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
-        if (data->monitor == aMonitor) {
-            freeMonitorData(data);
-            found = i;
-            break;
-        }
-    }
-    if (found >= 0)
+    PRInt32 found;
+    while ((found = findMonitorIndex(mMonitors, aMonitor)) != -1) {
+        MonitorData *data;
+        data = static_cast<MonitorData*>(mMonitors->ElementAt(found));
         mMonitors->RemoveElementAt(found);
+        freeMonitorData(data);
+    }
 
     return NS_OK;
 }

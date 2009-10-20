@@ -37,6 +37,7 @@ function testAddMonitor() {
   system.addMonitor("cpu-usage", function(usage){}, 1000);
   var listener = { monitor : function(usage) {} };
   system.addMonitor("cpu-usage", listener, 1000);
+  system.addMonitor("cpu-usage", listener, 1000);
 }
 
 testRemoveMonitor.description = "monitoring test";
@@ -48,6 +49,7 @@ function testRemoveMonitor() {
   system.removeMonitor("cpu-time", function(aCPUTime){});
   system.removeMonitor("cpu-usage", function(usage){});
   var listener = { monitor : function(usage) {} };
+  system.removeMonitor("cpu-usage", listener);
   system.removeMonitor("cpu-usage", listener);
 }
 

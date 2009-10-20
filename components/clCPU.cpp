@@ -180,7 +180,6 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     PRUint64 currentSystem = 0;
     PRUint64 currentIdle = 0;
 
-    PRUint64 user = 0, nice = 0, system = 0, idle = 0, total = 0;
     for (unsigned int i = 0; i < nProcessors; i++) {
         currentUser += processorInfos[i].cpu_ticks[CPU_STATE_USER];
         currentNice += processorInfos[i].cpu_ticks[CPU_STATE_NICE];
