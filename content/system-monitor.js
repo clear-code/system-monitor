@@ -5,6 +5,7 @@ var SystemMonitorService = {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
 
+    this.addPrefListener(this);
     this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.size");
     this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.interval");
 
@@ -18,11 +19,13 @@ var SystemMonitorService = {
 
   destroy : function() {
     window.removeEventListener("unload", this, false);
+    this.removePrefListener(this);
     this.destroyToolbarItems();
   },
 
 
   // CPU usage graph
+  CPUUsageListening : false,
   CPUUsageUpdateInterval : 1000,
   CPUUsageSize : 48,
   CPUTimeArray : [],
@@ -36,24 +39,28 @@ var SystemMonitorService = {
   },
 
   initCPUUsageItem : function() {
-    if (!this.initialized) return;
-
     var item = this.CPUUsageItem;
-    if (!item) return;
+    if (!this.initialized ||
+        !item ||
+        this.CPUUsageListening)
+        return;
 
     var canvas = this.CPUUsageCanvas;
     canvas.style.width = (canvas.width = this.CPUUsageSize)+"px";
     this.initCPUArray();
     window.system.addMonitor("cpu-usage", this, this.CPUUsageUpdateInterval);
+    this.CPUUsageListening = true;
   },
 
   destroyCPUUsageItem : function() {
-    if (!this.initialized) return;
-
     var item = this.CPUUsageItem;
-    if (!item) return;
+    if (!this.initialized ||
+        !item ||
+        !this.CPUUsageListening)
+        return;
 
     window.system.removeMonitor("cpu-usage", this);
+    this.CPUUsageListening = false;
   },
 
   updateCPUUsageItem : function() {
@@ -121,6 +128,8 @@ var SystemMonitorService = {
 
 
   // toolbar customize
+  SPLITTER_CLASS : "system-monitor-splitter",
+
   updateToolbarMethods : function() {
     if ("BrowserCustomizeToolbar" in window) {
       eval("window.BrowserCustomizeToolbar = "+
@@ -149,10 +158,12 @@ var SystemMonitorService = {
 
   initToolbarItems : function() {
     this.initCPUUsageItem();
+    this.insertSplitters();
   },
 
   destroyToolbarItems : function() {
     this.destroyCPUUsageItem();
+    this.removeSplitters();
   },
 
   initialShow : function() 
@@ -195,6 +206,32 @@ var SystemMonitorService = {
       if ("BrowserToolboxCustomizeDone" in window)
         window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
     }
+  },
+
+  insertSplitters : function() {
+    [
+      this.CPUUsageItem
+    ].forEach(function(aNode) {
+      if (aNode.previousSibling &&
+          aNode.previousSibling.localName != "splitter")
+        this.insertSplitterBefore(aNode);
+      if (aNode.nextSibling &&
+          aNode.nextSibling.localName != "splitter")
+        this.insertSplitterBefore(aNode.nextSibling);
+    }, this);
+  },
+
+  insertSplitterBefore : function(aNode) {
+    var splitter = document.createElement("splitter");
+    splitter.setAttribute("class", this.SPLITTER_CLASS);
+    aNode.parentNode.insertBefore(splitter, aNode);
+  },
+
+  removeSplitters : function() {
+    Array.slice(document.getElementsByAttribute("class", this.SPLITTER_CLASS))
+      .forEach(function(aNode) {
+        aNode.parentNode.removeChild(aNode);
+      });
   },
 
 
