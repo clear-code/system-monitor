@@ -5,7 +5,7 @@ var SystemMonitorService = {
   TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
   TOOLBAR_RESIZE_END : "system-monitor:toolbar-item-end-resize",
 
-  domain : "extensions.system-monitor@clear-code.com",
+  domain : "extensions.system-monitor@clear-code.com.",
 
   initialized : false,
   resizing : false,
@@ -15,8 +15,8 @@ var SystemMonitorService = {
     window.addEventListener("unload", this, false);
 
     this.addPrefListener(this);
-    this.onChangePref(this.domain+".cpu-usage.size");
-    this.onChangePref(this.domain+".cpu-usage.interval");
+    this.onChangePref(this.domain+"cpu-usage.size");
+    this.onChangePref(this.domain+"cpu-usage.interval");
 
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
@@ -183,7 +183,7 @@ var SystemMonitorService = {
   },
 
   initialShow : function() {
-    var bar = document.getElementById(this.getPref(this.domain+".defaultTargetToolbar"));
+    var bar = document.getElementById(this.getPref(this.domain+"defaultTargetToolbar"));
     if (bar && bar.currentSet) {
       var bundle = document.getElementById("system-monitor-bundle");
       var PromptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
@@ -192,7 +192,7 @@ var SystemMonitorService = {
       var currentset = bar.currentSet;
       var buttons = currentset.replace(/__empty/, "").split(',');
 
-      if (!this.getPref(this.domain+"."+this.CPU_USAGE_ITEM+".initialShow")) {
+      if (!this.getPref(this.domain+this.CPU_USAGE_ITEM+".initialShow")) {
         if (currentset.indexOf(this.CPU_USAGE_ITEM) < 0) {
           if (currentset.indexOf("spring") < 0 &&
               currentset.indexOf("urlbar-container") < 0 &&
@@ -200,7 +200,7 @@ var SystemMonitorService = {
             buttons.push("spring");
           buttons.push(this.CPU_USAGE_ITEM);
         }
-        this.setPref(this.domain+"."+this.CPU_USAGE_ITEM+".initialShow", true);
+        this.setPref(this.domain+this.CPU_USAGE_ITEM+".initialShow", true);
       }
       currentset = bar.currentSet.replace(/__empty/, "");
       var newset = buttons.join(",");
@@ -226,6 +226,7 @@ var SystemMonitorService = {
     [
       this.CPUUsageItem
     ].forEach(function(aNode) {
+      if (!aNode) return;
       if (aNode.previousSibling &&
           aNode.previousSibling.localName != "splitter")
         this.insertSplitterBefore(aNode);
@@ -336,7 +337,7 @@ var SystemMonitorService = {
         if (aSubject != window) break;
         if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
           this.setPref(
-            this.domain+".cpu-usage.size",
+            this.domain+"cpu-usage.size",
             this.CPUUsageCanvas.parentNode.boxObject.width
           );
           this.CPUUsageImage.src = "";
