@@ -164,12 +164,17 @@ var SystemMonitorService = {
       var PromptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
                            .getService(Ci.nsIPromptService);
 
-     var currentset = bar.currentSet;
+      var currentset = bar.currentSet;
       var buttons = currentset.replace(/__empty/, "").split(',');
 
       if (!this.getPref(PREFROOT+".initialshow.cpu-usage")) {
-        if (currentset.indexOf("system-monitor-cpu-usage") < 0)
-          buttons.push('system-monitor-cpu-usage');
+        if (currentset.indexOf("system-monitor-cpu-usage") < 0) {
+          if (currentset.indexOf("spring") < 0 &&
+              currentset.indexOf("urlbar-container") < 0 &&
+              currentset.indexOf("search-container") < 0)
+            buttons.push("spring");
+          buttons.push("system-monitor-cpu-usage");
+        }
         this.setPref(PREFROOT+".initialshow.cpu-usage", true);
       }
       currentset = bar.currentSet.replace(/__empty/, "");
