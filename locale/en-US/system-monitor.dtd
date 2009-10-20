@@ -1,2 +1,2 @@
-<!ENTITY toolbar.graph.label   "CPU Usage">
-<!ENTITY toolbar.graph.tooltip "CPU Usage">
+<!ENTITY toolbar.cpuUsage.label   "CPU Usage">
+<!ENTITY toolbar.cpuUsage.tooltip "CPU Usage">

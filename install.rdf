@@ -15,8 +15,8 @@
   </em:localized>
   <em:localized>
     <RDF:Description em:locale="ja"
-                     em:name="�V�X�e�����j�^�[ (System Monitor)"
-                     em:description="�c�[���o�[�ɃV�X�e���̏�Ԃ�\�����܂��B"
+                     em:name="システムモニター (System Monitor)"
+                     em:description="ツールバーにシステムの状態を表示します。"
                      em:homepageURL="http://www.clear-code.com/"/>
   </em:localized>
   <em:targetApplication>

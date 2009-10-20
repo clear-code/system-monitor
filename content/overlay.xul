@@ -12,19 +12,19 @@
   </stringbundleset>
 
   <toolbarpalette id="BrowserToolbarPalette">
-    <toolbaritem id="system-monitor-graph"
+    <toolbaritem id="system-monitor-cpu-usage"
                  class="system-monitor-item"
-                 tooltiptext="&toolbar.graph.tooltip;"
+                 tooltiptext="&toolbar.cpuUsage.tooltip;"
                  orient="vertical">
       <stack>
-        <hbox class="system-monitor-graph-background"
+        <hbox class="system-monitor-cpu-usage-background"
               flex="1"/>
-        <html:canvas id="system-monitor-graph-canvas"
+        <html:canvas id="system-monitor-cpu-usage-canvas"
                      width="48"
                      height="24"/>
       </stack>
       <label class="toolbarbutton-text"
-             value="&toolbar.graph.label;"/>
+             value="&toolbar.cpuUsage.label;"/>
     </toolbaritem>
   </toolbarpalette>
 

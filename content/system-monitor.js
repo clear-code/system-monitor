@@ -1,6 +1,6 @@
 var SystemMonitorService = {
   updateTime : 1000,
-  graphSize  : 48,
+  cpuUsageSize  : 48,
   CPUTimeArray : [],
 
   init : function() {
@@ -18,9 +18,8 @@ var SystemMonitorService = {
   },
 
 
-
   initCPUArray : function() {
-    var arraySize = parseInt(this.graphSize / 2);
+    var arraySize = parseInt(this.cpuUsageSize / 2);
     if (this.CPUTimeArray.length < arraySize) {
       while (this.CPUTimeArray.length < arraySize) {
         this.CPUTimeArray.push(undefined);
@@ -44,7 +43,7 @@ var SystemMonitorService = {
   },
 
   drawCPUUsageGraph : function(aUsage) {
-    var canvasElement = document.getElementById("system-monitor-graph-canvas");
+    var canvasElement = document.getElementById("system-monitor-cpu-usage-canvas");
     let context = canvasElement.getContext("2d")
     let y = canvasElement.height;
     let x = 0;
@@ -74,8 +73,8 @@ var SystemMonitorService = {
 
 
   // toolbar customize
-  get graphItem() {
-    return document.getElementById("system-monitor-graph");
+  get cpuUsageItem() {
+    return document.getElementById("system-monitor-cpu-usage");
   },
 
   updateToolbarMethods : function() {
@@ -105,7 +104,7 @@ var SystemMonitorService = {
   },
 
   initToolbarItems : function() {
-    var item = this.graphItem;
+    var item = this.cpuUsageItem;
     if (item) {
       this.initCPUArray();
       window.system.addMonitor("cpu-usage", this, this.updateTime);
@@ -113,7 +112,7 @@ var SystemMonitorService = {
   },
 
   destroyToolbarItems : function() {
-    var item = this.graphItem;
+    var item = this.cpuUsageItem;
     if (item) {
       window.system.removeMonitor("cpu-usage", this);
     }
@@ -131,10 +130,10 @@ var SystemMonitorService = {
      var currentset = bar.currentSet;
       var buttons = currentset.replace(/__empty/, "").split(',');
 
-      if (!this.getPref(PREFROOT+".initialshow.graph")) {
-        if (currentset.indexOf("system-monitor-graph") < 0)
-          buttons.push('system-monitor-graph');
-        this.setPref(PREFROOT+".initialshow.graph", true);
+      if (!this.getPref(PREFROOT+".initialshow.cpu-usage")) {
+        if (currentset.indexOf("system-monitor-cpu-usage") < 0)
+          buttons.push('system-monitor-cpu-usage');
+        this.setPref(PREFROOT+".initialshow.cpu-usage", true);
       }
       currentset = bar.currentSet.replace(/__empty/, "");
       var newset = buttons.join(",");
