@@ -1,10 +1,6 @@
 var SystemMonitorService = {
   initialized : false,
 
-  CPUUsageUpdateInterval : 1000,
-  CPUUsageSize : 48,
-  CPUTimeArray : [],
-
   init : function() {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
@@ -27,6 +23,10 @@ var SystemMonitorService = {
 
 
   // CPU usage graph
+  CPUUsageUpdateInterval : 1000,
+  CPUUsageSize : 48,
+  CPUTimeArray : [],
+
   get CPUUsageItem() {
     return document.getElementById("system-monitor-cpu-usage");
   },
