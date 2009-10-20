@@ -1,16 +1,25 @@
 var SystemMonitorService = {
+  CPU_USAGE_ITEM : "system-monitor-cpu-usage",
+  SPLITTER_CLASS : "system-monitor-splitter",
+
+  TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
+  TOOLBAR_RESIZE_END : "system-monitor:toolbar-item-end-resize",
+
+  domain : "extensions.system-monitor@clear-code.com",
+
   initialized : false,
+  resizing : false,
 
   init : function() {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
 
     this.addPrefListener(this);
-    this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.size");
-    this.onChangePref("extensions.system-monitor@clear-code.com.cpu-usage.interval");
+    this.onChangePref(this.domain+".cpu-usage.size");
+    this.onChangePref(this.domain+".cpu-usage.interval");
 
-    this.ObserverService.addObserver(this, "system-monitor:toolbar-item-begin-resize", false);
-    this.ObserverService.addObserver(this, "system-monitor:toolbar-item-end-resize", false);
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
 
     this.updateToolbarMethods();
 
@@ -23,15 +32,13 @@ var SystemMonitorService = {
   destroy : function() {
     window.removeEventListener("unload", this, false);
     this.removePrefListener(this);
-    this.ObserverService.removeObserver(this, "system-monitor:toolbar-item-begin-resize");
-    this.ObserverService.removeObserver(this, "system-monitor:toolbar-item-end-resize");
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
     this.destroyToolbarItems();
   },
 
 
   // CPU usage graph
-  CPU_USAGE_ITEM : "system-monitor-cpu-usage",
-
   CPUUsageListening : false,
   CPUUsageUpdateInterval : 1000,
   CPUUsageSize : 48,
@@ -55,6 +62,7 @@ var SystemMonitorService = {
     var canvas = this.CPUUsageCanvas;
     canvas.style.width = (canvas.width = item.width = this.CPUUsageSize)+"px";
     this.initCPUArray();
+    this.drawCPUUsageGraph();
     window.system.addMonitor("cpu-usage", this, this.CPUUsageUpdateInterval);
     this.CPUUsageListening = true;
   },
@@ -99,7 +107,7 @@ var SystemMonitorService = {
     return aEndY - 1;
   },
 
-  drawCPUUsageGraph : function(aUsage) {
+  drawCPUUsageGraph : function() {
     var canvasElement = this.CPUUsageCanvas;
     let context = canvasElement.getContext("2d")
     let y = canvasElement.height;
@@ -108,9 +116,6 @@ var SystemMonitorService = {
     context.fillStyle = "black";
     context.fillRect(0, 0, canvasElement.width, canvasElement.height);
     context.globalCompositeOperation = "copy";
-
-    this.CPUTimeArray.shift();
-    this.CPUTimeArray.push(aUsage);
 
     context.save();
     this.CPUTimeArray.forEach(function(aUsage) {
@@ -130,13 +135,13 @@ var SystemMonitorService = {
 
   // clISystemMonitor
   monitor : function(aUsage) {
-    this.drawCPUUsageGraph(aUsage);
+    this.CPUTimeArray.shift();
+    this.CPUTimeArray.push(aUsage);
+    this.drawCPUUsageGraph();
   },
 
 
   // toolbar customize
-  SPLITTER_CLASS : "system-monitor-splitter",
-
   updateToolbarMethods : function() {
     if ("BrowserCustomizeToolbar" in window) {
       eval("window.BrowserCustomizeToolbar = "+
@@ -175,7 +180,6 @@ var SystemMonitorService = {
 
   initialShow : function() 
   {
-    const PREFROOT = "extensions.system-monitor@clear-code.com";
     var bar = document.getElementById("toolbar-menubar");
     if (bar && bar.currentSet) {
       var bundle = document.getElementById("system-monitor-bundle");
@@ -185,7 +189,7 @@ var SystemMonitorService = {
       var currentset = bar.currentSet;
       var buttons = currentset.replace(/__empty/, "").split(',');
 
-      if (!this.getPref(PREFROOT+".initialshow.cpu-usage")) {
+      if (!this.getPref(this.domain+"."+this.CPU_USAGE_ITEM+".initialShow")) {
         if (currentset.indexOf(this.CPU_USAGE_ITEM) < 0) {
           if (currentset.indexOf("spring") < 0 &&
               currentset.indexOf("urlbar-container") < 0 &&
@@ -193,7 +197,7 @@ var SystemMonitorService = {
             buttons.push("spring");
           buttons.push(this.CPU_USAGE_ITEM);
         }
-        this.setPref(PREFROOT+".initialshow.cpu-usage", true);
+        this.setPref(this.domain+"."+this.CPU_USAGE_ITEM+".initialShow", true);
       }
       currentset = bar.currentSet.replace(/__empty/, "");
       var newset = buttons.join(",");
@@ -244,11 +248,20 @@ var SystemMonitorService = {
   },
 
   onSplitterMouseDown : function(aSplitter, aEvent) {
+    if (this.resizing ||
+        aEvent.button != 0 ||
+        aEvent.altKey ||
+        aEvent.ctrlKey ||
+        aEvent.shiftKey ||
+        aEvent.metaKey)
+        return;
+
     this.ObserverService.notifyObservers(
       window,
-      "system-monitor:toolbar-item-begin-resize",
+      this.TOOLBAR_RESIZE_BEGIN,
       aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
     );
+
     /* canvasを非表示にしたのと同じタイミングでリサイズを行うと、
        まだ内部的にcanvasの大きさが残ったままなので、その大きさ以下に
        タブバーの幅を縮められなくなる。手動でイベントを再送してやると
@@ -268,19 +281,24 @@ var SystemMonitorService = {
         .sendMouseEvent('mousedown', aX, aY, aButton, aDetail, flags);
       flags = null;
     }, 0, aEvent.clientX, aEvent.clientY, aEvent.button, aEvent.detail);
+
+    this.resizing = true;
   },
 
   onSplitterMouseUp : function(aSplitter, aEvent) {
-    this.ObserverService.notifyObservers(
-      window,
-      "system-monitor:toolbar-item-end-resize",
-      aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
-    );
+    window.setTimeout(function(aSelf) {
+      if (!aSelf.resizing) return;
+      aSelf.ObserverService.notifyObservers(
+        window,
+        aSelf.TOOLBAR_RESIZE_END,
+        aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
+      );
+      aSelf.resizing = false;
+    }, 10, this);
   },
 
 
   // preferences listener
-  domain : "extensions.system-monitor@clear-code.com",
   onChangePref : function(aData) {
     switch (aData) {
       case "extensions.system-monitor@clear-code.com.cpu-usage.size":
@@ -301,7 +319,8 @@ var SystemMonitorService = {
         this.onChangePref(aData);
         break;
 
-      case "system-monitor:toolbar-item-begin-resize":
+      case this.TOOLBAR_RESIZE_BEGIN:
+        if (aSubject != window) break;
         if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
           this.destroyCPUUsageItem();
           let canvas = this.CPUUsageCanvas;
@@ -309,10 +328,11 @@ var SystemMonitorService = {
         }
         break;
 
-      case "system-monitor:toolbar-item-end-resize":
+      case this.TOOLBAR_RESIZE_END:
+        if (aSubject != window) break;
         if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
           this.setPref(
-            "extensions.system-monitor@clear-code.com.cpu-usage.size",
+            this.domain+".cpu-usage.size",
             this.CPUUsageCanvas.parentNode.boxObject.width
           );
         }
@@ -335,6 +355,6 @@ var SystemMonitorService = {
     }
   }
 };
-SystemMonitorService.__proto__ = window['piro.sakura.ne.jp'].prefs;
+SystemMonitorService.__proto__ = window["piro.sakura.ne.jp"].prefs;
 
 window.addEventListener("load", SystemMonitorService, false);
