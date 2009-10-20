@@ -44,6 +44,6 @@ function testRemoveMonitor() {
 
   assert.isDefined(system.removeMonitor);
   system.removeMonitor("cpu-time", function(aCPUTime){}, 1000);
-  sdystem.removeMonitor("cpu-usage", function(usage){}, 1000);
+  system.removeMonitor("cpu-usage", function(usage){}, 1000);
 }
 
