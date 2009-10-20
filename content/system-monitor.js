@@ -48,6 +48,10 @@ var SystemMonitorService = {
     return document.getElementById(this.CPU_USAGE_ITEM);
   },
 
+  get CPUUsageImage() {
+    return document.getElementById("system-monitor-cpu-usage-backup");
+  },
+
   get CPUUsageCanvas() {
     return document.getElementById("system-monitor-cpu-usage-canvas");
   },
@@ -322,8 +326,9 @@ var SystemMonitorService = {
       case this.TOOLBAR_RESIZE_BEGIN:
         if (aSubject != window) break;
         if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
-          this.destroyCPUUsageItem();
           let canvas = this.CPUUsageCanvas;
+          this.CPUUsageImage.src = canvas.toDataURL();
+          this.destroyCPUUsageItem();
           canvas.style.width = (canvas.width = 1)+"px";
         }
         break;
@@ -335,6 +340,7 @@ var SystemMonitorService = {
             this.domain+".cpu-usage.size",
             this.CPUUsageCanvas.parentNode.boxObject.width
           );
+          this.CPUUsageImage.src = "";
         }
         break;
     }
