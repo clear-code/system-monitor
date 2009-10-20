@@ -5,7 +5,9 @@
 <RDF:Description RDF:about="urn:mozilla:install-manifest"
                  em:id="system-monitor@clear-code.com"
                  em:name="System Monitor"
-                 em:version="0.1+">
+                 em:version="0.1+"
+                 em:iconURL="chrome://system-monitor/content/icon.png"
+                 em:optionsURL="chrome://system-monitor/content/config.xul">
   <em:localized>
     <RDF:Description em:locale="en-US"
                      em:name="System Monitor"

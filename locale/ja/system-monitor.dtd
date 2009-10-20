@@ -1,2 +1,8 @@
 <!ENTITY toolbar.cpuUsage.label   "CPU使用率">
 <!ENTITY toolbar.cpuUsage.tooltip "CPU使用率">
+
+
+<!ENTITY config.title "システムモニターの設定">
+
+<!ENTITY config.cpuUsage.interval.before "CPU使用率の更新間隔：">
+<!ENTITY config.cpuUsage.interval.after "ミリ秒">

@@ -1,2 +1,8 @@
 <!ENTITY toolbar.cpuUsage.label   "CPU Usage">
 <!ENTITY toolbar.cpuUsage.tooltip "CPU Usage">
+
+
+<!ENTITY config.title "System Monitor Configuration">
+
+<!ENTITY config.cpuUsage.interval.before "Interval for updating CPU usage graph:">
+<!ENTITY config.cpuUsage.interval.after "msec.">

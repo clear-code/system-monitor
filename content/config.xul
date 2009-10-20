@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/"?>
+<!DOCTYPE prefwindow SYSTEM "chrome://system-monitor/locale/">
+<prefwindow id="system-monitor-config"
+            xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+            title="&config.title;">
+
+<prefpane id="prefpane-general">
+    <preferences>
+        <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+            name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+            type="int"/>
+    </preferences>
+
+    <hbox align="center">
+        <label value="&config.cpuUsage.interval.before;"
+            control="cpuUsage.interval-textbox"/>
+        <textbox id="cpuUsage.interval-textbox"
+                 preference="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+                 style="width: 5ch;"
+                 type="number"
+                 min="1"
+                 increment="1"/>
+        <label value="&config.cpuUsage.interval.after;"
+            control="cpuUsage.interval-textbox"/>
+    </hbox>
+
+</prefpane>
+
+</prefwindow>
