@@ -4,5 +4,10 @@
 
 <!ENTITY config.title "システムモニターの設定">
 
-<!ENTITY config.cpuUsage.interval.before "CPU使用率の更新間隔：">
+<!ENTITY config.cpuUsage.caption "CPU使用率">
+
+<!ENTITY config.cpuUsage.interval.before "グラフの更新間隔：">
 <!ENTITY config.cpuUsage.interval.after "ミリ秒">
+<!ENTITY config.cpuUsage.color.background "背景色：">
+<!ENTITY config.cpuUsage.color.foreground "前景色：">
+<!ENTITY config.cpuUsage.color.reset "リセット">

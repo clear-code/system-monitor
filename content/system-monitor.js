@@ -17,6 +17,8 @@ var SystemMonitorService = {
     this.addPrefListener(this);
     this.onChangePref(this.domain+"cpu-usage.size");
     this.onChangePref(this.domain+"cpu-usage.interval");
+    this.onChangePref(this.domain+"cpu-usage.color.background");
+    this.onChangePref(this.domain+"cpu-usage.color.foreground");
 
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
@@ -42,6 +44,8 @@ var SystemMonitorService = {
   CPUUsageListening : false,
   CPUUsageUpdateInterval : 1000,
   CPUUsageSize : 48,
+  CPUColorForeground : "green",
+  CPUColorBackground : "black",
   CPUTimeArray : [],
 
   get CPUUsageItem() {
@@ -117,7 +121,7 @@ var SystemMonitorService = {
     let y = canvasElement.height;
     let x = 0;
 
-    context.fillStyle = "black";
+    context.fillStyle = this.CPUColorBackground;
     context.fillRect(0, 0, canvasElement.width, canvasElement.height);
     context.globalCompositeOperation = "copy";
 
@@ -126,11 +130,11 @@ var SystemMonitorService = {
       let y_from = canvasElement.height;
       let y_to = y_from;
       if (aUsage == undefined) {
-        this.drawLine(context, "black", x, y_from, 0);
+        this.drawLine(context, this.CPUColorBackground, x, y_from, 0);
       } else {
         y_to = y_to - (y * aUsage);
-        y_from = this.drawLine(context, "green", x, y_from, y_to);
-        this.drawLine(context, "black", x, y_from, y_to);
+        y_from = this.drawLine(context, this.CPUColorForeground, x, y_from, y_to);
+        this.drawLine(context, this.CPUColorBackground, x, y_from, y_to);
       }
       x = x + 2;
     }, this);
@@ -311,6 +315,14 @@ var SystemMonitorService = {
         break;
       case "extensions.system-monitor@clear-code.com.cpu-usage.interval":
         this.CPUUsageUpdateInterval = this.getPref(aData);
+        this.updateCPUUsageItem();
+        break;
+      case "extensions.system-monitor@clear-code.com.cpu-usage.color.background":
+        this.CPUColorBackground = this.getPref(aData);
+        this.updateCPUUsageItem();
+        break;
+      case "extensions.system-monitor@clear-code.com.cpu-usage.color.foreground":
+        this.CPUColorForeground = this.getPref(aData);
         this.updateCPUUsageItem();
         break;
     }

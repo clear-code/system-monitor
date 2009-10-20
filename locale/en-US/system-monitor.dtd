@@ -4,5 +4,10 @@
 
 <!ENTITY config.title "System Monitor Configuration">
 
-<!ENTITY config.cpuUsage.interval.before "Interval for updating CPU usage graph:">
+<!ENTITY config.cpuUsage.caption "CPU usage">
+
+<!ENTITY config.cpuUsage.interval.before "Update graph every ">
 <!ENTITY config.cpuUsage.interval.after "msec.">
+<!ENTITY config.cpuUsage.color.background "Background:">
+<!ENTITY config.cpuUsage.color.foreground "Foreground:">
+<!ENTITY config.cpuUsage.color.reset "Reset">

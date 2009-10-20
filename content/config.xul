@@ -6,25 +6,63 @@
             title="&config.title;">
 
 <prefpane id="prefpane-general">
-    <preferences>
-        <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
-            name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
-            type="int"/>
-    </preferences>
+  <preferences>
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+                type="int"/>
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.background"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.color.background"
+                type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
+                type="string"/>
+  </preferences>
 
+  <groupbox orient="vertical">
+    <caption label="&config.cpuUsage.caption;"/>
     <hbox align="center">
-        <label value="&config.cpuUsage.interval.before;"
-            control="cpuUsage.interval-textbox"/>
-        <textbox id="cpuUsage.interval-textbox"
-                 preference="extensions.system-monitor@clear-code.com.cpu-usage.interval"
-                 style="width: 5ch;"
-                 type="number"
-                 min="1"
-                 increment="1"/>
-        <label value="&config.cpuUsage.interval.after;"
-            control="cpuUsage.interval-textbox"/>
+      <label value="&config.cpuUsage.interval.before;"
+             control="cpuUsage.interval-textbox"/>
+      <textbox id="cpuUsage.interval-textbox"
+               preference="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+               style="width: 5em;"
+               type="number"
+               min="100"
+               increment="1"/>
+      <label value="&config.cpuUsage.interval.after;"
+             control="cpuUsage.interval-textbox"/>
     </hbox>
+    <grid>
+      <columns>
+        <column/>
+        <column/>
+        <column/>
+      </columns>
+      <rows>
+        <row align="center">
+          <label value="&config.cpuUsage.color.background;"
+                 control="cpuUsage.color.background-colorpicker"/>
+          <colorpicker id="cpuUsage.color.background-colorpicker"
+                       type="button"
+                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
+          <button label="&config.cpuUsage.color.reset;"
+                  oncommand="resetValue(this.previousSibling, 'color');"/>
+        </row>
+        <row align="center">
+          <label value="&config.cpuUsage.color.foreground;"
+                 control="cpuUsage.color.foreground-colorpicker"/>
+          <colorpicker id="cpuUsage.color.foreground-colorpicker"
+                       type="button"
+                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
+          <button label="&config.cpuUsage.color.reset;"
+                  oncommand="resetValue(this.previousSibling, 'color');"/>
+        </row>
+      </rows>
+    </grid>
+  </groupbox>
 
 </prefpane>
+
+<script type="application/x-javascript" src="chrome://system-monitor/content/config.js"/>
 
 </prefwindow>
