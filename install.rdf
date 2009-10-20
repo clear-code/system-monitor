@@ -5,9 +5,20 @@
 <RDF:Description RDF:about="urn:mozilla:install-manifest"
                  em:id="system-monitor@clear-code.com"
                  em:name="System Monitor"
-                 em:version="0.1"
-                 em:description="System monitor on toolbar"
-                 em:creator="ClearCode Inc.">
+                 em:version="0.1+">
+  <em:localized>
+    <RDF:Description em:locale="en-US"
+                     em:name="System Monitor"
+                     em:description="System monitor on toolbar."
+                     em:creator="ClearCode Inc."
+                     em:homepageURL="http://www.clear-code.com/"/>
+  </em:localized>
+  <em:localized>
+    <RDF:Description em:locale="ja"
+                     em:name="システムモニター (System Monitor)"
+                     em:description="ツールバーにシステムの状態を表示します。"
+                     em:homepageURL="http://www.clear-code.com/"/>
+  </em:localized>
   <em:targetApplication>
     <RDF:Description em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
                      em:minVersion="3.5"
