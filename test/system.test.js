@@ -27,13 +27,23 @@ function testGetService() {
   assert.isDefined(systemService);
 }
 
-testMonitor.description = "monitoring test";
-testMonitor.priority = 'must';
-function testMonitor() {
+testAddMonitor.description = "monitoring test";
+testAddMonitor.priority = 'must';
+function testAddMonitor() {
   testDefined();
 
   assert.isDefined(system.addMonitor);
   system.addMonitor("cpu-time", function(aCPUTime){}, 1000);
   system.addMonitor("cpu-usage", function(usage){}, 1000);
+}
+
+testRemoveMonitor.description = "monitoring test";
+testRemoveMonitor.priority = 'must';
+function testRemoveMonitor() {
+  testAddMonitor();
+
+  assert.isDefined(system.removeMonitor);
+  system.removeMonitor("cpu-time", function(aCPUTime){}, 1000);
+  sdystem.removeMonitor("cpu-usage", function(usage){}, 1000);
 }
 
