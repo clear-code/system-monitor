@@ -2,9 +2,14 @@ AM_CXXFLAGS =				\
 	-Wall -fno-rtti -fno-exceptions	\
 	$(EXTENSION_CXXFLAGS)
 
+CLEANFILES = 			\
+	$(INTERFACE_FILES)	\
+	$(XPT_FILES)
+
 noinst_LTLIBRARIES = clSystemMonitor.la
 
 clSystemMonitor_la_SOURCES = 	\
+	$(XPT_FILES)		\
 	$(INTERFACE_FILES)	\
 	clCPU.cpp		\
 	clCPU.h			\
@@ -49,4 +54,3 @@ $(INTERFACE_FILES):
 	(for idl in $(IDL_FILES); do \
 	    $(XPIDL) -m header -I$(GECKO_IDL_PATH) $$idl;	\
 	 done)
-
