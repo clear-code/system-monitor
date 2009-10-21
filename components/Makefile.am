@@ -31,7 +31,7 @@ XPT_FILESS = 			\
 	clICPU.xpt		\
 	clICPUTime.xpt
 
-INTERFACE_HEADERS = 		\
+INTERFACE_FILES = 		\
 	clISystem.h		\
 	clICPU.h		\
 	clICPUTime.h
@@ -39,6 +39,6 @@ INTERFACE_HEADERS = 		\
 $(XPT_FILES): $(IDL_FILES)
 	$(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $<
 
-$(INTERFACE_HEADERS): $(IDLS)
+$(INTERFACE_FILES): $(IDLS)
 	$(XPIDL) -m header -I$(GECKO_IDL_PATH) $<
 
