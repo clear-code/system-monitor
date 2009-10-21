@@ -7,6 +7,7 @@ AC_CONFIG_MACRO_DIR([m4macros])
 
 AC_CONFIG_HEADERS([config.h])
 
+AM_PROG_LIBTOOL
 AC_PATH_PROG([PKG_CONFIG], [pkg-config], [no])
 
 AC_PROG_CXX
@@ -40,6 +41,7 @@ AC_CONFIG_FILES([
 Makefile
 install.rdf
 chrome.manifest
+components/Makefile
 ])
 
 AC_OUTPUT

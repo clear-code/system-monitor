@@ -13,6 +13,7 @@ run()
 }
 
 run ${ACLOCAL:-aclocal} -I m4macros $ACLOCAL_OPTIONS
+run ${LIBTOOLIZE:-libtoolize} --copy --force
 run ${AUTOHEADER:-autoheader}
 run ${AUTOMAKE:-automake} --add-missing --foreign --copy
 run ${AUTOCONF:-autoconf}
