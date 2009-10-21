@@ -1,0 +1,10 @@
+content @PACKAGE_NAME@ content/
+overlay chrome://browser/content/browser.xul chrome://@PACKAGE_NAME@/content/overlay.xul
+
+locale @PACKAGE_NAME@ en-US locale/en-US/
+locale @PACKAGE_NAME@ ja locale/ja/
+
+skin @PACKAGE_NAME@ classic/1.0 skin/classic/
+
+style chrome://browser/content/browser.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
+style chrome://global/content/customizeToolbar.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
