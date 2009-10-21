@@ -13,6 +13,30 @@ AC_PATH_PROG([PKG_CONFIG], [pkg-config], [no])
 AC_PROG_CXX
 AC_PROG_CPP
 
+case "$host_os" in
+  mingw*|cygwin*)
+    PLATFORM="WINNT"
+    COMPILER="msvc"
+    ;;
+  darwin*)
+    PLATFORM="Darwin"
+    COMPILER="gcc3"
+    ;;
+  linux-*)
+    PLATFORM="Linux"
+    COMPILER="gcc3"
+    ;;
+esac
+AC_SUBST(PLATFORM)
+AC_SUBST(COMPILER)
+
+case "$host_cpu" in
+  i*)
+    CPU="x86"
+    ;;
+esac
+AC_SUBST(CPU)
+
 AC_CHECK_XULRUNNER
 
 libgtop2_exists=no
