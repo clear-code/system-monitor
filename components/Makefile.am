@@ -47,10 +47,10 @@ INTERFACE_FILES = 		\
 
 $(XPT_FILES):
 	(for idl in $(IDL_FILES); do \
-	    $(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $$idl	\
+	    $(XPIDL) -m typelib -I$(XPCOM_IDL_PATH) $$idl	\
 	 done)
 
 $(INTERFACE_FILES):
 	(for idl in $(IDL_FILES); do \
-	    $(XPIDL) -m header -I$(GECKO_IDL_PATH) $$idl;	\
+	    $(XPIDL) -m header -I$(XPCOM_IDL_PATH) $$idl;	\
 	 done)
