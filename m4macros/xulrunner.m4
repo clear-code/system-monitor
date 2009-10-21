@@ -8,8 +8,13 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
       AC_MSG_ERROR([--with-libxul-sdk must specify a path])
   elif test -n "$LIBXUL_SDK_DIR" -a "$LIBXUL_SDK_DIR" != "no"; then
       LIBXUL_SDK=`cd "$LIBXUL_SDK_DIR" && pwd`
-      XPCOM_IDL_PATH="$LIBXUL_SDK/sdk/idl"
-      XPCOM_LDFLAGS="$LIBXUL_SDK/lib"
+      XPCOM_IDL_PATH="$LIBXUL_SDK/idl"
+      XPCOM_LDFLAGS="-L$LIBXUL_SDK/lib"
+      XPCOM_CFLAGS="-fshort-wchar"
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/sdk/include"
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/xpcom" # nsIVariant.h nsITimer.h
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/dom" # nsIScriptNameSpaceManager.h
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/caps" # nsISecurityCheckedComponent.h
   else
       XULRUNNER_PACKAGE_NAME="libxul-unstable"
       PKG_CHECK_MODULES(XPCOM, $XULRUNNER_PACKAGE_NAME)
@@ -25,4 +30,5 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
   AC_SUBST(XPIDL)
   AC_SUBST(XPCOM_LIBS)
   AC_SUBST(XPCOM_LDFLAGS)
+  AC_SUBST(XPCOM_CFLAGS)
 ])
