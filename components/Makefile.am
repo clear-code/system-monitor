@@ -2,7 +2,7 @@ AM_CXXFLAGS =				\
 	-Wall -fno-rtti -fno-exceptions	\
 	$(EXTENSION_CXXFLAGS)
 
-noinst_LTLIBRARIES = clSystemMonitor.la
+lib_LTLIBRARIES = clSystemMonitor.la
 
 clSystemMonitor_la_SOURCES = 	\
 	$(INTERFACE_HEADERS)	\
