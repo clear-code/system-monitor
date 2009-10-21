@@ -2,7 +2,7 @@ AM_CXXFLAGS =				\
 	-Wall -fno-rtti -fno-exceptions	\
 	$(EXTENSION_CXXFLAGS)
 
-lib_LTLIBRARIES = clSystemMonitor.la
+noinst_LTLIBRARIES = clSystemMonitor.la
 
 clSystemMonitor_la_SOURCES = 	\
 	$(INTERFACE_HEADERS)	\
@@ -19,6 +19,7 @@ clSystemMonitor_la_LIBADD = 	\
 	$(LIBGTOP2_LIBS)
 
 clSystemMonitor_la_LDFLAGS = 	\
+        -rpath `pwd`/.libs      \
 	-avoid-version		\
 	-export-dynamic $(no_undefined)		\
 	-module			\
