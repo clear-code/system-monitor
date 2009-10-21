@@ -5,7 +5,7 @@ AM_CXXFLAGS =				\
 noinst_LTLIBRARIES = clSystemMonitor.la
 
 clSystemMonitor_la_SOURCES = 	\
-	$(INTERFACE_HEADERS)	\
+	$(INTERFACE_FILES)	\
 	clCPU.cpp		\
 	clCPU.h			\
 	clCPUTime.cpp		\
