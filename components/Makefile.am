@@ -40,9 +40,13 @@ INTERFACE_FILES = 		\
 	clICPU.h		\
 	clICPUTime.h
 
-$(XPT_FILES): $(IDL_FILES)
-	$(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $<
+$(XPT_FILES):
+	(for idl in $(IDL_FILES); do \
+	    $(XPIDL) -m typelib -I$(GECKO_IDL_PATH) $$idl	\
+	 done)
 
-$(INTERFACE_FILES): $(IDLS)
-	$(XPIDL) -m header -I$(GECKO_IDL_PATH) $<
+$(INTERFACE_FILES):
+	(for idl in $(IDL_FILES); do \
+	    $(XPIDL) -m header -I$(GECKO_IDL_PATH) $$idl;	\
+	 done)
 
