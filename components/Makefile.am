@@ -15,7 +15,8 @@ clSystemMonitor_la_SOURCES = 	\
 	clSystemModule.cpp
 
 clSystemMonitor_la_LIBADD = 	\
-	$(XPCOM_LIBS)
+	$(XPCOM_LIBS)		\
+	$(LIBGTOP2_LIBS)
 
 clSystemMonitor_la_LDFLAGS = 	\
 	$(XPCOM_LDFLAGS)
