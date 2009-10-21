@@ -6,5 +6,6 @@ ACLOCAL_AMFLAGS = -I m4macros $$ACLOCAL_OPTIONS
 all: xpi
 
 xpi:
-	zip -q -r -9 $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi install.rdf components/*.js components/*.xpt content locale skin defaults platform chrome.manifest -x \*.git/\*
+	(rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi && \
+	 zip -q -r -9 $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi install.rdf components/*.js components/*.xpt content locale skin defaults platform chrome.manifest -x \*.git/\*)
 
