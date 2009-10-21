@@ -1,6 +1,9 @@
 #ifndef __CL_CPU_H__
 #define __CL_CPU_H__
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
 #include "clICPU.h"
 
 #include <nsISecurityCheckedComponent.h>
@@ -24,7 +27,7 @@ public:
 
 private:
   static clCPU *gCPU;
-#ifdef HAVE_LIBGTOP
+#ifdef HAVE_LIBGTOP2
   void setPreviousCPUTime(void *gtop_cpu);
 #endif
   PRUint64 mPreviousUserTime;

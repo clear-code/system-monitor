@@ -4,7 +4,7 @@
 #include <nsMemory.h>
 #include <nsCOMPtr.h>
 
-#ifdef HAVE_LIBGTOP
+#ifdef HAVE_LIBGTOP2
 #include <glibtop/cpu.h>
 #elif defined(XP_WIN)
 #include <windows.h>
@@ -18,7 +18,7 @@
 
 #include "clCPUTime.h"
 
-#ifdef HAVE_LIBGTOP
+#ifdef HAVE_LIBGTOP2
 void
 clCPU::setPreviousCPUTime (void *gtop_cpu)
 {
@@ -30,7 +30,7 @@ clCPU::setPreviousCPUTime (void *gtop_cpu)
     mPreviousIOWaitTime = cpu->iowait + cpu->irq + cpu->softirq;
 }
 
-#endif /* HAVE_LIBGTOP */
+#endif /* HAVE_LIBGTOP2 */
 clCPU::clCPU()
     : mPreviousUserTime(0)
     , mPreviousNiceTime(0)
@@ -38,7 +38,7 @@ clCPU::clCPU()
     , mPreviousIdleTime(0)
     , mPreviousIOWaitTime(0)
 {
-#ifdef HAVE_LIBGTOP
+#ifdef HAVE_LIBGTOP2
     glibtop_cpu cpu;
     glibtop_init();
     glibtop_get_cpu(&cpu);
@@ -105,7 +105,7 @@ NS_IMPL_ISUPPORTS2_CI(clCPU,
 NS_IMETHODIMP
 clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 {
-#ifdef HAVE_LIBGTOP
+#ifdef HAVE_LIBGTOP2
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
