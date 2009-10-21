@@ -29,7 +29,7 @@ IDL_FILES = 			\
 	clICPU.idl		\
 	clICPUTime.idl
 
-XPT_FILESS = 			\
+XPT_FILES = 			\
 	clISystem.xpt		\
 	clICPU.xpt		\
 	clICPUTime.xpt
