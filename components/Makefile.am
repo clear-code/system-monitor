@@ -19,6 +19,9 @@ clSystemMonitor_la_LIBADD = 	\
 	$(LIBGTOP2_LIBS)
 
 clSystemMonitor_la_LDFLAGS = 	\
+	-avoid-version		\
+	-export-dynamic $(no_undefined)		\
+	-module			\
 	$(XPCOM_LDFLAGS)
 
 IDL_FILES = 			\
