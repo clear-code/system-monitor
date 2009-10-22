@@ -12,13 +12,12 @@
 #include "clCPUTime.h"
 
 clSystem::clSystem()
-     : mCPU(nsnull)
-     , mMonitors(nsnull)
+     : mMonitors(nsnull)
 {
 }
 
 struct MonitorData {
-    clSystem *system;
+    clICPU* cpu;
     PRUnichar *topic;
     clISystemMonitor *monitor;
     nsITimer *timer;
@@ -78,7 +77,8 @@ createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *
     if (!data)
         return NULL;
 
-    data->system = system;
+    data->cpu = new clCPU();
+    NS_ADDREF(data->cpu);
     data->topic = CL_strdup(aTopic);
     NS_ADDREF(data->monitor = aMonitor);
     NS_ADDREF(data->timer = aTimer);
@@ -96,14 +96,13 @@ freeMonitorData (MonitorData *data)
     nsMemory::Free(data->topic);
     NS_RELEASE(data->monitor);
     NS_RELEASE(data->timer);
+    NS_RELEASE(data->cpu);
 
     nsMemory::Free(data);
 }
 
 clSystem::~clSystem()
 {
-    NS_RELEASE(mCPU);
-
     if (mMonitors) {
         PRInt32 count = mMonitors->Count();
         for (PRInt32 i = 0; i < count; i++) {
@@ -141,9 +140,6 @@ clSystem::GetService()
 nsresult
 clSystem::Init()
 {
-    mCPU = new clCPU();
-    NS_ADDREF(mCPU);
-
     return NS_OK;
 }
 
@@ -154,10 +150,7 @@ NS_IMPL_ISUPPORTS2_CI(clSystem,
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU * *aCPU)
 {
-    *aCPU = mCPU;
-    NS_ADDREF(*aCPU);
-
-    return NS_OK;
+    return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 NS_IMETHODIMP
@@ -225,7 +218,7 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
 }
 
 static nsresult
-getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aValue)
+getMonitoringObject(clICPU *cpu, const PRUnichar *aTopic, nsIVariant **aValue)
 {
     const PRUnichar cpuTimeString[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
     const PRUnichar cpuUsageString[] = {'c', 'p', 'u', '-', 'u', 's', 'a', 'g', 'e', '\0'};
@@ -233,12 +226,12 @@ getMonitoringObject(clSystem *system, const PRUnichar *aTopic, nsIVariant **aVal
 
     if (!CL_strcmp(cpuUsageString, aTopic)) {
         double usage;
-        system->mCPU->GetUsage(&usage);
+        cpu->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
     } else if (!CL_strcmp(cpuTimeString, aTopic)) {
         nsCOMPtr<clICPUTime> cpuTime;
-        system->mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
+        cpu->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);
@@ -255,7 +248,7 @@ clSystem::Timeout(nsITimer *aTimer, void *aClosure)
     MonitorData *data = static_cast<MonitorData*>(aClosure);
 
     nsCOMPtr<nsIVariant> value;
-    getMonitoringObject(data->system, data->topic, getter_AddRefs(value));
+    getMonitoringObject(data->cpu, data->topic, getter_AddRefs(value));
 
     data->monitor->Monitor(value);
 }

@@ -77,27 +77,6 @@ clCPU::~clCPU()
 {
 }
 
-clCPU * clCPU::gCPU = nsnull;
-
-clCPU *
-clCPU::GetInstance()
-{
-    if (!clCPU::gCPU) {
-        clCPU::gCPU = new clCPU();
-    }
-
-    return clCPU::gCPU;
-}
-
-clCPU *
-clCPU::GetService()
-{
-    clCPU *cpu = clCPU::GetInstance();
-    NS_IF_ADDREF(cpu);
-
-    return cpu;
-}
-
 NS_IMPL_ISUPPORTS2_CI(clCPU,
                       clICPU,
                       nsISecurityCheckedComponent)

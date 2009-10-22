@@ -26,8 +26,6 @@ public:
   NS_DECL_CLISYSTEM
   NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
-  nsCOMPtr<clICPU> mCPU;
-
 private:
   static clSystem *gSystem;
   nsAutoVoidArray *mMonitors;
