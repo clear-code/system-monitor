@@ -96,12 +96,15 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 
     guint64 total = user + system + nice + idle + io_wait;
 
-    *result = new clCPUTime((double)user / total,
-                            (double)nice / total,
-                            (double)system / total,
-                            (double)idle / total,
-                            (double)io_wait / total);
-
+    if (total == 0) {
+        *result = new clCPUTime(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    } else {
+        *result = new clCPUTime((double)user / total,
+                                (double)nice / total,
+                                (double)system / total,
+                                (double)idle / total,
+                                (double)io_wait / total);
+    }
     NS_ADDREF(*result);
     setPreviousCPUTime(&cpu);
     return NS_OK;
@@ -132,12 +135,15 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     mPreviousSystemTime = FILETIME_TO_UINT64(kernelTime);
     mPreviousIdleTime = FILETIME_TO_UINT64(idleTime);
 
-    *result = new clCPUTime((double)0.0f,
-                            (double)0.0f,
-                            (double)kernel / total,
-                            (double)idle / total,
-                            (double)0.0f);
-
+    if (total == 0) {
+        *result = new clCPUTime(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    } else {
+        *result = new clCPUTime((double)0.0f,
+                                (double)0.0f,
+                                (double)kernel / total,
+                                (double)idle / total,
+                                (double)0.0f);
+    }
     NS_ADDREF(*result);
 
     return NS_OK;
@@ -179,11 +185,15 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 
     total = user + nice + system + idle;
 
-    *result = new clCPUTime((double)user / total,
-                            (double)nice / total,
-                            (double)system / total,
-                            (double)idle / total,
-                            (double)0.0f);
+    if (total == 0) {
+        *result = new clCPUTime(0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+    } else {
+        *result = new clCPUTime((double)user / total,
+                                (double)nice / total,
+                                (double)system / total,
+                                (double)idle / total,
+                                (double)0.0f);
+    }
     NS_ADDREF(*result);
 
     return NS_OK;
