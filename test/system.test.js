@@ -12,14 +12,6 @@ function testDefined() {
   assert.isDefined(system);
 }
 
-testCPU.description = "cpu attribute test";
-testCPU.priority = 'must';
-function testCPU() {
-  testDefined();
-  assert.isDefined(system.cpu);
-  assert.implementInterface("clICPU", system.cpu);
-}
-
 testGetService.description = "get service test";
 testGetService.priority = 'must';
 function testGetService() {
