@@ -20,6 +20,8 @@ config.sub
 depcomp
 libtool
 ltmain.sh
+chrome.manifest
+install.rdf
 m4macros/libtool.m4
 m4macros/ltoptions.m4
 m4macros/ltsugar.m4
