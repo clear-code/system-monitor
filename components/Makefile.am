@@ -45,8 +45,14 @@ INTERFACE_FILES = 		\
 	clICPU.h		\
 	clICPUTime.h
 
-$(INTERFACE_FILES):
-	(for idl in $(IDL_FILES); do \
-	    $(XPIDL) -m typelib -I$(XPCOM_IDL_PATH) $$idl;	\
-	    $(XPIDL) -m header -I$(XPCOM_IDL_PATH) $$idl;	\
-	 done)
+BUILT_SOURCES =			\
+	$(XPT_FILES)		\
+	$(INTERFACE_FILES)
+
+.idl.xpt:
+	$(XPIDL) -m typelib -I$(XPCOM_IDL_PATH) $<
+
+.idl.h:
+	$(XPIDL) -m header -I$(XPCOM_IDL_PATH) $<
+
+SUFFIXES = .idl .xpt .h
