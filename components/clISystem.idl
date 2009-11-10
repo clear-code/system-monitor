@@ -12,6 +12,6 @@ interface clISystemMonitor : nsISupports
 interface clISystem : nsISupports
 {
   readonly attribute clICPU cpu;
-  void addMonitor(in wstring aTopic, in clISystemMonitor aMonitor, in long aInterval);
-  void removeMonitor(in wstring aTopic, in clISystemMonitor aMonitor);
+  void addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
+  void removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
 };

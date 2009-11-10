@@ -16,89 +16,31 @@ clSystem::clSystem()
 {
 }
 
-struct MonitorData {
-    clICPU* cpu;
-    PRUnichar *topic;
-    clISystemMonitor *monitor;
-    nsITimer *timer;
+class MonitorData
+{
+public:
+    MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer);
+    virtual ~MonitorData();
+    nsCOMPtr<clICPU> mCPU;
+    nsString mTopic;
+    nsCOMPtr<clISystemMonitor> mMonitor;
+    nsCOMPtr<nsITimer> mTimer;
 };
 
-PRUint32
-CL_strlen(const PRUnichar *aString)
+MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
 {
-    const PRUnichar *end;
-
-    for (end = aString; *end; ++end) {
-        // empty loop
-    }
-
-    return end - aString;
+    NS_ADDREF(mCPU = new clCPU());
+    mTopic.Assign(aTopic);
+    NS_ADDREF(mMonitor = aMonitor);
+    NS_ADDREF(mTimer = aTimer);
 }
 
-static int
-CL_strcmp(const PRUnichar *a, const PRUnichar *b)
+MonitorData::~MonitorData()
 {
-    while (*b) {
-        int r = *a - *b;
-        if (r)
-            return r;
-
-        ++a;
-        ++b;
-    }
-
-    return *a != '\0';
-}
-
-static PRUnichar *
-CL_strndup(const PRUnichar *aString, PRUint32 aLen)
-{
-    PRUnichar *newBuf = (PRUnichar*) NS_Alloc((aLen + 1) * sizeof(PRUnichar));
-    if (newBuf) {
-        memcpy(newBuf, aString, aLen * sizeof(PRUnichar));
-        newBuf[aLen] = '\0';
-    }
-    return newBuf;
-}
-
-static PRUnichar *
-CL_strdup(const PRUnichar *aString)
-{
-    PRUint32 len = CL_strlen(aString);
-    return CL_strndup(aString, len);
-}
-
-static MonitorData *
-createMonitorData (clSystem *system, const PRUnichar *aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
-{
-    MonitorData *data;
-
-    data = (MonitorData *)nsMemory::Alloc(sizeof(MonitorData));
-    if (!data)
-        return NULL;
-
-    data->cpu = new clCPU();
-    NS_ADDREF(data->cpu);
-    data->topic = CL_strdup(aTopic);
-    NS_ADDREF(data->monitor = aMonitor);
-    NS_ADDREF(data->timer = aTimer);
-
-    return data;
-}
-
-static void
-freeMonitorData (MonitorData *data)
-{
-    if (!data)
-        return;
-
-    data->timer->Cancel();
-    nsMemory::Free(data->topic);
-    NS_RELEASE(data->monitor);
-    NS_RELEASE(data->timer);
-    NS_RELEASE(data->cpu);
-
-    nsMemory::Free(data);
+    mTimer->Cancel();
+    NS_RELEASE(mMonitor);
+    NS_RELEASE(mTimer);
+    NS_RELEASE(mCPU);
 }
 
 clSystem::~clSystem()
@@ -107,7 +49,7 @@ clSystem::~clSystem()
         PRInt32 count = mMonitors->Count();
         for (PRInt32 i = 0; i < count; i++) {
             MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
-            freeMonitorData(data);
+            delete data;
             mMonitors->RemoveElementAt(i);
         }
         delete mMonitors;
@@ -154,7 +96,7 @@ clSystem::GetCpu(clICPU * *aCPU)
 }
 
 NS_IMETHODIMP
-clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
 {
     MonitorData *data;
 
@@ -168,7 +110,7 @@ clSystem::AddMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor, PRInt3
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
     NS_ENSURE_SUCCESS(rv, rv);
 
-    data = createMonitorData(this, aTopic, aMonitor, timer);
+    data = new MonitorData(aTopic, aMonitor, timer);
     mMonitors->AppendElement(data);
 
     rv = timer->InitWithFuncCallback(clSystem::Timeout,
@@ -189,7 +131,7 @@ findMonitorIndex(nsAutoVoidArray *monitors, clISystemMonitor *aMonitor)
 
     for (PRInt32 i = 0; i < count; i++) {
         MonitorData *data = static_cast<MonitorData*>(monitors->ElementAt(i));
-        if (data->monitor == aMonitor) {
+        if (data->mMonitor == aMonitor) {
             return i;
         }
     }
@@ -197,7 +139,7 @@ findMonitorIndex(nsAutoVoidArray *monitors, clISystemMonitor *aMonitor)
 }
 
 NS_IMETHODIMP
-clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
+clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
 {
     if (!mMonitors)
         return NS_OK;
@@ -211,25 +153,23 @@ clSystem::RemoveMonitor(const PRUnichar *aTopic, clISystemMonitor *aMonitor)
         MonitorData *data;
         data = static_cast<MonitorData*>(mMonitors->ElementAt(found));
         mMonitors->RemoveElementAt(found);
-        freeMonitorData(data);
+        delete data;
     }
 
     return NS_OK;
 }
 
 static nsresult
-getMonitoringObject(clICPU *cpu, const PRUnichar *aTopic, nsIVariant **aValue)
+getMonitoringObject(clICPU *cpu, const nsAString &aTopic, nsIVariant **aValue)
 {
-    const PRUnichar cpuTimeString[] = {'c', 'p', 'u', '-', 't', 'i', 'm', 'e', '\0'};
-    const PRUnichar cpuUsageString[] = {'c', 'p', 'u', '-', 'u', 's', 'a', 'g', 'e', '\0'};
     nsCOMPtr<nsIWritableVariant> value;
 
-    if (!CL_strcmp(cpuUsageString, aTopic)) {
+    if (aTopic.Equals(NS_LITERAL_STRING("cpu-usage"))) {
         double usage;
         cpu->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
-    } else if (!CL_strcmp(cpuTimeString, aTopic)) {
+    } else if (aTopic.Equals(NS_LITERAL_STRING("cpu-time"))) {
         nsCOMPtr<clICPUTime> cpuTime;
         cpu->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");
@@ -248,9 +188,9 @@ clSystem::Timeout(nsITimer *aTimer, void *aClosure)
     MonitorData *data = static_cast<MonitorData*>(aClosure);
 
     nsCOMPtr<nsIVariant> value;
-    getMonitoringObject(data->cpu, data->topic, getter_AddRefs(value));
+    getMonitoringObject(data->mCPU, data->mTopic, getter_AddRefs(value));
 
-    data->monitor->Monitor(value);
+    data->mMonitor->Monitor(value);
 }
 
 static char *
