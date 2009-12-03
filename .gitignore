@@ -6,6 +6,7 @@ system-monitor-*.xpi
 Makefile
 aclocal.m4
 autom4te.cache/
+application.ini
 config.h
 config.h.in
 config.log

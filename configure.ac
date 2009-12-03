@@ -60,6 +60,7 @@ AC_SUBST(EXTENSION_CXXFLAGS)
 AC_CONFIG_FILES([
 Makefile
 install.rdf
+application.ini
 chrome.manifest
 components/Makefile
 ])
