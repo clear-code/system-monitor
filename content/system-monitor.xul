@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<!DOCTYPE overlay SYSTEM "chrome://system-monitor/locale/">
+<window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        title="&toolbar.cpuUsage.label;" 
+        windowtype="system-monitor:main"
+        onmousedown="dragStart(event)"
+        onmousemove="dragMove(event)"
+        onmouseup="dragEnd(event)"
+        onmouseover="dragEnd(event)"
+        status="Transparent"
+        persist="status,screenX,screenY">
+
+  <script type="application/x-javascript" src="chrome://system-monitor/content/trenswindow.js"/>
+  <script type="application/x-javascript" src="chrome://system-monitor/content/prefs.js"/>
+  <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
+
+  <stack id="system-monitor-cpu-usage">
+    <hbox class="system-monitor-cpu-usage-background"
+          flex="1"/>
+    <image id="system-monitor-cpu-usage-backup" flex="1"/>
+    <html:canvas id="system-monitor-cpu-usage-canvas"
+                 width="48"
+                 height="24"/>
+  </stack>
+</window> 

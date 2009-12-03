@@ -160,7 +160,7 @@ var SystemMonitorService = {
       );
     }
     var toolbox = document.getElementById("navigator-toolbox");
-    if (toolbox.customizeDone) {
+    if (toolbox && toolbox.customizeDone) {
       toolbox.__systemmonitor__customizeDone = toolbox.customizeDone;
       toolbox.customizeDone = function(aChanged) {
         this.__systemmonitor__customizeDone(aChanged);

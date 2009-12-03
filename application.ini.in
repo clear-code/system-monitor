@@ -1,0 +1,9 @@
+[App]
+Name=System Monitor
+Version=@PACKAGE_VERSION@
+BuildID=20091203
+system-monitor@clear-code.com
+
+[Gecko]
+MinVersion=1.9.1
+MaxVersion=1.9.2
