@@ -24,8 +24,10 @@
     <hbox class="system-monitor-cpu-usage-background"
           flex="1"/>
     <image id="system-monitor-cpu-usage-backup" flex="1"/>
-    <html:canvas id="system-monitor-cpu-usage-canvas"
-                 width="48"
-                 height="24"/>
+    <hbox>
+      <html:canvas id="system-monitor-cpu-usage-canvas"
+                   width="48"
+                   height="24"/>
+    </hbox>
   </stack>
 </window> 
