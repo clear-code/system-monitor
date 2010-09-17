@@ -13,7 +13,7 @@ function testCreate() {
 }
 
 test_properties.priority = 'must';
-test_properties.properties = {
+test_properties.parameters = {
   total  : { name : 'total',  type : 'int' },
   used   : { name : 'used',   type : 'int' },
   free   : { name : 'free',   type : 'int' },
