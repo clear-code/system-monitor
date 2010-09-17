@@ -15,6 +15,8 @@ clSystemMonitor_la_SOURCES = 	\
 	clCPU.h			\
 	clCPUTime.cpp		\
 	clCPUTime.h		\
+	clMemory.h		\
+	clMemory.cpp		\
 	clSystem.cpp		\
 	clSystem.h		\
 	clSystemModule.cpp
