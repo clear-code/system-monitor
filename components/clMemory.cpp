@@ -19,6 +19,7 @@ clMemory::~clMemory()
 NS_IMETHODIMP clMemory::GetTotal(PRUint64 *aTotal)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -28,6 +29,7 @@ NS_IMETHODIMP clMemory::GetTotal(PRUint64 *aTotal)
 NS_IMETHODIMP clMemory::GetUsed(PRUint64 *aUsed)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -37,6 +39,7 @@ NS_IMETHODIMP clMemory::GetUsed(PRUint64 *aUsed)
 NS_IMETHODIMP clMemory::GetFree(PRUint64 *aFree)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -46,6 +49,7 @@ NS_IMETHODIMP clMemory::GetFree(PRUint64 *aFree)
 NS_IMETHODIMP clMemory::GetShared(PRUint64 *aShared)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -55,6 +59,7 @@ NS_IMETHODIMP clMemory::GetShared(PRUint64 *aShared)
 NS_IMETHODIMP clMemory::GetBuffer(PRUint64 *aBuffer)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -64,6 +69,7 @@ NS_IMETHODIMP clMemory::GetBuffer(PRUint64 *aBuffer)
 NS_IMETHODIMP clMemory::GetCached(PRUint64 *aCached)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -73,6 +79,7 @@ NS_IMETHODIMP clMemory::GetCached(PRUint64 *aCached)
 NS_IMETHODIMP clMemory::GetUser(PRUint64 *aUser)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
@@ -82,6 +89,7 @@ NS_IMETHODIMP clMemory::GetUser(PRUint64 *aUser)
 NS_IMETHODIMP clMemory::GetLocked(PRUint64 *aLocked)
 {
 #ifdef HAVE_LIBGTOP2
+    return NS_ERROR_NOT_IMPLEMENTED;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif
