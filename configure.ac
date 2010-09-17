@@ -34,6 +34,9 @@ case "$host_cpu" in
   i*)
     CPU="x86"
     ;;
+  x86_64)
+    CPU="x86_64"
+    ;;
 esac
 AC_SUBST(CPU)
 
