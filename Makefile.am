@@ -6,6 +6,7 @@ ACLOCAL_AMFLAGS = -I m4macros $$ACLOCAL_OPTIONS
 all: deploy xpi
 
 deploy:
+	mkdir -p platform/$(PLATFORM)_$(CPU)-$(COMPILER)/components && \
 	cp components/.libs/clSystemMonitor$(SHARED_LIBRARY_SUFFIX) \
 	platform/$(PLATFORM)_$(CPU)-$(COMPILER)/components/
 xpi:
