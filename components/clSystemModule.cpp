@@ -64,9 +64,9 @@ static nsModuleComponentInfo systemComponents[] =
        &NS_CLASSINFO_NAME(clCPU)
     },
     {
-       "CPUTime Property",
-       CL_SYSTEM_CID,
-       CL_SYSTEM_CONTRACT_ID,
+       "CPUTime",
+       CL_CPU_TIME_CID,
+       CL_CPU_TIME_CONTRACT_ID,
        clCPUTimeConstructor,
        NULL,
        NULL,
