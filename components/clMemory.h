@@ -1,6 +1,9 @@
 #ifndef __CL_MEMORY_H__
 #define __CL_MEMORY_H__
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif /* HAVE_CONFIG_H */
 #include "clIMemory.h"
 
 #include <nsISecurityCheckedComponent.h>
