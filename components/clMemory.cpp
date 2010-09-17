@@ -1,6 +1,9 @@
 #include "clMemory.h"
 
-NS_IMPL_ISUPPORTS1(clMemory, clIMemory)
+#include <nsIClassInfoImpl.h>
+#include <nsMemory.h>
+
+NS_IMPL_ISUPPORTS1_CI(clMemory, clIMemory)
 
 clMemory::clMemory()
 {
