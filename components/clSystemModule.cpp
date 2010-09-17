@@ -8,14 +8,17 @@
 #include "clCPU.h"
 #include "clSystem.h"
 #include "clCPUTime.h"
+#include "clMemory.h"
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPU)
 NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(clSystem, clSystem::GetService)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUTime)
+NS_GENERIC_FACTORY_CONSTRUCTOR(clMemory)
 
 NS_DECL_CLASSINFO(clCPU)
 NS_DECL_CLASSINFO(clSystem)
 NS_DECL_CLASSINFO(clCPUTime)
+NS_DECL_CLASSINFO(clMemory)
 
 static NS_METHOD
 registerSystem(nsIComponentManager *aCompMgr,
@@ -74,6 +77,18 @@ static nsModuleComponentInfo systemComponents[] =
        NS_CI_INTERFACE_GETTER_NAME(clCPUTime),
        NULL,
        &NS_CLASSINFO_NAME(clCPUTime)
+    },
+    {
+       "Memory",
+       CL_MEMORY_CID,
+       CL_MEMORY_CONTRACT_ID,
+       clMemoryConstructor,
+       NULL,
+       NULL,
+       NULL,
+       NS_CI_INTERFACE_GETTER_NAME(clMemory),
+       NULL,
+       &NS_CLASSINFO_NAME(clMemory)
     },
 };
 
