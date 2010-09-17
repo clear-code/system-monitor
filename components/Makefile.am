@@ -33,17 +33,20 @@ clSystemMonitor_la_LDFLAGS = 	\
 IDL_FILES = 			\
 	clISystem.idl		\
 	clICPU.idl		\
-	clICPUTime.idl
+	clICPUTime.idl		\
+	clIMemory.idl
 
 XPT_FILES = 			\
 	clISystem.xpt		\
 	clICPU.xpt		\
-	clICPUTime.xpt
+	clICPUTime.xpt		\
+	clIMemory.xpt
 
 INTERFACE_FILES = 		\
 	clISystem.h		\
 	clICPU.h		\
-	clICPUTime.h
+	clICPUTime.h		\
+	clIMemory.h
 
 BUILT_SOURCES =			\
 	$(XPT_FILES)		\
