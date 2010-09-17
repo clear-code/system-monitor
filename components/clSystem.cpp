@@ -7,7 +7,7 @@
 #include <nsIVariant.h>
 
 #ifdef HAVE_LIBGTOP2
-#include <glibtop/cpu.h>
+#include <glibtop.h>
 #endif
 
 #include "clISystem.h"
