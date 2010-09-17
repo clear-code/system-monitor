@@ -40,7 +40,6 @@ clCPU::clCPU()
 {
 #ifdef HAVE_LIBGTOP2
     glibtop_cpu cpu;
-    glibtop_init();
     glibtop_get_cpu(&cpu);
     setPreviousCPUTime(&cpu);
 #elif defined(XP_WIN)

@@ -6,6 +6,10 @@
 #include <nsCRT.h>
 #include <nsIVariant.h>
 
+#ifdef HAVE_LIBGTOP2
+#include <glibtop/cpu.h>
+#endif
+
 #include "clISystem.h"
 #include "clICPU.h"
 #include "clCPU.h"
@@ -82,6 +86,9 @@ clSystem::GetService()
 nsresult
 clSystem::Init()
 {
+#ifdef HAVE_LIBGTOP2
+    glibtop_init();
+#endif
     return NS_OK;
 }
 
