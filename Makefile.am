@@ -3,6 +3,8 @@ SUBDIRS = components
 
 ACLOCAL_AMFLAGS = -I m4macros $$ACLOCAL_OPTIONS
 
+noinst_DATA = xpi
+
 TARGET_FILES = 					\
 	install.rdf				\
 	components/*.js				\
