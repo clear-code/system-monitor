@@ -55,9 +55,9 @@ BUILT_SOURCES =			\
 	$(INTERFACE_FILES)
 
 .idl.xpt:
-	$(XPIDL) -m typelib -I$(XPCOM_IDL_PATH) $<
+	$(XPIDL) -m typelib -I"$(XPCOM_IDL_PATH)" $<
 
 .idl.h:
-	$(XPIDL) -m header -I$(XPCOM_IDL_PATH) $<
+	$(XPIDL) -m header -I"$(XPCOM_IDL_PATH)" $<
 
 SUFFIXES = .idl .xpt .h

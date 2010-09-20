@@ -8,7 +8,11 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
       AC_MSG_ERROR([--with-libxul-sdk must specify a path])
   elif test -n "$LIBXUL_SDK_DIR" -a "$LIBXUL_SDK_DIR" != "no"; then
       LIBXUL_SDK=`cd "$LIBXUL_SDK_DIR" && pwd`
-      XPCOM_IDL_PATH="$LIBXUL_SDK/idl"
+      if test "$PLATFORM" = "WINNT"; then
+          XPCOM_IDL_PATH="`cygpath -w $LIBXUL_SDK/idl`"
+      else
+          XPCOM_IDL_PATH="$LIBXUL_SDK/idl"
+      fi
       XPCOM_LDFLAGS="-L$LIBXUL_SDK/lib"
       XPCOM_CFLAGS="-fshort-wchar"
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/sdk/include"
