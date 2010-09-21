@@ -1,0 +1,91 @@
+<html>
+<head>
+<script type="text/javascript">
+<!--
+var updateTime = 1000;
+var gMemoryArray = initMemoryArray(24);
+
+system.addMonitor("memory-usage", drawGraph, updateTime);
+
+function initMemoryArray(size) {
+  var memoryArray = new Array();
+
+  for (var i = 0; i < size; i++) {
+    memoryArray.push(undefined);
+  }
+
+  return memoryArray;
+}
+
+function drawLine(context, color, x, y_from, y_to) {
+  context.beginPath();
+  context.strokeStyle = color;
+  context.lineWidth = 1.0;
+  context.lineCap = "square";
+  context.globalCompositeOperation = "copy";
+  context.moveTo(x, y_from);
+  context.lineTo(x, y_to);
+  context.closePath();
+  context.stroke();
+  return y_to;
+}
+
+function drawGraph(memoryUsage) {
+  var canvasElement = document.getElementById("system-monitor-canvas");
+  var consoleElement = document.getElementById("system-monitor-console");
+  var context = canvasElement.getContext("2d")
+  var y = canvasElement.height;
+  var x = 0;
+
+  context.fillStyle = "black";
+  context.fillRect(0, 0, canvasElement.width, canvasElement.height);
+  context.globalCompositeOperation = "copy";
+
+  gMemoryArray.shift();
+  gMemoryArray.push(memoryUsage);
+  
+  var output = [];
+  context.save();
+  gMemoryArray.forEach(function(aMemory) {
+    var y_from = canvasElement.height;
+    var y_to = y_from;
+    if (aMemory == undefined) {
+      drawLine(context, "black", x, y_from, 0);
+      output.push('undefined');
+    } else {
+      var total = aMemory.total;
+      y_to = y_to - (y * aMemory.user / total);
+      y_from = drawLine(context, "aqua", x, y_from, y_to);
+      y_to = y_to - (y * (total-aMemory.user) / total);
+      drawLine(context, "black", x, y_from, y_to);
+/*
+      output.push([aMemory.total / (1024*1024),
+                   aMemory.used / (1024*1024),
+                   aMemory.free / (1024*1024),
+                   aMemory.shared / (1024*1024),
+                   aMemory.buffer / (1024*1024),
+                   aMemory.cached / (1024*1024),
+                   aMemory.user / (1024*1024),
+                   aMemory.locked / (1024*1024)]
+                     .map(function(aValue) {
+                       return parseInt(aValue);
+                     })
+                     .join('/'));
+*/
+    }
+    x = x + 2;
+  });
+  context.restore();
+  consoleElement.innerHTML = output.join('\n');
+}
+
+-->
+</script>
+</head>
+<body>
+  <div>
+    <canvas id="system-monitor-canvas" width="48" height="20" />
+  </div>
+  <pre id="system-monitor-console"></pre>
+</body>
+</html>

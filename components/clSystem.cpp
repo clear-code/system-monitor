@@ -18,6 +18,8 @@
 #include "clICPU.h"
 #include "clCPU.h"
 #include "clCPUTime.h"
+#include "clIMemory.h"
+#include "clMemory.h"
 
 clSystem::clSystem()
      : mMonitors(nsnull)
@@ -189,6 +191,12 @@ clSystem::GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue)
         value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);
+    } else if (aTopic.Equals(NS_LITERAL_STRING("memory-usage"))) {
+        nsCOMPtr<clIMemory> memory;
+        NS_ADDREF(memory = new clMemory());
+        value = do_CreateInstance("@mozilla.org/variant;1");
+        const nsIID iid = memory->GetIID();
+        value->SetAsInterface(iid, memory);
     }
 
     NS_IF_ADDREF(*aValue = value);

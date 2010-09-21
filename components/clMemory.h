@@ -11,11 +11,12 @@
 #define CL_MEMORY_CID {0x32404cb9, 0x1d05, 0x4f80, {0x83, 0x88, 0x4f, 0x6a, 0xc2, 0x15, 0x76, 0x0b}}
 
 class clMemory : public clIMemory
-/*               , public nsISecurityCheckedComponent*/
+               , public nsISecurityCheckedComponent
 {
 public:
   NS_DECL_ISUPPORTS
   NS_DECL_CLIMEMORY
+  NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
   clMemory();
 

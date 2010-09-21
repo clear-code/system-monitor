@@ -7,7 +7,9 @@
 #include <glibtop/mem.h>
 #endif
 
-NS_IMPL_ISUPPORTS1_CI(clMemory, clIMemory)
+NS_IMPL_ISUPPORTS2_CI(clMemory,
+                      clIMemory,
+                      nsISecurityCheckedComponent)
 
 clMemory::clMemory()
 {
@@ -119,3 +121,37 @@ NS_IMETHODIMP clMemory::GetLocked(PRUint64 *aLocked)
 #endif
 }
 
+static char *
+cloneAllAccessString (void)
+{
+    static const char allAccessString[] = "allAccess";
+    return (char*)nsMemory::Clone(allAccessString, sizeof(allAccessString));
+}
+
+NS_IMETHODIMP
+clMemory::CanCreateWrapper(const nsIID * iid, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clMemory::CanCallMethod(const nsIID * iid, const PRUnichar *methodName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clMemory::CanGetProperty(const nsIID * iid, const PRUnichar *propertyName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clMemory::CanSetProperty(const nsIID * iid, const PRUnichar *propertyName, char **_retval NS_OUTPARAM)
+{
+    *_retval = cloneAllAccessString();
+    return NS_OK;
+}
