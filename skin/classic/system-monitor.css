@@ -1,4 +1,5 @@
-.system-monitor-cpu-usage-background {
+.system-monitor-cpu-usage-background,
+.system-monitor-memory-usage-background {
   border: 1px solid ThreeDShadow;
 }
 
@@ -12,7 +13,8 @@
 }
 
 .system-monitor-item + .system-monitor-item,
-.system-monitor-item + .system-monitor-splitter + .system-monitor-item {
+.system-monitor-item + .system-monitor-splitter + .system-monitor-item,
+toolbarpaletteitem[id^="wrapper-system-monitor-"] + toolbarpaletteitem[id^="wrapper-system-monitor-"] {
   margin-left: 1px;
 }
 
