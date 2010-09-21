@@ -362,17 +362,13 @@ Application.console.log([e, aContext, aColor, aX, aBeginY, aEndY]);
       if (aValue == undefined) {
         this.drawLine(context, this.colorBackground, x, y_from, 0);
       } else {
-        y_to = y_to - (y * Math.max(0, Math.min(1, this.getForegroundFactor(aValue))));
+        y_to = y_to - (y * Math.max(0, Math.min(1, aValue)));
         y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
         this.drawLine(context, this.colorBackground, x, y_from, y_to);
       }
       x = x + 2;
     }, this);
     context.restore();
-  },
-
-  getForegroundFactor : function(aValue) {
-    return aValue;
   },
 
   // clISystemMonitor
@@ -458,14 +454,12 @@ SystemMonitorMemoryItem.prototype = {
   itemId   : 'system-monitor-memory-usage',
   imageId  : 'system-monitor-memory-usage-backup',
   canvasId : 'system-monitor-memory-usage-canvas',
+  // clISystemMonitor
   monitor : function(aValue) {
     if (!(aValue instanceof Ci.clIMemory)) return;
     this.valueArray.shift();
-    this.valueArray.push(aValue);
+    this.valueArray.push(aValue.user / aValue.total);
     this.drawGraph();
-  },
-  getForegroundFactor : function(aValue) {
-    return aValue.user / aValue.total;
   }
 };
 
