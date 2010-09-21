@@ -15,6 +15,7 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
       fi
       XPCOM_LDFLAGS="-L$LIBXUL_SDK/lib"
       XPCOM_CFLAGS="-fshort-wchar"
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include"
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/sdk/include"
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/xpcom" # nsIVariant.h nsITimer.h
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/dom" # nsIScriptNameSpaceManager.h
