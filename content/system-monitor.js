@@ -1,5 +1,4 @@
 var SystemMonitorService = {
-  CPU_USAGE_ITEM : "system-monitor-cpu-usage",
   SPLITTER_CLASS : "system-monitor-splitter",
 
   TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
@@ -9,19 +8,15 @@ var SystemMonitorService = {
 
   initialized : false,
   resizing : false,
+  items : [],
 
   init : function() {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
 
-    this.addPrefListener(this);
-    this.onChangePref(this.domain+"cpu-usage.size");
-    this.onChangePref(this.domain+"cpu-usage.interval");
-    this.onChangePref(this.domain+"cpu-usage.color.background");
-    this.onChangePref(this.domain+"cpu-usage.color.foreground");
-
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
+    this.items = [
+      new SystemMonitorCPUItem()
+    ];
 
     this.updateToolbarMethods();
 
@@ -33,119 +28,7 @@ var SystemMonitorService = {
 
   destroy : function() {
     window.removeEventListener("unload", this, false);
-    this.removePrefListener(this);
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
     this.destroyToolbarItems();
-  },
-
-
-  // CPU usage graph
-  CPUUsageListening : false,
-  CPUUsageUpdateInterval : 1000,
-  CPUUsageSize : 48,
-  CPUColorForeground : "green",
-  CPUColorBackground : "black",
-  CPUTimeArray : [],
-
-  get CPUUsageItem() {
-    return document.getElementById(this.CPU_USAGE_ITEM);
-  },
-
-  get CPUUsageImage() {
-    return document.getElementById("system-monitor-cpu-usage-backup");
-  },
-
-  get CPUUsageCanvas() {
-    return document.getElementById("system-monitor-cpu-usage-canvas");
-  },
-
-  initCPUUsageItem : function() {
-    var item = this.CPUUsageItem;
-    if (!this.initialized ||
-        !item ||
-        this.CPUUsageListening)
-        return;
-
-    var canvas = this.CPUUsageCanvas;
-    canvas.style.width = (canvas.width = item.width = this.CPUUsageSize)+"px";
-    this.initCPUArray();
-    this.drawCPUUsageGraph();
-    window.system.addMonitor("cpu-usage", this, this.CPUUsageUpdateInterval);
-    this.CPUUsageListening = true;
-  },
-
-  destroyCPUUsageItem : function() {
-    var item = this.CPUUsageItem;
-    if (!this.initialized ||
-        !item ||
-        !this.CPUUsageListening)
-        return;
-
-    window.system.removeMonitor("cpu-usage", this);
-    this.CPUUsageListening = false;
-  },
-
-  updateCPUUsageItem : function() {
-    this.destroyCPUUsageItem();
-    this.initCPUUsageItem();
-  },
-
-  initCPUArray : function() {
-    var arraySize = parseInt(this.CPUUsageSize / 2);
-    if (this.CPUTimeArray.length < arraySize) {
-      while (this.CPUTimeArray.length < arraySize) {
-        this.CPUTimeArray.unshift(undefined);
-      }
-    } else {
-      this.CPUTimeArray = this.CPUTimeArray.slice(-arraySize);
-    }
-  },
-
-  drawLine : function(aContext, aColor, aX, aBeginY, aEndY) {
-    aContext.beginPath();
-    aContext.strokeStyle = aColor;
-    aContext.lineWidth = 1.0;
-    aContext.lineCap = "square";
-    aContext.globalCompositeOperation = "copy";
-    aContext.moveTo(aX, aBeginY);
-    aContext.lineTo(aX, aEndY);
-    aContext.closePath();
-    aContext.stroke();
-    return aEndY - 1;
-  },
-
-  drawCPUUsageGraph : function() {
-    var canvasElement = this.CPUUsageCanvas;
-    let context = canvasElement.getContext("2d")
-    let y = canvasElement.height;
-    let x = 0;
-
-    context.fillStyle = this.CPUColorBackground;
-    context.fillRect(0, 0, canvasElement.width, canvasElement.height);
-    context.globalCompositeOperation = "copy";
-
-    context.save();
-    this.CPUTimeArray.forEach(function(aUsage) {
-      let y_from = canvasElement.height;
-      let y_to = y_from;
-      if (aUsage == undefined) {
-        this.drawLine(context, this.CPUColorBackground, x, y_from, 0);
-      } else {
-        y_to = y_to - (y * aUsage);
-        y_from = this.drawLine(context, this.CPUColorForeground, x, y_from, y_to);
-        this.drawLine(context, this.CPUColorBackground, x, y_from, y_to);
-      }
-      x = x + 2;
-    }, this);
-    context.restore();
-  },
-
-  // clISystemMonitor
-  monitor : function(aUsage) {
-    this.CPUTimeArray.shift();
-    this.CPUTimeArray.push(aUsage);
-    this.drawCPUUsageGraph();
   },
 
 
@@ -177,12 +60,16 @@ var SystemMonitorService = {
   },
 
   initToolbarItems : function() {
-    this.initCPUUsageItem();
+    this.items.forEach(function(aItem) {
+      aItem.init();
+    });
     this.insertSplitters();
   },
 
   destroyToolbarItems : function() {
-    this.destroyCPUUsageItem();
+    this.items.forEach(function(aItem) {
+      aItem.destroy();
+    });
     this.removeSplitters();
   },
 
@@ -196,16 +83,19 @@ var SystemMonitorService = {
       var currentset = bar.currentSet;
       var buttons = currentset.replace(/__empty/, "").split(',');
 
-      if (!this.getPref(this.domain+this.CPU_USAGE_ITEM+".initialShow")) {
-        if (currentset.indexOf(this.CPU_USAGE_ITEM) < 0) {
+      this.items.forEach(function(aItem) {
+        if (this.getPref(this.domain+aItem.type+".initialShow"))
+          return;
+
+        if (currentset.indexOf(aItem.itemId) < 0) {
           if (currentset.indexOf("spring") < 0 &&
               currentset.indexOf("urlbar-container") < 0 &&
               currentset.indexOf("search-container") < 0)
             buttons.push("spring");
-          buttons.push(this.CPU_USAGE_ITEM);
+          buttons.push(aItem.itemId);
         }
-        this.setPref(this.domain+this.CPU_USAGE_ITEM+".initialShow", true);
-      }
+        this.setPref(this.domain+aItem.type+".initialShow", true);
+      }, this);
       currentset = bar.currentSet.replace(/__empty/, "");
       var newset = buttons.join(",");
       if (currentset != newset &&
@@ -227,16 +117,15 @@ var SystemMonitorService = {
   },
 
   insertSplitters : function() {
-    [
-      this.CPUUsageItem
-    ].forEach(function(aNode) {
-      if (!aNode) return;
-      if (aNode.previousSibling &&
-          aNode.previousSibling.localName != "splitter")
-        this.insertSplitterBefore(aNode);
-      if (aNode.nextSibling &&
-          aNode.nextSibling.localName != "splitter")
-        this.insertSplitterBefore(aNode.nextSibling);
+    this.items.forEach(function(aItem) {
+      var element = aItem.item;
+      if (!element) return;
+      if (element.previousSibling &&
+          element.previousSibling.localName != "splitter")
+        this.insertSplitterBefore(element);
+      if (element.nextSibling &&
+          element.nextSibling.localName != "splitter")
+        this.insertSplitterBefore(element.nextSibling);
     }, this);
   },
 
@@ -305,59 +194,6 @@ var SystemMonitorService = {
     }, 10, this);
   },
 
-
-  // preferences listener
-  onChangePref : function(aData) {
-    switch (aData) {
-      case "extensions.system-monitor@clear-code.com.cpu-usage.size":
-        this.CPUUsageSize = this.getPref(aData);
-        this.updateCPUUsageItem();
-        break;
-      case "extensions.system-monitor@clear-code.com.cpu-usage.interval":
-        this.CPUUsageUpdateInterval = this.getPref(aData);
-        this.updateCPUUsageItem();
-        break;
-      case "extensions.system-monitor@clear-code.com.cpu-usage.color.background":
-        this.CPUColorBackground = this.getPref(aData);
-        this.updateCPUUsageItem();
-        break;
-      case "extensions.system-monitor@clear-code.com.cpu-usage.color.foreground":
-        this.CPUColorForeground = this.getPref(aData);
-        this.updateCPUUsageItem();
-        break;
-    }
-  },
-
-  // nsIObserver
-  observe : function(aSubject, aTopic, aData) {
-    switch (aTopic) {
-      case "nsPref:changed":
-        this.onChangePref(aData);
-        break;
-
-      case this.TOOLBAR_RESIZE_BEGIN:
-        if (aSubject != window) break;
-        if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
-          let canvas = this.CPUUsageCanvas;
-          this.CPUUsageImage.src = canvas.toDataURL();
-          this.destroyCPUUsageItem();
-          canvas.style.width = (canvas.width = 1)+"px";
-        }
-        break;
-
-      case this.TOOLBAR_RESIZE_END:
-        if (aSubject != window) break;
-        if (aData.indexOf(this.CPU_USAGE_ITEM) > -1) {
-          this.setPref(
-            this.domain+"cpu-usage.size",
-            this.CPUUsageCanvas.parentNode.boxObject.width
-          );
-          this.CPUUsageImage.src = "";
-        }
-        break;
-    }
-  },
-
   ObserverService : Cc["@mozilla.org/observer-service;1"]
                       .getService(Ci.nsIObserverService),
 
@@ -374,5 +210,228 @@ var SystemMonitorService = {
   }
 };
 SystemMonitorService.__proto__ = window["piro.sakura.ne.jp"].prefs;
+
+
+function SystemMonitorItem()
+{
+}
+SystemMonitorItem.prototype = {
+  __proto__ : SystemMonitorService,
+  item : null,
+  itemId : null,
+  type : null,
+  init : function() {
+  },
+  destroy : function() {
+  }
+};
+
+
+function SystemMonitorSimpleGraphItem()
+{
+}
+SystemMonitorSimpleGraphItem.prototype = {
+  __proto__ : SystemMonitorItem.prototype,
+
+  type     : '',
+  itemId   : '',
+  imageId  : '',
+  canvasId : '',
+
+  listening : false,
+  interval : 1000,
+  size : 48,
+  colorForeground : "green",
+  colorBackground : "black",
+  valueArray : [],
+
+  get item() {
+    return document.getElementById(this.itemId);
+  },
+
+  get image() {
+    return document.getElementById(this.imageId);
+  },
+
+  get canvas() {
+    return document.getElementById(this.canvasId);
+  },
+
+  init : function() {
+    var item = this.item;
+    if (!this.initialized ||
+        !item ||
+        this.listening)
+        return;
+
+    this.size = this.getPref(this.domain+this.type+".size");
+    this.interval = this.getPref(this.domain+this.type+".interval");
+    this.colorBackground = this.getPref(this.domain+this.type+".color.background");
+    this.colorForeground = this.getPref(this.domain+this.type+".color.foreground");
+
+    var canvas = this.canvas;
+    canvas.style.width = (canvas.width = item.width = this.size)+"px";
+    this.initValueArray();
+    this.drawGraph();
+
+    window.system.addMonitor(this.type, this, this.interval);
+
+    this.addPrefListener(this);
+
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
+
+    this.listening = true;
+  },
+
+  destroy : function() {
+    var item = this.item;
+    if (!this.initialized ||
+        !item ||
+        !this.listening)
+        return;
+
+    window.system.removeMonitor(this.type, this);
+
+    this.removePrefListener(this);
+
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
+
+    this.listening = false;
+  },
+
+  update : function() {
+    this.destroy();
+    this.init();
+  },
+
+  initValueArray : function() {
+    var arraySize = parseInt(this.size / 2);
+    if (this.valueArray.length < arraySize) {
+      while (this.valueArray.length < arraySize) {
+        this.valueArray.unshift(undefined);
+      }
+    } else {
+      this.valueArray = this.valueArray.slice(-arraySize);
+    }
+  },
+
+  drawLine : function(aContext, aColor, aX, aBeginY, aEndY) {
+    aContext.beginPath();
+    aContext.strokeStyle = aColor;
+    aContext.lineWidth = 1.0;
+    aContext.lineCap = "square";
+    aContext.globalCompositeOperation = "copy";
+    aContext.moveTo(aX, aBeginY);
+    aContext.lineTo(aX, aEndY);
+    aContext.closePath();
+    aContext.stroke();
+    return aEndY - 1;
+  },
+
+  drawGraph : function() {
+    var canvasElement = this.canvas;
+    let context = canvasElement.getContext("2d")
+    let y = canvasElement.height;
+    let x = 0;
+
+    context.fillStyle = this.colorBackground;
+    context.fillRect(0, 0, canvasElement.width, canvasElement.height);
+    context.globalCompositeOperation = "copy";
+
+    context.save();
+    this.valueArray.forEach(function(aValue) {
+      let y_from = canvasElement.height;
+      let y_to = y_from;
+      if (aValue == undefined) {
+        this.drawLine(context, this.colorBackground, x, y_from, 0);
+      } else {
+        y_to = y_to - (y * this.getForegroundFactor(aValue));
+        y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
+        this.drawLine(context, this.colorBackground, x, y_from, y_to);
+      }
+      x = x + 2;
+    }, this);
+    context.restore();
+  },
+
+  getForegroundFactor : function(aValue) {
+    return aValue;
+  },
+
+  // clISystemMonitor
+  monitor : function(aValue) {
+    this.valueArray.shift();
+    this.valueArray.push(aValue);
+    this.drawGraph();
+  },
+
+  // preferences listener
+  onChangePref : function(aData) {
+    switch (aData.replace(this.domain+this.type+'.', '')) {
+      case "size":
+        this.size = this.getPref(aData);
+        this.update();
+        break;
+      case "interval":
+        this.interval = this.getPref(aData);
+        this.update();
+        break;
+      case "color.background":
+        this.colorBackground = this.getPref(aData);
+        this.update();
+        break;
+      case "color.foreground":
+        this.colorForeground = this.getPref(aData);
+        this.update();
+        break;
+    }
+  },
+
+  // nsIObserver
+  observe : function(aSubject, aTopic, aData) {
+    switch (aTopic) {
+      case "nsPref:changed":
+        this.onChangePref(aData);
+        break;
+
+      case this.TOOLBAR_RESIZE_BEGIN:
+        if (aSubject != window) break;
+        if (aData.indexOf(this.itemId) > -1) {
+          let canvas = this.canvas;
+          this.image.src = canvas.toDataURL();
+          this.destroy();
+          canvas.style.width = (canvas.width = 1)+"px";
+        }
+        break;
+
+      case this.TOOLBAR_RESIZE_END:
+        if (aSubject != window) break;
+        if (aData.indexOf(this.itemId) > -1) {
+          this.setPref(
+            this.domain+this.type+".size",
+            this.canvas.parentNode.boxObject.width
+          );
+          this.image.src = "";
+          this.init();
+        }
+        break;
+    }
+  }
+};
+
+
+function SystemMonitorCPUItem()
+{
+}
+SystemMonitorCPUItem.prototype = {
+  __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  type     : 'cpu-usage',
+  itemId   : 'system-monitor-cpu-usage',
+  imageId  : 'system-monitor-cpu-usage-backup',
+  canvasId : 'system-monitor-cpu-usage-canvas'
+};
+
 
 window.addEventListener("load", SystemMonitorService, false);
