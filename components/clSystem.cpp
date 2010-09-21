@@ -15,7 +15,6 @@
 #include <glibtop/global.h>
 #endif
 
-#include "clISystem.h"
 #include "clICPU.h"
 #include "clCPU.h"
 #include "clCPUTime.h"
