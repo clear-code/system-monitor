@@ -27,6 +27,21 @@
       <label class="toolbarbutton-text"
              value="&toolbar.cpuUsage.label;"/>
     </toolbaritem>
+    <toolbaritem id="system-monitor-memory-usage"
+                 class="system-monitor-item"
+                 tooltiptext="&toolbar.memoryUsage.tooltip;"
+                 orient="vertical">
+      <stack>
+        <hbox class="system-monitor-memory-usage-background"
+              flex="1"/>
+        <image id="system-monitor-memory-usage-backup" flex="1"/>
+        <html:canvas id="system-monitor-memory-usage-canvas"
+                     width="48"
+                     height="24"/>
+      </stack>
+      <label class="toolbarbutton-text"
+             value="&toolbar.memoryUsage.label;"/>
+    </toolbaritem>
   </toolbarpalette>
 
 </overlay>

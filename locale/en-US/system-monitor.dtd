@@ -1,6 +1,9 @@
 <!ENTITY toolbar.cpuUsage.label   "CPU Usage">
 <!ENTITY toolbar.cpuUsage.tooltip "CPU Usage">
 
+<!ENTITY toolbar.memoryUsage.label   "Memory Usage">
+<!ENTITY toolbar.memoryUsage.tooltip "Memory Usage">
+
 
 <!ENTITY config.title "System Monitor Configuration">
 
@@ -11,3 +14,12 @@
 <!ENTITY config.cpuUsage.color.background "Background:">
 <!ENTITY config.cpuUsage.color.foreground "Foreground:">
 <!ENTITY config.cpuUsage.color.reset "Reset">
+
+<!ENTITY config.memoryUsage.caption "Memory usage">
+
+<!ENTITY config.memoryUsage.interval.before "Update graph every ">
+<!ENTITY config.memoryUsage.interval.after "msec.">
+<!ENTITY config.memoryUsage.color.background "Background:">
+<!ENTITY config.memoryUsage.color.foreground "Foreground:">
+<!ENTITY config.memoryUsage.color.reset "Reset">
+

@@ -10,3 +10,9 @@
   margin: 0 -4px;
   max-width: 8px;
 }
+
+.system-monitor-item + .system-monitor-item,
+.system-monitor-item + .system-monitor-splitter + .system-monitor-item {
+  margin-left: 1px;
+}
+

@@ -1,5 +1,7 @@
 <!ENTITY toolbar.cpuUsage.label   "CPU使用率">
 <!ENTITY toolbar.cpuUsage.tooltip "CPU使用率">
+<!ENTITY toolbar.memoryUsage.label   "メモリ使用率">
+<!ENTITY toolbar.memoryUsage.tooltip "メモリ使用率">
 
 
 <!ENTITY config.title "システムモニターの設定">
@@ -11,3 +13,12 @@
 <!ENTITY config.cpuUsage.color.background "背景色：">
 <!ENTITY config.cpuUsage.color.foreground "前景色：">
 <!ENTITY config.cpuUsage.color.reset "リセット">
+
+<!ENTITY config.memoryUsage.caption "メモリ使用率">
+
+<!ENTITY config.memoryUsage.interval.before "グラフの更新間隔：">
+<!ENTITY config.memoryUsage.interval.after "ミリ秒">
+<!ENTITY config.memoryUsage.color.background "背景色：">
+<!ENTITY config.memoryUsage.color.foreground "前景色：">
+<!ENTITY config.memoryUsage.color.reset "リセット">
+

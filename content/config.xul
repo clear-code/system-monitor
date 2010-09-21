@@ -16,6 +16,15 @@
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
+                name="extensions.system-monitor@clear-code.com.memory-usage.interval"
+                type="int"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.background"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.background"
+                type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
+                type="string"/>
   </preferences>
 
   <groupbox orient="vertical">
@@ -55,6 +64,52 @@
                        type="button"
                        preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
           <button label="&config.cpuUsage.color.reset;"
+                  oncommand="resetValue(this.previousSibling, 'color');"/>
+        </row>
+      </rows>
+    </grid>
+  </groupbox>
+
+  <groupbox orient="vertical">
+    <caption label="&config.memoryUsage.caption;"/>
+    <hbox align="center">
+      <label value="&config.memoryUsage.interval.before;"
+             control="memoryUsage.interval-textbox"/>
+      <textbox id="memoryUsage.interval-textbox"
+               preference="extensions.system-monitor@clear-code.com.memory-usage.interval"
+               style="width: 5em;"
+               type="number"
+               min="100"
+
+               increment="1"/>
+      <label value="&config.memoryUsage.interval.after;"
+             control="memoryUsage.interval-textbox"/>
+    </hbox>
+    <grid>
+      <columns>
+        <column/>
+        <column/>
+        <column/>
+      </columns>
+      <rows>
+        <row align="center">
+          <label value="&config.memoryUsage.color.background;"
+                 control="memoryUsage.color.background-colorpicker"/>
+          <colorpicker id="memoryUsage.color.background-colorpicker"
+
+                       type="button"
+                       preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
+          <button label="&config.memoryUsage.color.reset;"
+                  oncommand="resetValue(this.previousSibling, 'color');"/>
+        </row>
+        <row align="center">
+          <label value="&config.memoryUsage.color.foreground;"
+                 control="memoryUsage.color.foreground-colorpicker"/>
+          <colorpicker id="memoryUsage.color.foreground-colorpicker"
+                       type="button"
+                       preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
+          <button label="&config.memoryUsage.color.reset;"
+
                   oncommand="resetValue(this.previousSibling, 'color');"/>
         </row>
       </rows>

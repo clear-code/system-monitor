@@ -30,4 +30,14 @@
                    height="24"/>
     </hbox>
   </stack>
+  <stack id="system-monitor-memory-usage">
+    <hbox class="system-monitor-memory-usage-background"
+          flex="1"/>
+    <image id="system-monitor-memory-usage-backup" flex="1"/>
+    <hbox>
+      <html:canvas id="system-monitor-memory-usage-canvas"
+                   width="48"
+                   height="24"/>
+    </hbox>
+  </stack>
 </window> 

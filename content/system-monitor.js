@@ -15,7 +15,8 @@ var SystemMonitorService = {
     window.addEventListener("unload", this, false);
 
     this.items = [
-      new SystemMonitorCPUItem()
+      new SystemMonitorCPUItem(),
+      new SystemMonitorMemoryItem()
     ];
 
     this.updateToolbarMethods();
@@ -431,6 +432,20 @@ SystemMonitorCPUItem.prototype = {
   itemId   : 'system-monitor-cpu-usage',
   imageId  : 'system-monitor-cpu-usage-backup',
   canvasId : 'system-monitor-cpu-usage-canvas'
+};
+
+function SystemMonitorMemoryItem()
+{
+}
+SystemMonitorMemoryItem.prototype = {
+  __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  type     : 'memory-usage',
+  itemId   : 'system-monitor-memory-usage',
+  imageId  : 'system-monitor-memory-usage-backup',
+  canvasId : 'system-monitor-memory-usage-canvas',
+  getForegroundFactor : function(aValue) {
+    return aValue.user / aValue.total;
+  }
 };
 
 
