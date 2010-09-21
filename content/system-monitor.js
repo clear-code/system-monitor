@@ -458,6 +458,12 @@ SystemMonitorMemoryItem.prototype = {
   itemId   : 'system-monitor-memory-usage',
   imageId  : 'system-monitor-memory-usage-backup',
   canvasId : 'system-monitor-memory-usage-canvas',
+  monitor : function(aValue) {
+    if (!(aValue instanceof Ci.clIMemory)) return;
+    this.valueArray.shift();
+    this.valueArray.push(aValue);
+    this.drawGraph();
+  },
   getForegroundFactor : function(aValue) {
     return aValue.user / aValue.total;
   }
