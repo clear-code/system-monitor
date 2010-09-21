@@ -240,6 +240,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   canvasId : '',
 
   listening : false,
+  observing : false,
   interval : 1000,
   size : 48,
   colorForeground : "green",
@@ -276,11 +277,8 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.drawGraph();
 
     window.system.addMonitor(this.type, this, this.interval);
-
     this.addPrefListener(this);
-
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
+    this.startObserve();
 
     this.listening = true;
   },
@@ -293,13 +291,24 @@ SystemMonitorSimpleGraphItem.prototype = {
         return;
 
     window.system.removeMonitor(this.type, this);
-
     this.removePrefListener(this);
-
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
+    this.stopObserve();
 
     this.listening = false;
+  },
+
+  startObserve : function() {
+    if (this.observing) return;
+    this.observing = true;
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
+  },
+
+  stopObserve : function() {
+    if (!this.observing) return;
+    this.observing = false;
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
   },
 
   update : function() {
@@ -319,6 +328,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   drawLine : function(aContext, aColor, aX, aBeginY, aEndY) {
+try{
     aContext.beginPath();
     aContext.strokeStyle = aColor;
     aContext.lineWidth = 1.0;
@@ -328,6 +338,10 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.lineTo(aX, aEndY);
     aContext.closePath();
     aContext.stroke();
+}
+catch(e){
+Application.console.log([e, aContext, aColor, aX, aBeginY, aEndY]);
+}
     return aEndY - 1;
   },
 
@@ -348,7 +362,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       if (aValue == undefined) {
         this.drawLine(context, this.colorBackground, x, y_from, 0);
       } else {
-        y_to = y_to - (y * this.getForegroundFactor(aValue));
+        y_to = y_to - (y * Math.max(0, Math.min(1, this.getForegroundFactor(aValue))));
         y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
         this.drawLine(context, this.colorBackground, x, y_from, y_to);
       }
@@ -398,23 +412,24 @@ SystemMonitorSimpleGraphItem.prototype = {
         break;
 
       case this.TOOLBAR_RESIZE_BEGIN:
-        if (aSubject != window) break;
+        if (aSubject != window || !this.item) break;
         if (aData.indexOf(this.itemId) > -1) {
           let canvas = this.canvas;
           this.image.src = canvas.toDataURL();
           this.destroy();
+          this.startObserve();
           canvas.style.width = (canvas.width = 1)+"px";
         }
         break;
 
       case this.TOOLBAR_RESIZE_END:
-        if (aSubject != window) break;
+        if (aSubject != window || !this.item) break;
         if (aData.indexOf(this.itemId) > -1) {
+          this.image.src = "";
           this.setPref(
             this.domain+this.type+".size",
             this.canvas.parentNode.boxObject.width
           );
-          this.image.src = "";
           this.init();
         }
         break;
@@ -443,6 +458,11 @@ SystemMonitorMemoryItem.prototype = {
   itemId   : 'system-monitor-memory-usage',
   imageId  : 'system-monitor-memory-usage-backup',
   canvasId : 'system-monitor-memory-usage-canvas',
+  monitor : function(aValue) {
+    this.valueArray.shift();
+    this.valueArray.push(aValue);
+    this.drawGraph();
+  },
   getForegroundFactor : function(aValue) {
     return aValue.user / aValue.total;
   }
