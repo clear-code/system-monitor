@@ -29,8 +29,10 @@ public:
 private:
   static clSystem *gSystem;
   nsAutoVoidArray *mMonitors;
+  nsCOMPtr<clICPU> mCPU;
 
   nsresult Init();
+  nsresult GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue);
 };
 
 #endif /* __CL_SYSTEM_H__ */

@@ -29,7 +29,6 @@ class MonitorData
 public:
     MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer);
     virtual ~MonitorData();
-    nsCOMPtr<clICPU> mCPU;
     nsString mTopic;
     nsCOMPtr<clISystemMonitor> mMonitor;
     nsCOMPtr<nsITimer> mTimer;
@@ -37,7 +36,6 @@ public:
 
 MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer)
 {
-    NS_ADDREF(mCPU = new clCPU());
     mTopic.Assign(aTopic);
     NS_ADDREF(mMonitor = aMonitor);
     NS_ADDREF(mTimer = aTimer);
@@ -48,7 +46,6 @@ MonitorData::~MonitorData()
     mTimer->Cancel();
     NS_RELEASE(mMonitor);
     NS_RELEASE(mTimer);
-    NS_RELEASE(mCPU);
 }
 
 clSystem::~clSystem()
@@ -62,6 +59,9 @@ clSystem::~clSystem()
         }
         delete mMonitors;
         mMonitors = 0;
+    }
+    if (mCPU) {
+      NS_RELEASE(mCPU);
     }
 }
 
@@ -93,6 +93,7 @@ clSystem::Init()
 #ifdef HAVE_LIBGTOP2
     glibtop_init();
 #endif
+    NS_ADDREF(mCPU = new clCPU());
     return NS_OK;
 }
 
@@ -170,19 +171,21 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
     return NS_OK;
 }
 
-static nsresult
-getMonitoringObject(clICPU *cpu, const nsAString &aTopic, nsIVariant **aValue)
+NS_IMETHODIMP
+clSystem::GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue)
 {
     nsCOMPtr<nsIWritableVariant> value;
 
     if (aTopic.Equals(NS_LITERAL_STRING("cpu-usage"))) {
         double usage;
-        cpu->GetUsage(&usage);
+        getter_AddRefs(mCPU);
+        mCPU->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
     } else if (aTopic.Equals(NS_LITERAL_STRING("cpu-time"))) {
         nsCOMPtr<clICPUTime> cpuTime;
-        cpu->GetCurrentTime(getter_AddRefs(cpuTime));
+        getter_AddRefs(mCPU);
+        mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);
@@ -199,7 +202,7 @@ clSystem::Timeout(nsITimer *aTimer, void *aClosure)
     MonitorData *data = static_cast<MonitorData*>(aClosure);
 
     nsCOMPtr<nsIVariant> value;
-    getMonitoringObject(data->mCPU, data->mTopic, getter_AddRefs(value));
+    gSystem->GetMonitoringObject(data->mTopic, getter_AddRefs(value));
 
     data->mMonitor->Monitor(value);
 }
