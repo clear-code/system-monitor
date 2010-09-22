@@ -17,7 +17,6 @@ class clSystem : public clISystem
 public:
   static clSystem *GetInstance();
   static clSystem *GetService();
-  static void Timeout(nsITimer *aTimer, void *aClosure);
 
   clSystem();
   virtual ~clSystem();
@@ -26,13 +25,14 @@ public:
   NS_DECL_CLISYSTEM
   NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
-private:
   static clSystem *gSystem;
+  nsresult GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue);
+
+private:
   nsAutoVoidArray *mMonitors;
   nsCOMPtr<clICPU> mCPU;
 
   nsresult Init();
-  nsresult GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue);
 };
 
 #endif /* __CL_SYSTEM_H__ */

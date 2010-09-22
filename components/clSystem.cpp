@@ -26,11 +26,16 @@ clSystem::clSystem()
 {
 }
 
-class MonitorData
+
+class MonitorData : public nsITimerCallback
 {
 public:
     MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer);
     virtual ~MonitorData();
+
+    NS_DECL_ISUPPORTS
+    NS_DECL_NSITIMERCALLBACK
+
     nsString mTopic;
     nsCOMPtr<clISystemMonitor> mMonitor;
     nsCOMPtr<nsITimer> mTimer;
@@ -49,6 +54,22 @@ MonitorData::~MonitorData()
     NS_RELEASE(mMonitor);
     NS_RELEASE(mTimer);
 }
+
+/* nsITimerCallback */
+NS_IMETHODIMP
+MonitorData::Notify(nsITimer *aTimer)
+{
+    nsCOMPtr<nsIVariant> value;
+    clSystem::gSystem->GetMonitoringObject(mTopic, getter_AddRefs(value));
+
+    mMonitor->Monitor(value);
+
+    return NS_OK;
+}
+
+NS_IMPL_ISUPPORTS1(MonitorData,
+                   nsITimerCallback)
+
 
 clSystem::~clSystem()
 {
@@ -128,10 +149,9 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     data = new MonitorData(aTopic, aMonitor, timer);
     mMonitors->AppendElement(data);
 
-    rv = timer->InitWithFuncCallback(clSystem::Timeout,
-                                     (void*)data,
-                                     aInterval,
-                                     nsITimer::TYPE_REPEATING_SLACK);
+    rv = timer->InitWithCallback(data,
+                                 aInterval,
+                                 nsITimer::TYPE_REPEATING_SLACK);
     NS_ENSURE_SUCCESS(rv, rv);
 
     return NS_OK;
@@ -202,17 +222,6 @@ clSystem::GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue)
     NS_IF_ADDREF(*aValue = value);
 
     return value ? NS_OK : NS_ERROR_FAILURE;
-}
-
-void
-clSystem::Timeout(nsITimer *aTimer, void *aClosure)
-{
-    MonitorData *data = static_cast<MonitorData*>(aClosure);
-
-    nsCOMPtr<nsIVariant> value;
-    gSystem->GetMonitoringObject(data->mTopic, getter_AddRefs(value));
-
-    data->mMonitor->Monitor(value);
 }
 
 static char *
