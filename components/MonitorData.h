@@ -3,6 +3,7 @@
 
 #include "clISystem.h"
 
+#include <nsString.h>
 #include <nsITimer.h>
 #include <nsCOMPtr.h>
 
