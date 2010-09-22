@@ -39,6 +39,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zc:wchar_t-"
 				Optimization="0"
 				AdditionalIncludeDirectories="C:\xulrunner\include;c:\xulrunner\include\dom;c:\xulrunner\include\xpcom;C:\xulrunner\include\caps;C:\xulrunner\sdk\include"
 				PreprocessorDefinitions="XP_WIN"
@@ -113,6 +114,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/Zc:wchar_t-"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="c:\xulrunner\include;c:\xulrunner\include\dom;c:\xulrunner\include\xpcom;C:\xulrunner\include\caps;C:\xulrunner\sdk\include"
