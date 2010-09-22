@@ -4,7 +4,6 @@
 #include "clISystem.h"
 
 #include <nsISecurityCheckedComponent.h>
-#include <nsVoidArray.h>
 #include <nsITimer.h>
 #include <nsCOMPtr.h>
 #include <nsCOMArray.h>
