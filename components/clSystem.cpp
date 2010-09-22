@@ -4,7 +4,6 @@
 
 #include "clSystem.h"
 #include "MonitorData.h"
-#include "MonitorData.cpp"
 
 #include <nsIClassInfoImpl.h>
 #include <nsComponentManagerUtils.h>
