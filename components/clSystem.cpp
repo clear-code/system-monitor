@@ -106,7 +106,8 @@ NS_IMPL_ISUPPORTS2_CI(clSystem,
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU * *aCPU)
 {
-    return NS_ERROR_NOT_IMPLEMENTED;
+    *aCPU = mCPU;
+    return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -166,7 +167,8 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
     while ((found = findMonitorIndex(mMonitors, aMonitor)) != -1) {
         MonitorData *data;
         data = static_cast<MonitorData*>(mMonitors->ElementAt(found));
-        mMonitors->RemoveElementAt(found);
+        mMonitors->
+        RemoveElementAt(found);
         delete data;
     }
 
