@@ -27,15 +27,11 @@ clSystem::clSystem()
 
 clSystem::~clSystem()
 {
-    if (mMonitors) {
-        PRInt32 count = mMonitors->Count();
-        for (PRInt32 i = 0; i < count; i++) {
-            MonitorData *data = static_cast<MonitorData*>(mMonitors->ElementAt(i));
-            delete data;
-            mMonitors->RemoveElementAt(i);
-        }
-        delete mMonitors;
-        mMonitors = 0;
+    PRInt32 count = mMonitors.Count();
+    for (PRInt32 i = 0; i < count; i++) {
+        MonitorData *data = static_cast<MonitorData*>(mMonitors.ObjectAt(i));
+        delete data;
+        mMonitors.RemoveObjectAt(i);
     }
     if (mCPU) {
       NS_RELEASE(mCPU);
@@ -90,12 +86,6 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
 {
     MonitorData *data;
 
-    if (!mMonitors) {
-        mMonitors = new nsAutoVoidArray();
-        if (nsnull == mMonitors)
-            return NS_ERROR_OUT_OF_MEMORY;
-    }
-
     nsresult rv;
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
     NS_ENSURE_SUCCESS(rv, rv);
@@ -103,7 +93,7 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     NS_ENSURE_SUCCESS(rv, rv);
 
     data = new MonitorData(aTopic, aMonitor, timer, system);
-    mMonitors->AppendElement(data);
+    mMonitors.AppendObject(data);
 
     rv = timer->InitWithCallback(data,
                                  aInterval,
@@ -114,14 +104,14 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
 }
 
 static PRInt32
-findMonitorIndex(nsAutoVoidArray *monitors, clISystemMonitor *aMonitor)
+findMonitorIndex(nsCOMArray<nsITimerCallback>&monitors, clISystemMonitor *aMonitor)
 {
-    PRInt32 count = monitors->Count();
+    PRInt32 count = monitors.Count();
     if (count == 0)
         return -1;
 
     for (PRInt32 i = 0; i < count; i++) {
-        MonitorData *data = static_cast<MonitorData*>(monitors->ElementAt(i));
+        MonitorData *data = static_cast<MonitorData*>(monitors.ObjectAt(i));
         if (data->mMonitor == aMonitor) {
             return i;
         }
@@ -132,18 +122,15 @@ findMonitorIndex(nsAutoVoidArray *monitors, clISystemMonitor *aMonitor)
 NS_IMETHODIMP
 clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
 {
-    if (!mMonitors)
-        return NS_OK;
-
-    PRInt32 count = mMonitors->Count();
+    PRInt32 count = mMonitors.Count();
     if (count == 0)
         return NS_OK;
 
     PRInt32 found;
     while ((found = findMonitorIndex(mMonitors, aMonitor)) != -1) {
         MonitorData *data;
-        data = static_cast<MonitorData*>(mMonitors->ElementAt(found));
-        mMonitors->RemoveElementAt(found);
+        data = static_cast<MonitorData*>(mMonitors.ObjectAt(found));
+        mMonitors.RemoveObjectAt(found);
         delete data;
     }
 

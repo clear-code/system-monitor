@@ -7,6 +7,7 @@
 #include <nsVoidArray.h>
 #include <nsITimer.h>
 #include <nsCOMPtr.h>
+#include <nsCOMArray.h>
 
 #define CL_SYSTEM_CONTRACT_ID "@clear-code.com/system;1"
 #define CL_SYSTEM_CID {0x6f8ad6ae, 0x05d8, 0x441e, {0xa8, 0xe9, 0x51, 0x53, 0xfc, 0xa9, 0x4c, 0x48}}
@@ -27,7 +28,7 @@ public:
 
 private:
   static clSystem *gSystem;
-  nsAutoVoidArray *mMonitors;
+  nsCOMArray<nsITimerCallback> mMonitors;
   nsCOMPtr<clICPU> mCPU;
 
   nsresult Init();
