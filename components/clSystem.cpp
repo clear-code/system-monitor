@@ -19,9 +19,6 @@
 
 #include "clICPU.h"
 #include "clCPU.h"
-#include "clCPUTime.h"
-#include "clIMemory.h"
-#include "clMemory.h"
 
 clSystem::clSystem()
      : mMonitors(nsnull)
@@ -102,8 +99,10 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     nsresult rv;
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
     NS_ENSURE_SUCCESS(rv, rv);
+    nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
+    NS_ENSURE_SUCCESS(rv, rv);
 
-    data = new MonitorData(aTopic, aMonitor, timer);
+    data = new MonitorData(aTopic, aMonitor, timer, system);
     mMonitors->AppendElement(data);
 
     rv = timer->InitWithCallback(data,
@@ -150,35 +149,6 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
     }
 
     return NS_OK;
-}
-
-NS_IMETHODIMP
-clSystem::GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue)
-{
-    nsCOMPtr<nsIWritableVariant> value;
-
-    if (aTopic.Equals(NS_LITERAL_STRING("cpu-usage"))) {
-        double usage;
-        mCPU->GetUsage(&usage);
-        value = do_CreateInstance("@mozilla.org/variant;1");
-        value->SetAsDouble(usage);
-    } else if (aTopic.Equals(NS_LITERAL_STRING("cpu-time"))) {
-        nsCOMPtr<clICPUTime> cpuTime;
-        mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
-        value = do_CreateInstance("@mozilla.org/variant;1");
-        const nsIID iid = cpuTime->GetIID();
-        value->SetAsInterface(iid, cpuTime);
-    } else if (aTopic.Equals(NS_LITERAL_STRING("memory-usage"))) {
-        nsCOMPtr<clIMemory> memory;
-        NS_ADDREF(memory = new clMemory());
-        value = do_CreateInstance("@mozilla.org/variant;1");
-        const nsIID iid = memory->GetIID();
-        value->SetAsInterface(iid, memory);
-    }
-
-    NS_IF_ADDREF(*aValue = value);
-
-    return value ? NS_OK : NS_ERROR_FAILURE;
 }
 
 static char *

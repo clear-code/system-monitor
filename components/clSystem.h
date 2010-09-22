@@ -26,7 +26,6 @@ public:
   NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
   static clSystem *gSystem;
-  nsresult GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue);
 
 private:
   nsAutoVoidArray *mMonitors;
