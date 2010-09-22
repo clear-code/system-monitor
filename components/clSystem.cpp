@@ -29,8 +29,6 @@ clSystem::~clSystem()
 {
     PRInt32 count = mMonitors.Count();
     for (PRInt32 i = 0; i < count; i++) {
-        MonitorData *data = static_cast<MonitorData*>(mMonitors.ObjectAt(i));
-        delete data;
         mMonitors.RemoveObjectAt(i);
     }
     if (mCPU) {
@@ -84,15 +82,13 @@ clSystem::GetCpu(clICPU * *aCPU)
 NS_IMETHODIMP
 clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
 {
-    MonitorData *data;
-
     nsresult rv;
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
     NS_ENSURE_SUCCESS(rv, rv);
     nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
     NS_ENSURE_SUCCESS(rv, rv);
 
-    data = new MonitorData(aTopic, aMonitor, timer, system);
+    nsCOMPtr<nsITimerCallback> data = new MonitorData(aTopic, aMonitor, timer, system);
     mMonitors.AppendObject(data);
 
     rv = timer->InitWithCallback(data,
@@ -128,10 +124,7 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
 
     PRInt32 found;
     while ((found = findMonitorIndex(mMonitors, aMonitor)) != -1) {
-        MonitorData *data;
-        data = static_cast<MonitorData*>(mMonitors.ObjectAt(found));
         mMonitors.RemoveObjectAt(found);
-        delete data;
     }
 
     return NS_OK;
