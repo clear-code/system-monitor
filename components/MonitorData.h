@@ -16,12 +16,13 @@ public:
     NS_DECL_ISUPPORTS
     NS_DECL_NSITIMERCALLBACK
 
-    nsString mTopic;
     nsCOMPtr<clISystemMonitor> mMonitor;
+
+private:
+    nsString mTopic;
     nsCOMPtr<clISystem> mSystem;
     nsCOMPtr<nsITimer> mTimer;
 
-private:
     nsresult GetMonitoringObject(nsIVariant **aValue);
 };
 
