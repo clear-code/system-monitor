@@ -8,6 +8,18 @@ CLEANFILES = 			\
 
 noinst_LTLIBRARIES = clSystemMonitor.la
 
+if PLATFORM_WINNT
+platform_sources =
+endif
+
+if PLATFORM_DARWIN
+platform_sources =
+endif
+
+if PLATFORM_LINUX
+platform_sources =
+endif
+
 clSystemMonitor_la_SOURCES = 	\
 	$(XPT_FILES)		\
 	$(INTERFACE_FILES)	\
@@ -19,7 +31,8 @@ clSystemMonitor_la_SOURCES = 	\
 	clMemory.cpp		\
 	clSystem.cpp		\
 	clSystem.h		\
-	clSystemModule.cpp
+	clSystemModule.cpp	\
+	$(platform_sources)
 
 clSystemMonitor_la_LIBADD = 	\
 	$(XPCOM_LIBS)		\
