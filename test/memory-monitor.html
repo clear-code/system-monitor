@@ -54,9 +54,9 @@ function drawGraph(memoryUsage) {
       output.push('undefined');
     } else {
       var total = aMemory.total;
-      y_to = y_to - (y * aMemory.user / total);
+      y_to = y_to - (y * aMemory.used / total);
       y_from = drawLine(context, "aqua", x, y_from, y_to);
-      y_to = y_to - (y * (total-aMemory.user) / total);
+      y_to = y_to - (y * aMemory.free / total);
       drawLine(context, "black", x, y_from, y_to);
       output.push([aMemory.total / (1024*1024),
                    aMemory.used / (1024*1024),
@@ -65,7 +65,7 @@ function drawGraph(memoryUsage) {
                      .map(function(aValue) {
                        return parseInt(aValue);
                      })
-                     .join('/'));
+                     .join(' / '));
     }
     x = x + 2;
   });
