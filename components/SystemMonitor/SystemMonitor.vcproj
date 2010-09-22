@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="c:\xulrunner\include\dom;c:\xulrunner\include\xpcom;C:\xulrunner\include\caps;C:\xulrunner\sdk\include"
+				AdditionalIncludeDirectories="C:\xulrunner\include;c:\xulrunner\include\dom;c:\xulrunner\include\xpcom;C:\xulrunner\include\caps;C:\xulrunner\sdk\include"
 				PreprocessorDefinitions="XP_WIN"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -115,7 +115,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="c:\xulrunner\include\dom;c:\xulrunner\include\xpcom;C:\xulrunner\include\caps;C:\xulrunner\sdk\include"
+				AdditionalIncludeDirectories="c:\xulrunner\include;c:\xulrunner\include\dom;c:\xulrunner\include\xpcom;C:\xulrunner\include\caps;C:\xulrunner\sdk\include"
 				PreprocessorDefinitions="XP_WIN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -189,11 +189,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\MonitorData.cpp"
+				RelativePath="..\clSystemModule.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\clSystemModule.cpp"
+				RelativePath="..\MonitorData.cpp"
 				>
 			</File>
 		</Filter>
@@ -219,11 +219,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\clMemory.h"
+				RelativePath="..\clISystem.h"
 				>
 			</File>
 			<File
-				RelativePath="..\clISystem.h"
+				RelativePath="..\clMemory.h"
 				>
 			</File>
 			<File
