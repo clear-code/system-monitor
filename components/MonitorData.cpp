@@ -28,7 +28,7 @@ MonitorData::~MonitorData()
     NS_RELEASE(mTimer);
 }
 
-NS_IMETHODIMP
+nsresult
 MonitorData::GetMonitoringObject(nsIVariant **aValue)
 {
     nsCOMPtr<nsIWritableVariant> value;
