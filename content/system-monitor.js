@@ -457,7 +457,7 @@ SystemMonitorMemoryItem.prototype = {
   // clISystemMonitor
   monitor : function(aValue) {
     this.valueArray.shift();
-    this.valueArray.push(aValue.user / aValue.total);
+    this.valueArray.push((aValue.used - aValue.cached) / aValue.total);
     this.drawGraph();
   }
 };
