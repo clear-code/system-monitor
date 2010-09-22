@@ -456,7 +456,6 @@ SystemMonitorMemoryItem.prototype = {
   canvasId : 'system-monitor-memory-usage-canvas',
   // clISystemMonitor
   monitor : function(aValue) {
-    if (!(aValue instanceof Ci.clIMemory)) return;
     this.valueArray.shift();
     this.valueArray.push(aValue.user / aValue.total);
     this.drawGraph();
