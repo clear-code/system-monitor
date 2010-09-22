@@ -91,7 +91,8 @@ var SystemMonitorService = {
         if (currentset.indexOf(aItem.itemId) < 0) {
           if (currentset.indexOf("spring") < 0 &&
               currentset.indexOf("urlbar-container") < 0 &&
-              currentset.indexOf("search-container") < 0)
+              currentset.indexOf("search-container") < 0 &&
+              buttons.indexOf("spring") < 0)
             buttons.push("spring");
           buttons.push(aItem.itemId);
         }
