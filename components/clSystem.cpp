@@ -182,13 +182,11 @@ clSystem::GetMonitoringObject(const nsAString &aTopic, nsIVariant **aValue)
 
     if (aTopic.Equals(NS_LITERAL_STRING("cpu-usage"))) {
         double usage;
-        getter_AddRefs(mCPU);
         mCPU->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
     } else if (aTopic.Equals(NS_LITERAL_STRING("cpu-time"))) {
         nsCOMPtr<clICPUTime> cpuTime;
-        getter_AddRefs(mCPU);
         mCPU->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
