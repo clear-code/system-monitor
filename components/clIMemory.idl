@@ -7,9 +7,6 @@ interface clIMemory : nsISupports
   readonly attribute PRUInt64 total;
   readonly attribute PRUInt64 used;
   readonly attribute PRUInt64 free;
-  readonly attribute PRUInt64 shared;
-  readonly attribute PRUInt64 buffer;
-  readonly attribute PRUInt64 cached;
-  readonly attribute PRUInt64 user;
-  readonly attribute PRUInt64 locked;
+
+  readonly attribute PRUInt64 virtualUsed;
 };

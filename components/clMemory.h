@@ -24,16 +24,10 @@ private:
   ~clMemory();
 
 protected:
-#ifdef HAVE_LIBGTOP2
   PRUint64 mTotal;
   PRUint64 mUsed;
   PRUint64 mFree;
-  PRUint64 mShared;
-  PRUint64 mBuffer;
-  PRUint64 mCached;
-  PRUint64 mUser;
-  PRUint64 mLocked;
-#endif
+  PRUint64 mVirtualUsed;
 };
 
 #endif /* __CL_MEMORY_H__ */

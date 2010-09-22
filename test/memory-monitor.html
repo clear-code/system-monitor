@@ -61,11 +61,7 @@ function drawGraph(memoryUsage) {
       output.push([aMemory.total / (1024*1024),
                    aMemory.used / (1024*1024),
                    aMemory.free / (1024*1024),
-                   aMemory.shared / (1024*1024),
-                   aMemory.buffer / (1024*1024),
-                   aMemory.cached / (1024*1024),
-                   aMemory.user / (1024*1024),
-                   aMemory.locked / (1024*1024)]
+                   aMemory.virtualUsed / (1024*1024)]
                      .map(function(aValue) {
                        return parseInt(aValue);
                      })

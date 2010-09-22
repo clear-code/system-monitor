@@ -19,12 +19,8 @@ clMemory::clMemory()
   glibtop_get_mem(&memory);
 
   mTotal = memory.total;
-  mUsed = memory.used;
-  mShared = memory.shared;
-  mBuffer = memory.buffer;
-  mCached = memory.cached;
-  mUser = memory.user;
-  mLocked = memory.locked;
+  mUsed = memory.used - memory.cached;
+  mFree = mTotal - mUsed;
 #endif
 }
 
@@ -66,56 +62,11 @@ NS_IMETHODIMP clMemory::GetFree(PRUint64 *aFree)
 #endif
 }
 
-/* readonly attribute PRUint64 shared; */
-NS_IMETHODIMP clMemory::GetShared(PRUint64 *aShared)
+/* readonly attribute PRUint64 virtualUsed; */
+NS_IMETHODIMP clMemory::GetVirtualUsed(PRUint64 *aVirtualUsed)
 {
 #ifdef HAVE_LIBGTOP2
-    *aShared = mShared;
-    return NS_OK;
-#else
     return NS_ERROR_NOT_IMPLEMENTED;
-#endif
-}
-
-/* readonly attribute PRUint64 buffer; */
-NS_IMETHODIMP clMemory::GetBuffer(PRUint64 *aBuffer)
-{
-#ifdef HAVE_LIBGTOP2
-    *aBuffer = mBuffer;
-    return NS_OK;
-#else
-    return NS_ERROR_NOT_IMPLEMENTED;
-#endif
-}
-
-/* readonly attribute PRUint64 cached; */
-NS_IMETHODIMP clMemory::GetCached(PRUint64 *aCached)
-{
-#ifdef HAVE_LIBGTOP2
-    *aCached = mCached;
-    return NS_OK;
-#else
-    return NS_ERROR_NOT_IMPLEMENTED;
-#endif
-}
-
-/* readonly attribute PRUint64 user; */
-NS_IMETHODIMP clMemory::GetUser(PRUint64 *aUser)
-{
-#ifdef HAVE_LIBGTOP2
-    *aUser = mUser;
-    return NS_OK;
-#else
-    return NS_ERROR_NOT_IMPLEMENTED;
-#endif
-}
-
-/* readonly attribute PRUint64 locked; */
-NS_IMETHODIMP clMemory::GetLocked(PRUint64 *aLocked)
-{
-#ifdef HAVE_LIBGTOP2
-    *aLocked = mLocked;
-    return NS_OK;
 #else
     return NS_ERROR_NOT_IMPLEMENTED;
 #endif

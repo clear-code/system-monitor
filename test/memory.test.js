@@ -17,11 +17,7 @@ test_properties.parameters = {
   total  : { name : 'total',  type : 'int' },
   used   : { name : 'used',   type : 'int' },
   free   : { name : 'free',   type : 'int' },
-  shared : { name : 'shared', type : 'int' },
-  buffer : { name : 'buffer', type : 'int' },
-  cached : { name : 'cached', type : 'int' },
-  user   : { name : 'user',   type : 'int' },
-  locked : { name : 'locked', type : 'int' }
+  virtualUsed : { name : 'virtualUsed', type : 'int' }
 };
 function test_properties(aParameter) {
   testCreate()
