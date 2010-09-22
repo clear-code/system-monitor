@@ -81,7 +81,7 @@ NS_IMPL_ISUPPORTS2_CI(clSystem,
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU * *aCPU)
 {
-    *aCPU = mCPU;
+    NS_ADDREF(*aCPU = mCPU);
     return NS_OK;
 }
 
