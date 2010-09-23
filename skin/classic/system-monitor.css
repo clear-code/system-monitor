@@ -1,6 +1,9 @@
-.system-monitor-cpu-usage-background,
-.system-monitor-memory-usage-background {
+.system-monitor-canvas-background {
   border: 1px solid ThreeDShadow;
+}
+
+.system-monitor-tooltip-label {
+  margin: 0;
 }
 
 .system-monitor-splitter {
@@ -17,4 +20,3 @@
 toolbarpaletteitem[id^="wrapper-system-monitor-"] + toolbarpaletteitem[id^="wrapper-system-monitor-"] {
   margin-left: 1px;
 }
-

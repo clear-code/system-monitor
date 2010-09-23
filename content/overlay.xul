@@ -11,13 +11,24 @@
     <stringbundle id="system-monitor-bundle" src="chrome://system-monitor/locale/system-monitor.properties"/>
   </stringbundleset>
 
+  <popupset id="mainPopupSet">
+    <tooltip id="system-monitor-cpu-usage-tooltip">
+      <label id="system-monitor-cpu-usage-tooltip-label"
+        class="system-monitor-tooltip-label">&toolbar.cpuUsage.label;</label>
+    </tooltip>
+    <tooltip id="system-monitor-memory-usage-tooltip">
+      <label id="system-monitor-memory-usage-tooltip-label"
+        class="system-monitor-tooltip-label">&toolbar.memoryUsage.label;</label>
+    </tooltip>
+  </popupset>
+
   <toolbarpalette id="BrowserToolbarPalette">
     <toolbaritem id="system-monitor-cpu-usage"
                  class="system-monitor-item"
-                 tooltiptext="&toolbar.cpuUsage.tooltip;"
+                 tooltip="system-monitor-cpu-usage-tooltip"
                  orient="vertical">
       <stack>
-        <hbox class="system-monitor-cpu-usage-background"
+        <hbox class="system-monitor-canvas-background"
               flex="1"/>
         <image id="system-monitor-cpu-usage-backup" flex="1"/>
         <html:canvas id="system-monitor-cpu-usage-canvas"
@@ -29,10 +40,10 @@
     </toolbaritem>
     <toolbaritem id="system-monitor-memory-usage"
                  class="system-monitor-item"
-                 tooltiptext="&toolbar.memoryUsage.tooltip;"
+                 tooltip="system-monitor-memory-usage-tooltip"
                  orient="vertical">
       <stack>
-        <hbox class="system-monitor-memory-usage-background"
+        <hbox class="system-monitor-canvas-background"
               flex="1"/>
         <image id="system-monitor-memory-usage-backup" flex="1"/>
         <html:canvas id="system-monitor-memory-usage-canvas"

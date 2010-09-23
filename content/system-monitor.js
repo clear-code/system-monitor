@@ -10,6 +10,10 @@ var SystemMonitorService = {
   resizing : false,
   items : [],
 
+  get bundle() {
+    return document.getElementById("system-monitor-bundle");
+  },
+
   init : function() {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
@@ -77,7 +81,6 @@ var SystemMonitorService = {
   initialShow : function() {
     var bar = document.getElementById(this.getPref(this.domain+"defaultTargetToolbar"));
     if (bar && bar.currentSet) {
-      var bundle = document.getElementById("system-monitor-bundle");
       var PromptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
                            .getService(Ci.nsIPromptService);
 
@@ -103,8 +106,8 @@ var SystemMonitorService = {
       if (currentset != newset &&
         PromptService.confirmEx(
           null,
-          bundle.getString("initialshow_confirm_title"),
-          bundle.getString("initialshow_confirm_text"),
+          this.bundle.getString("initialshow_confirm_title"),
+          this.bundle.getString("initialshow_confirm_text"),
           (PromptService.BUTTON_TITLE_YES * PromptService.BUTTON_POS_0) +
           (PromptService.BUTTON_TITLE_NO  * PromptService.BUTTON_POS_1),
           null, null, null, null, {}
@@ -443,7 +446,20 @@ SystemMonitorCPUItem.prototype = {
   type     : 'cpu-usage',
   itemId   : 'system-monitor-cpu-usage',
   imageId  : 'system-monitor-cpu-usage-backup',
-  canvasId : 'system-monitor-cpu-usage-canvas'
+  canvasId : 'system-monitor-cpu-usage-canvas',
+  get tooltip() {
+    return document.getElementById('system-monitor-cpu-usage-tooltip-label');
+  },
+  // clISystemMonitor
+  monitor : function(aValue) {
+    this.valueArray.shift();
+    this.valueArray.push(aValue);
+    this.drawGraph();
+    this.tooltip.textContent = this.bundle.getFormattedString(
+                                 'cpu_usage_tooltip',
+                                 [parseInt(aValue * 100)]
+                               );
+  }
 };
 
 function SystemMonitorMemoryItem()
@@ -455,11 +471,20 @@ SystemMonitorMemoryItem.prototype = {
   itemId   : 'system-monitor-memory-usage',
   imageId  : 'system-monitor-memory-usage-backup',
   canvasId : 'system-monitor-memory-usage-canvas',
+  get tooltip() {
+    return document.getElementById('system-monitor-memory-usage-tooltip-label');
+  },
   // clISystemMonitor
   monitor : function(aValue) {
     this.valueArray.shift();
     this.valueArray.push(aValue.used / aValue.total);
     this.drawGraph();
+    this.tooltip.textContent = this.bundle.getFormattedString(
+                                 'memory_usage_tooltip',
+                                 [parseInt(aValue.total / 1024 / 1024),
+                                  parseInt(aValue.used / 1024 / 1024),
+                                  parseInt(aValue.used / aValue.total * 100)]
+                               );
   }
 };
 

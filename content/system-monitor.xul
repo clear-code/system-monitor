@@ -20,8 +20,19 @@
   <script type="application/x-javascript" src="chrome://system-monitor/content/prefs.js"/>
   <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
 
+  <popupset>
+    <tooltip id="system-monitor-cpu-usage-tooltip">
+      <label id="system-monitor-cpu-usage-tooltip-label"
+        class="system-monitor-tooltip-label">&toolbar.cpuUsage.label;</label>
+    </tooltip>
+    <tooltip id="system-monitor-memory-usage-tooltip">
+      <label id="system-monitor-memory-usage-tooltip-label"
+        class="system-monitor-tooltip-label">&toolbar.memoryUsage.label;</label>
+    </tooltip>
+  </popupset>
+
   <stack id="system-monitor-cpu-usage">
-    <hbox class="system-monitor-cpu-usage-background"
+    <hbox class="system-monitor-canvas-background"
           flex="1"/>
     <image id="system-monitor-cpu-usage-backup" flex="1"/>
     <hbox>
@@ -31,7 +42,7 @@
     </hbox>
   </stack>
   <stack id="system-monitor-memory-usage">
-    <hbox class="system-monitor-memory-usage-background"
+    <hbox class="system-monitor-canvas-background"
           flex="1"/>
     <image id="system-monitor-memory-usage-backup" flex="1"/>
     <hbox>
