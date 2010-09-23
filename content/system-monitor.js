@@ -332,7 +332,6 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   drawLine : function(aContext, aColor, aX, aBeginY, aEndY) {
-try{
     aContext.beginPath();
     aContext.strokeStyle = aColor;
     aContext.lineWidth = 1.0;
@@ -342,10 +341,6 @@ try{
     aContext.lineTo(aX, aEndY);
     aContext.closePath();
     aContext.stroke();
-}
-catch(e){
-Application.console.log([e, aContext, aColor, aX, aBeginY, aEndY]);
-}
     return aEndY - 1;
   },
 
