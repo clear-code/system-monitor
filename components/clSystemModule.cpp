@@ -1,16 +1,14 @@
 #include <mozilla/ModuleUtils.h>
 
-#include <nsIScriptNameSpaceManager.h>
-
 #include "clCPU.h"
 #include "clSystem.h"
 #include "clCPUTime.h"
 #include "clMemory.h"
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPU)
-NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(clSystem, clSystem::GetService)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUTime)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clMemory)
+NS_GENERIC_FACTORY_CONSTRUCTOR_INIT(clSystem, Init)
 
 NS_DEFINE_NAMED_CID(CL_SYSTEM_CID);
 NS_DEFINE_NAMED_CID(CL_CPU_CID);
@@ -34,7 +32,7 @@ static const mozilla::Module::ContractIDEntry kSystemContracts[] = {
 };
 
 static const mozilla::Module::CategoryEntry kSystemCategories[] = {
-  { JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY, "system", CL_SYSTEM_CONTRACT_ID },
+  { "JavaScript global property", "system", CL_SYSTEM_CONTRACT_ID },
   { NULL }
 };
 
@@ -47,4 +45,4 @@ static const mozilla::Module kSystemModule = {
 
 NSMODULE_DEFN(clSystemModule) = &kSystemModule;
 
-NS_IMPL_MOZILLA192_NSGETMODULE(&kSystemModule)
+NS_IMPL_MOZILLA192_NSGETMODULE(&kSystemModule);

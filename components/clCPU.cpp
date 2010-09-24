@@ -76,6 +76,7 @@ clCPU::~clCPU()
 {
 }
 
+NS_IMPL_CLASSINFO(clCPU, NULL, 0, CL_CPU_CID)
 NS_IMPL_ISUPPORTS2_CI(clCPU,
                       clICPU,
                       nsISecurityCheckedComponent)

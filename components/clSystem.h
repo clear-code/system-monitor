@@ -25,12 +25,12 @@ public:
   NS_DECL_CLISYSTEM
   NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
+  nsresult Init();
+
 private:
   static clSystem *gSystem;
   nsCOMArray<nsITimerCallback> mMonitors;
   nsCOMPtr<clICPU> mCPU;
-
-  nsresult Init();
 };
 
 #endif /* __CL_SYSTEM_H__ */

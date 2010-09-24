@@ -67,6 +67,7 @@ clSystem::Init()
     return NS_OK;
 }
 
+NS_IMPL_CLASSINFO(clSystem, NULL, 0, CL_SYSTEM_CID)
 NS_IMPL_ISUPPORTS2_CI(clSystem,
                       clISystem,
                       nsISecurityCheckedComponent)
