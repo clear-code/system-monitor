@@ -1,6 +1,10 @@
 #ifndef __CL_SYSTEM_H__
 #define __CL_SYSTEM_H__
 
+#ifndef MOZ_NO_MOZALLOC
+#define MOZ_NO_MOZALLOC
+#endif
+
 #include <mozilla-config.h>
 
 #include "clISystem.h"
