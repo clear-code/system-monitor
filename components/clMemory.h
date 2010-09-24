@@ -1,10 +1,13 @@
 #ifndef __CL_MEMORY_H__
 #define __CL_MEMORY_H__
 
+#include <mozilla-config.h>
+
+#include "clIMemory.h"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
-#include "clIMemory.h"
 
 #include <nsISecurityCheckedComponent.h>
 #define CL_MEMORY_CONTRACT_ID "@clear-code.com/system/memory;1"

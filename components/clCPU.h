@@ -1,9 +1,12 @@
 #ifndef __CL_CPU_H__
 #define __CL_CPU_H__
 
+#include <mozilla-config.h>
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
+
 #include "clICPU.h"
 
 #include <nsISecurityCheckedComponent.h>

@@ -1,3 +1,4 @@
+#include <mozilla-config.h>
 #include <mozilla/ModuleUtils.h>
 
 #include "clCPU.h"
