@@ -9,3 +9,9 @@ skin @PACKAGE_NAME@ classic/1.0 skin/classic/
 style chrome://browser/content/browser.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
 style chrome://global/content/customizeToolbar.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
 style chrome://system-monitor/content/system-monitor.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
+
+interfaces components/clICPU.xpt
+interfaces components/clICPUTime.xpt
+interfaces components/clIMemory.xpt
+interfaces components/clISystem.xpt
+
