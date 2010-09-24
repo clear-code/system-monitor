@@ -60,9 +60,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib plds4.lib"
+				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib plds4.lib mozalloc.lib"
 				OutputFile="$(OutDir)\cl$(ProjectName).dll"
-				AdditionalLibraryDirectories="C:\xulrunner\sdk\lib"
+				AdditionalLibraryDirectories="C:\xulrunner\sdk\lib;c:\xulrunner\lib"
 				GenerateManifest="false"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
@@ -136,9 +136,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib plds4.lib libcmt.lib"
+				AdditionalDependencies="xpcomglue_s.lib xpcom.lib nspr4.lib plds4.lib libcmt.lib mozalloc.lib"
 				OutputFile="$(OutDir)\$cl(ProjectName).dll"
-				AdditionalLibraryDirectories="C:\xulrunner\sdk\lib"
+				AdditionalLibraryDirectories="C:\xulrunner\sdk\lib;c:\xulrunner\lib"
 				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
