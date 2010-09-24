@@ -15,3 +15,5 @@ interfaces components/clICPUTime.xpt
 interfaces components/clIMemory.xpt
 interfaces components/clISystem.xpt
 
+category JavaScript-global-property system @clear-code.com/system;1
+
