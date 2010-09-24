@@ -1,9 +1,5 @@
 #include <mozilla/ModuleUtils.h>
 
-#include <nsICategoryManager.h>
-#include <nsServiceManagerUtils.h>
-#include <nsIClassInfoImpl.h>
-
 #include <nsIScriptNameSpaceManager.h>
 
 #include "clCPU.h"
@@ -16,10 +12,10 @@ NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(clSystem, clSystem::GetService)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clCPUTime)
 NS_GENERIC_FACTORY_CONSTRUCTOR(clMemory)
 
-NS_DEFINE_NAMED_CID(CL_SYSTEM_CID)
-NS_DEFINE_NAMED_CID(CL_CPU_CID)
-NS_DEFINE_NAMED_CID(CL_CPU_TIME_CID)
-NS_DEFINE_NAMED_CID(CL_MEMORY_CID)
+NS_DEFINE_NAMED_CID(CL_SYSTEM_CID);
+NS_DEFINE_NAMED_CID(CL_CPU_CID);
+NS_DEFINE_NAMED_CID(CL_CPU_TIME_CID);
+NS_DEFINE_NAMED_CID(CL_MEMORY_CID);
 
 static const mozilla::Module::CIDEntry kSystemCIDs[] = {
   { &kCL_SYSTEM_CID, false, NULL, clSystemConstructor },
@@ -38,7 +34,7 @@ static const mozilla::Module::ContractIDEntry kSystemContracts[] = {
 };
 
 static const mozilla::Module::CategoryEntry kSystemCategories[] = {
-  { "JavaScript global property", "system", CL_SYSTEM_CID },
+  { JAVASCRIPT_GLOBAL_PROPERTY_CATEGORY, "system", CL_SYSTEM_CONTRACT_ID },
   { NULL }
 };
 
