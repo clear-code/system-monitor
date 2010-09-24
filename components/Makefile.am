@@ -32,6 +32,8 @@ clSystemMonitor_la_SOURCES = 	\
 	clSystem.cpp		\
 	clSystem.h		\
 	clSystemModule.cpp	\
+	MonitorData.cpp		\
+	MonitorData.h		\
 	$(platform_sources)
 
 clSystemMonitor_la_LIBADD = 	\
