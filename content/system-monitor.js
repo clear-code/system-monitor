@@ -79,7 +79,14 @@ var SystemMonitorService = {
   },
 
   initialShow : function() {
-    var bar = document.getElementById(this.getPref(this.domain+"defaultTargetToolbar"));
+    var bar;
+    this.getPref(this.domain+"defaultTargetToolbar")
+      .split(/[,\s]+/)
+      .some(function(aTarget) {
+        bar = document.getElementById(aTarget);
+        if (bar.boxObject.height && bar.boxObject.width)
+          return true;
+      });
     if (bar && bar.currentSet) {
       var PromptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
                            .getService(Ci.nsIPromptService);
