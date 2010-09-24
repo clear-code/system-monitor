@@ -15,5 +15,10 @@ interfaces components/clICPUTime.xpt
 interfaces components/clIMemory.xpt
 interfaces components/clISystem.xpt
 
-category JavaScript-global-property system @clear-code.com/system;1
+binary-component platform/Darwin_x86-gcc3/components/clSystemMonitor.dylib ABI=Darwin_x86-gcc3
+binary-component platform/Linux_arm-gcc3/components/clSystemMonitor.so ABI=Linux_arm-gcc3
+binary-component platform/Linux_x86_64-gcc3/components/clSystemMonitor.so ABI=Linux_x86_64-gcc3
+binary-component platform/Linux_x86-gcc3/components/clSystemMonitor.so ABI=Linux_x86-gcc3
+binary-component platform/WINNT_x86-msvc/components/clSystemMonitor.dll ABI=WINNT_x86-msvc
 
+category JavaScript-global-property system @clear-code.com/system;1
