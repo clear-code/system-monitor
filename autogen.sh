@@ -19,6 +19,7 @@ case `uname -s` in
 	;;
     *)
 	: ${LIBTOOLIZE:=libtoolize}
+	: ${ACLOCAL_OPTIONS:="-I /usr/share/aclocal"}
 	;;
 esac
 
