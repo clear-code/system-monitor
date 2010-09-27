@@ -15,7 +15,7 @@ run()
 case `uname -s` in
     Darwin)
 	: ${LIBTOOLIZE:=glibtoolize}
-	: ${ACLOCAL_OPTIONS:="-I /opt/local/share"}
+	: ${ACLOCAL_OPTIONS:="-I /opt/local/share/aclocal"}
 	;;
     *)
 	: ${LIBTOOLIZE:=libtoolize}
