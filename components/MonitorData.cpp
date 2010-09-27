@@ -22,10 +22,19 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
 
 MonitorData::~MonitorData()
 {
-    mTimer->Cancel();
-    NS_RELEASE(mMonitor);
-    NS_RELEASE(mSystem);
-    NS_RELEASE(mTimer);
+	Destroy();
+}
+
+nsresult
+MonitorData::Destroy()
+{
+    if (mTimer) {
+      mTimer->Cancel();
+      NS_RELEASE(mMonitor);
+      NS_RELEASE(mSystem);
+      NS_RELEASE(mTimer);
+    }
+    return NS_OK;
 }
 
 nsresult

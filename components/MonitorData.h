@@ -18,6 +18,8 @@ public:
 
     nsCOMPtr<clISystemMonitor> mMonitor;
 
+    nsresult Destroy();
+
 private:
     nsString mTopic;
     nsCOMPtr<clISystem> mSystem;
