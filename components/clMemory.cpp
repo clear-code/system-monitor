@@ -21,9 +21,9 @@ clMemory::clMemory()
 {
   /* member initializers and constructor code */
 #ifdef HAVE_LIBGTOP2
-#define __CL_MEMORY_AVAILABLE_TOTAL__
-#define __CL_MEMORY_AVAILABLE_USED__
-#define __CL_MEMORY_AVAILABLE_FREE__
+#define CL_MEMORY_AVAILABLE_TOTAL
+#define CL_MEMORY_AVAILABLE_USED
+#define CL_MEMORY_AVAILABLE_FREE
   glibtop_mem memory;
   glibtop_get_mem(&memory);
 
@@ -31,10 +31,10 @@ clMemory::clMemory()
   mUsed = memory.used - memory.cached;
   mFree = mTotal - mUsed;
 #elif defined(XP_WIN)
-#define __CL_MEMORY_AVAILABLE_TOTAL__
-#define __CL_MEMORY_AVAILABLE_USED__
-#define __CL_MEMORY_AVAILABLE_FREE__
-#define __CL_MEMORY_AVAILABLE_VIRTUAL_USED__
+#define CL_MEMORY_AVAILABLE_TOTAL
+#define CL_MEMORY_AVAILABLE_USED
+#define CL_MEMORY_AVAILABLE_FREE
+#define CL_MEMORY_AVAILABLE_VIRTUAL_USED
   MEMORYSTATUSEX memory;
   memory.dwLength=sizeof(memory);
   GlobalMemoryStatusEx(&memory);
@@ -44,9 +44,9 @@ clMemory::clMemory()
   mUsed = mTotal - mFree;
   mVirtualUsed = memory.ullTotalVirtual - memory.ullAvailVirtual;
 #elif defined(XP_MACOSX)
-#define __CL_MEMORY_AVAILABLE_TOTAL__
-#define __CL_MEMORY_AVAILABLE_USED__
-#define __CL_MEMORY_AVAILABLE_FREE__
+#define CL_MEMORY_AVAILABLE_TOTAL
+#define CL_MEMORY_AVAILABLE_USED
+#define CL_MEMORY_AVAILABLE_FREE
   host_basic_info total_memory;
   mach_msg_type_number_t total_count = HOST_BASIC_INFO_COUNT;
   host_info(mach_host_self(), HOST_BASIC_INFO, (host_info_t) &total_memory, &total_count);
@@ -69,7 +69,7 @@ clMemory::~clMemory()
 /* readonly attribute PRUint64 total; */
 NS_IMETHODIMP clMemory::GetTotal(PRUint64 *aTotal)
 {
-#ifdef __CL_MEMORY_AVAILABLE_TOTAL__
+#ifdef CL_MEMORY_AVAILABLE_TOTAL
     *aTotal = mTotal;
     return NS_OK;
 #else
@@ -80,7 +80,7 @@ NS_IMETHODIMP clMemory::GetTotal(PRUint64 *aTotal)
 /* readonly attribute PRUint64 used; */
 NS_IMETHODIMP clMemory::GetUsed(PRUint64 *aUsed)
 {
-#ifdef __CL_MEMORY_AVAILABLE_USED__
+#ifdef CL_MEMORY_AVAILABLE_USED
     *aUsed = mUsed;
     return NS_OK;
 #else
@@ -91,7 +91,7 @@ NS_IMETHODIMP clMemory::GetUsed(PRUint64 *aUsed)
 /* readonly attribute PRUint64 free; */
 NS_IMETHODIMP clMemory::GetFree(PRUint64 *aFree)
 {
-#ifdef __CL_MEMORY_AVAILABLE_FREE__
+#ifdef CL_MEMORY_AVAILABLE_FREE
     *aFree = mFree;
     return NS_OK;
 #else
@@ -102,7 +102,7 @@ NS_IMETHODIMP clMemory::GetFree(PRUint64 *aFree)
 /* readonly attribute PRUint64 virtualUsed; */
 NS_IMETHODIMP clMemory::GetVirtualUsed(PRUint64 *aVirtualUsed)
 {
-#ifdef __CL_MEMORY_AVAILABLE_VIRTUAL_USED__
+#ifdef CL_MEMORY_AVAILABLE_VIRTUAL_USED
     *aVirtualUsed = mVirtualUsed;
     return NS_OK;
 #else
