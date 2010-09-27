@@ -17,9 +17,9 @@ case `uname -s` in
 	: ${LIBTOOLIZE:=glibtoolize}
 	: ${ACLOCAL_OPTIONS:="-I /opt/local/share/aclocal"}
 	;;
-case `uname -s` in
     CYGWIN)
 	: ${ACLOCAL_OPTIONS:="-I /usr/share/aclocal"}
+	;;
 esac
 
 run ${ACLOCAL:-aclocal} -I m4macros $ACLOCAL_OPTIONS
