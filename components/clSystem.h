@@ -28,6 +28,7 @@ public:
 private:
   static clSystem *gSystem;
   nsCOMArray<nsITimerCallback> mMonitors;
+  nsCOMArray<nsITimer> mTimers;
   nsCOMPtr<clICPU> mCPU;
 
   nsresult Init();

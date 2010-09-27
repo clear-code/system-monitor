@@ -89,6 +89,7 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
 
     nsCOMPtr<nsITimerCallback> data = new MonitorData(aTopic, aMonitor, timer, system);
     mMonitors.AppendObject(data);
+    mTimers.AppendObject(timer);
 
     rv = timer->InitWithCallback(data,
                                  aInterval,
@@ -123,6 +124,11 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
 
     PRInt32 found;
     while ((found = findMonitorIndex(mMonitors, aMonitor)) != -1) {
+        // Warning!!
+        // Assume that the timer object is at the same position as the monitor's.
+        nsITimer *timer = static_cast<nsITimer*>(mTimers.ObjectAt(found));
+        timer->Cancel();
+        mTimers.RemoveObjectAt(found);
         mMonitors.RemoveObjectAt(found);
     }
 
