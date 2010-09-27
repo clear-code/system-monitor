@@ -22,7 +22,7 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
 
 MonitorData::~MonitorData()
 {
-	Destroy();
+    Destroy();
 }
 
 nsresult
