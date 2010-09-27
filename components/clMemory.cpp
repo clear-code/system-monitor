@@ -51,7 +51,7 @@ clMemory::clMemory()
   mach_msg_type_number_t total_count = HOST_BASIC_INFO_COUNT;
   host_info(mach_host_self(), HOST_BASIC_INFO, (host_info_t) &total_memory, &total_count);
 
-  mTotal = host.memory_size;
+  mTotal = total_memory.memory_size;
 
   vm_statistics memory;
   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
