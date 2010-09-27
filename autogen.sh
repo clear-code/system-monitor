@@ -17,14 +17,13 @@ case `uname -s` in
 	: ${LIBTOOLIZE:=glibtoolize}
 	: ${ACLOCAL_OPTIONS:="-I /opt/local/share/aclocal"}
 	;;
-    *)
-	: ${LIBTOOLIZE:=libtoolize}
+case `uname -s` in
+    CYGWIN)
 	: ${ACLOCAL_OPTIONS:="-I /usr/share/aclocal"}
-	;;
 esac
 
 run ${ACLOCAL:-aclocal} -I m4macros $ACLOCAL_OPTIONS
-run ${LIBTOOLIZE} --copy --force
+run ${LIBTOOLIZE:-libtoolize} --copy --force
 run ${AUTOHEADER:-autoheader}
 run ${AUTOMAKE:-automake} --add-missing --foreign --copy
 run ${AUTOCONF:-autoconf}
