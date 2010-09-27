@@ -14,10 +14,10 @@ run()
 
 case `uname -s` in
     Darwin)
-	: ${LIBTOOLIZE=-glibtoolize}
+	: ${LIBTOOLIZE:=glibtoolize}
 	;;
     *)
-	: ${LIBTOOLIZE=-libtoolize}
+	: ${LIBTOOLIZE:=libtoolize}
 	;;
 esac
 
