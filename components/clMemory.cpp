@@ -58,6 +58,7 @@ clMemory::clMemory()
   host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t) &memory, &count);
 
   mFree = memory.free_count * vm_page_size;
+  mUsed = mTotal - mFree;
 #endif
 }
 
