@@ -1,12 +1,6 @@
 #ifndef __CL_MEMORY_H__
 #define __CL_MEMORY_H__
 
-#ifndef MOZ_NO_MOZALLOC
-#define MOZ_NO_MOZALLOC
-#endif
-
-#include <mozilla-config.h>
-
 #include "clIMemory.h"
 
 #ifdef HAVE_CONFIG_H

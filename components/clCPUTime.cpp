@@ -25,7 +25,6 @@ clCPUTime::~clCPUTime()
 {
 }
 
-NS_IMPL_CLASSINFO(clCPUTime, NULL, 0, CL_CPU_TIME_CID)
 NS_IMPL_ISUPPORTS2_CI(clCPUTime,
                       clICPUTime,
                       nsISecurityCheckedComponent)

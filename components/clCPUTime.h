@@ -1,12 +1,6 @@
 #ifndef __CL_CPU_TIME_H__
 #define __CL_CPU_TIME_H__
 
-#ifndef MOZ_NO_MOZALLOC
-#define MOZ_NO_MOZALLOC
-#endif
-
-#include <mozilla-config.h>
-
 #include "clICPUTime.h"
 
 #include <nsISecurityCheckedComponent.h>

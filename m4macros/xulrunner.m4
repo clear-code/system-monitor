@@ -28,7 +28,7 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
       XPCOM_IDL_PATH=`$PKG_CONFIG --variable=idldir $XULRUNNER_PACKAGE_NAME`
       XPCOM_LDFLAGS=`$PKG_CONFIG --libs-only-L $XULRUNNER_PACKAGE_NAME`
   fi
-  XPCOM_LIBS="-lxpcomglue_s_nomozalloc -lnspr4 -lplds4"
+  XPCOM_LIBS="-lxpcomglue_s -lnspr4 -lplds4"
   XPIDL="$LIBXUL_SDK/bin/xpidl"
   AC_SUBST(LIBXUL_SDK)
   AC_SUBST(XPCOM_IDL_PATH)

@@ -9,7 +9,6 @@
 #include <windows.h>
 #endif
 
-NS_IMPL_CLASSINFO(clMemory, NULL, 0, CL_MEMORY_CID)
 NS_IMPL_ISUPPORTS2_CI(clMemory,
                       clIMemory,
                       nsISecurityCheckedComponent)

@@ -1,12 +1,6 @@
 #ifndef __MONITOR_DATA_H__
 #define __MONITOR_DATA_H__
 
-#ifndef MOZ_NO_MOZALLOC
-#define MOZ_NO_MOZALLOC
-#endif
-
-#include <mozilla-config.h>
-
 #include "clISystem.h"
 
 #include <nsStringGlue.h>
