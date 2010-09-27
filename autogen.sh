@@ -12,8 +12,17 @@ run()
     fi
 }
 
+case `uname -s` in
+    Darwin)
+	: ${LIBTOOLIZE=-glibtoolize}
+	;;
+    *)
+	: ${LIBTOOLIZE=-libtoolize}
+	;;
+esac
+
 run ${ACLOCAL:-aclocal} -I m4macros $ACLOCAL_OPTIONS
-run ${LIBTOOLIZE:-libtoolize} --copy --force
+run ${LIBTOOLIZE} --copy --force
 run ${AUTOHEADER:-autoheader}
 run ${AUTOMAKE:-automake} --add-missing --foreign --copy
 run ${AUTOCONF:-autoconf}
