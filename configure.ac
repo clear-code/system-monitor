@@ -17,17 +17,14 @@ case "$host_os" in
   mingw*|cygwin*)
     PLATFORM="WINNT"
     COMPILER="msvc"
-    AC_DEFINE(XP_WIN, 1, [Define to 1 if you build for Windows])
     ;;
   darwin*)
     PLATFORM="Darwin"
     COMPILER="gcc3"
-    AC_DEFINE(XP_MACOSX, 1, [Define to 1 if you build for Mac OS X])
     ;;
   linux-*)
     PLATFORM="Linux"
     COMPILER="gcc3"
-    AC_DEFINE(XP_UNIX, 1, [Define to 1 if you build for Linux])
     ;;
 esac
 AC_SUBST(PLATFORM)
