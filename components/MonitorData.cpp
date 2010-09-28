@@ -97,7 +97,7 @@ MonitorData::GetMonitoringObject(nsIVariant **aValue)
 }
 
 nsCOMPtr<nsIDOMWindow>
-MonitorData::getGlobal()
+MonitorData::GetGlobal()
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));

@@ -34,7 +34,7 @@ private:
     nsresult GetMonitoringObject(nsIVariant **aValue);
 
     nsresult RemoveSelf();
-    nsCOMPtr<nsIDOMWindow> getGlobal();
+    nsCOMPtr<nsIDOMWindow> GetGlobal();
 };
 
 #endif /* __MONITOR_DATA_H__ */
