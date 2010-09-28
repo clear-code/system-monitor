@@ -1,6 +1,8 @@
 #ifndef __MONITOR_DATA_H__
 #define __MONITOR_DATA_H__
 
+#include <mozilla-config.h>
+
 #include "clISystem.h"
 
 #include <nsStringGlue.h>

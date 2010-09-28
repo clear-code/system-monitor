@@ -1,6 +1,8 @@
 #ifndef __CL_CPU_TIME_H__
 #define __CL_CPU_TIME_H__
 
+#include <mozilla-config.h>
+
 #include "clICPUTime.h"
 
 #include <nsISecurityCheckedComponent.h>

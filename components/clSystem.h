@@ -1,6 +1,8 @@
 #ifndef __CL_SYSTEM_H__
 #define __CL_SYSTEM_H__
 
+#include <mozilla-config.h>
+
 #include "clISystem.h"
 
 #include <nsISecurityCheckedComponent.h>
