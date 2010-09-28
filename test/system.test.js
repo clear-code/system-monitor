@@ -10,6 +10,7 @@ testDefined.description = "defined test";
 testDefined.priority = 'must';
 function testDefined() {
   assert.isDefined(system);
+  assert.isInstanceOf(Ci.clISystem, system);
 }
 
 testGetService.description = "get service test";
@@ -19,36 +20,36 @@ function testGetService() {
   assert.isDefined(systemService);
 }
 
-testAddMonitor.description = "monitoring test";
-testAddMonitor.priority = 'must';
-function testAddMonitor() {
+testAddRemoveMonitor.description = "monitoring test";
+testAddRemoveMonitor.priority = 'must';
+testAddRemoveMonitor.parameters = {
+	'cpu-time' : { target : 'cpu-time', expected : TypeOf(Ci.clICPUTime) },
+	'cpu-usage' : { target : 'cpu-usage', expected : TypeOf(Number) },
+	'memory-usage' : { target : 'memory-usage', expected : TypeOf(Ci.clIMemory) }
+};
+function testAddRemoveMonitor(aParameter) {
   testDefined();
 
-  assert.isDefined(system.addMonitor);
-  system.addMonitor("cpu-time", function(aCPUTime){}, 1000);
-  system.addMonitor("cpu-usage", function(aUsage){}, 1000);
-  system.addMonitor("memory-usage", function(aMemory){}, 1000);
-  var listener = { monitor : function(usage) {} };
-  system.addMonitor("cpu-usage", listener, 1000);
-  system.addMonitor("cpu-usage", listener, 1000);
-  system.addMonitor("memory-usage", listener, 1000);
+  assert.isFunction(system.addMonitor);
+  assert.isFunction(system.removeMonitor);
+
+  var functionListenerMock = new FunctionMock(aParameter.target+' function');
+  functionListenerMock.expect(aParameter.expected);
+  system.addMonitor(aParameter.target, functionListenerMock, 300);
+
+  var objectListenerMock = new Mock(aParameter.target+' object');
+  objectListenerMock.expect('monitor', aParameter.expected);
+  system.addMonitor(aParameter.target, objectListenerMock, 300);
+
+  utils.wait(500);
+
+  system.removeMonitor(aParameter.target, functionListenerMock);
+  system.removeMonitor(aParameter.target, objectListenerMock);
+
+  utils.wait(500);
 }
 
-testRemoveMonitor.description = "monitoring test";
-testRemoveMonitor.priority = 'must';
-function testRemoveMonitor() {
-  testAddMonitor();
-
-  assert.isDefined(system.removeMonitor);
-  system.removeMonitor("cpu-time", function(aCPUTime){});
-  system.removeMonitor("cpu-usage", function(aUsage){});
-  system.removeMonitor("memory-usage", function(aMemory){});
-  var listener = { monitor : function(usage) {} };
-  system.removeMonitor("cpu-usage", listener);
-  system.removeMonitor("cpu-usage", listener);
-  system.removeMonitor("memory-usage", listener);
-}
-
+testAutoStop.priority = 'must';
 function testAutoStop() {
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   assert.isDefined(content.system);
