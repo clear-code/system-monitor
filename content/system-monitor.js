@@ -47,7 +47,16 @@ var SystemMonitorService = {
         )
       );
     }
-    var toolbox = document.getElementById("navigator-toolbox");
+    if ("CustomizeMailToolbar" in window) {
+      eval("window.CustomizeMailToolbar = "+
+        window.CustomizeMailToolbar.toSource().replace(
+          "{",
+          "{ SystemMonitorService.destroyToolbarItems(); "
+        )
+      );
+    }
+    var toolbox = document.getElementById("navigator-toolbox") ||
+                  document.getElementById("mail-toolbox");
     if (toolbox && toolbox.customizeDone) {
       toolbox.__systemmonitor__customizeDone = toolbox.customizeDone;
       toolbox.customizeDone = function(aChanged) {
@@ -59,6 +68,13 @@ var SystemMonitorService = {
       window.__systemmonitor__BrowserToolboxCustomizeDone = window.BrowserToolboxCustomizeDone;
       window.BrowserToolboxCustomizeDone = function(aChanged) {
         window.__systemmonitor__BrowserToolboxCustomizeDone.apply(window, arguments);
+        SystemMonitorService.initToolbarItems();
+      };
+    }
+    if ("MailToolboxCustomizeDone" in window) {
+      window.__systemmonitor__MailToolboxCustomizeDone = window.MailToolboxCustomizeDone;
+      window.MailToolboxCustomizeDone = function() {
+        window.__systemmonitor__MailToolboxCustomizeDone.apply(window, arguments);
         SystemMonitorService.initToolbarItems();
       };
     }
@@ -84,7 +100,7 @@ var SystemMonitorService = {
       .split(/[,\s]+/)
       .some(function(aTarget) {
         bar = document.getElementById(aTarget);
-        if (bar.boxObject.height && bar.boxObject.width)
+        if (bar && bar.boxObject.height && bar.boxObject.width)
           return true;
       });
     if (bar && bar.currentSet) {
@@ -125,6 +141,8 @@ var SystemMonitorService = {
       }
       if ("BrowserToolboxCustomizeDone" in window)
         window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
+      else if ("MailToolboxCustomizeDone" in window)
+        window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
     }
   },
 

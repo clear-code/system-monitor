@@ -1,1 +1,1 @@
-pref("extensions.system-monitor@clear-code.com.defaultTargetToolbar", "nav-bar");
+pref("extensions.system-monitor@clear-code.com.defaultTargetToolbar", "nav-bar,mail-bar3");

@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<?xul-overlay href="baseOverlay.xul"?>
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+         xmlns:html="http://www.w3.org/1999/xhtml">
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="system-monitor-bundle"/>
+  </stringbundleset>
+
+  <popupset id="mainPopupSet">
+    <tooltip id="system-monitor-cpu-usage-tooltip"/>
+    <tooltip id="system-monitor-memory-usage-tooltip"/>
+  </popupset>
+
+  <toolbarpalette id="BrowserToolbarPalette">
+    <toolbaritem id="system-monitor-cpu-usage"/>
+    <toolbaritem id="system-monitor-memory-usage"/>
+  </toolbarpalette>
+
+</overlay>
