@@ -28,7 +28,7 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
 
-    nsCOMPtr<nsIDOMWindow> owner = getGlobal();
+    nsCOMPtr<nsIDOMWindow> owner = GetGlobal();
     if (owner) {
       NS_ADDREF(mOwner = owner);
     }
