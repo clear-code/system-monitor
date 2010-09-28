@@ -87,7 +87,7 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
     NS_ENSURE_SUCCESS(rv, rv);
 
-    nsCOMPtr<nsITimerCallback> data = new MonitorData(aTopic, aMonitor, timer, system);
+    MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system);
     mMonitors.AppendObject(data);
 
     rv = timer->InitWithCallback(data,
@@ -99,14 +99,14 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
 }
 
 static PRInt32
-findMonitorIndex(nsCOMArray<nsITimerCallback>&monitors, clISystemMonitor *aMonitor)
+findMonitorIndex(nsCOMArray<MonitorData>&monitors, clISystemMonitor *aMonitor)
 {
     PRInt32 count = monitors.Count();
     if (count == 0)
         return -1;
 
     for (PRInt32 i = 0; i < count; i++) {
-        MonitorData *data = static_cast<MonitorData*>(monitors.ObjectAt(i));
+        MonitorData *data = monitors.ObjectAt(i);
         if (data->mMonitor == aMonitor) {
             return i;
         }
@@ -123,7 +123,7 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
 
     PRInt32 found;
     while ((found = findMonitorIndex(mMonitors, aMonitor)) != -1) {
-        MonitorData *data = static_cast<MonitorData*>(mMonitors.ObjectAt(found));
+        MonitorData *data = mMonitors.ObjectAt(found);
         data->Destroy();
         mMonitors.RemoveObjectAt(found);
     }
