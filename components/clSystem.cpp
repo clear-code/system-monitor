@@ -11,6 +11,13 @@
 #include <nsCRT.h>
 #include <nsIVariant.h>
 
+#include <jsapi.h>
+#include <jsobj.h>
+#include <nsIXPConnect.h>
+#include <nsServiceManagerUtils.h>
+#include <nsIDOMWindow.h>
+#include <nsPIDOMWindow.h>
+
 #ifdef HAVE_LIBGTOP2
 #include <glibtop.h>
 #include <glibtop/global.h>
@@ -86,8 +93,9 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     NS_ENSURE_SUCCESS(rv, rv);
 
     nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
+    nsCOMPtr<nsIDOMWindow> owner = GetGlobal();
 
-    MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system);
+    MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system, owner);
     mMonitors.AppendObject(data);
 
     rv = timer->InitWithCallback(data,
@@ -96,6 +104,38 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     NS_ENSURE_SUCCESS(rv, rv);
 
     return NS_OK;
+}
+
+nsCOMPtr<nsIDOMWindow>
+clSystem::GetGlobal()
+{
+    nsresult rv;
+    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
+    if (NS_FAILED(rv))
+      return nsnull;
+
+    nsAXPCNativeCallContext *cc = nsnull;
+    xpc->GetCurrentNativeCallContext(&cc);
+    if (!cc)
+      return nsnull;
+
+    JSContext* cx;
+    rv = cc->GetJSContext(&cx);
+    if (NS_FAILED(rv) || !cx)
+      return nsnull;
+
+    JSObject *scope = ::JS_GetScopeChain(cx);
+    if (!scope)
+      return nsnull;
+
+    nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
+    xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, scope),
+                                        getter_AddRefs(wrapper));
+    if (!wrapper)
+      return nsnull;
+
+    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
+    return win ? win.get() : nsnull ;
 }
 
 static PRInt32

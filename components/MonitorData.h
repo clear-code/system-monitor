@@ -15,7 +15,7 @@ class MonitorData : public nsITimerCallback
 {
 public:
     MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
-                nsITimer *aTimer, clISystem *aSystem);
+                nsITimer *aTimer, clISystem *aSystem, nsIDOMWindow *aOwner);
     virtual ~MonitorData();
 
     NS_DECL_ISUPPORTS
@@ -34,7 +34,6 @@ private:
     nsresult GetMonitoringObject(nsIVariant **aValue);
 
     nsresult RemoveSelf();
-    nsCOMPtr<nsIDOMWindow> GetGlobal();
 };
 
 #endif /* __MONITOR_DATA_H__ */

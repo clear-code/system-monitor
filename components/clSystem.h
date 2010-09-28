@@ -8,6 +8,7 @@
 #include <nsISecurityCheckedComponent.h>
 #include <nsCOMPtr.h>
 #include <nsCOMArray.h>
+#include <nsIDOMWindow.h>
 
 #include "MonitorData.h"
 
@@ -34,6 +35,8 @@ private:
   nsCOMPtr<clICPU> mCPU;
 
   nsresult Init();
+
+  nsCOMPtr<nsIDOMWindow> GetGlobal();
 };
 
 #endif /* __CL_SYSTEM_H__ */

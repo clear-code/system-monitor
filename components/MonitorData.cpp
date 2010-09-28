@@ -21,16 +21,14 @@
 #include "clMemory.h"
 
 MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
-                         nsITimer *aTimer, clISystem *aSystem)
+                         nsITimer *aTimer, clISystem *aSystem, nsIDOMWindow *aOwner)
 {
     mTopic.Assign(aTopic);
     NS_ADDREF(mMonitor = aMonitor);
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
-
-    nsCOMPtr<nsIDOMWindow> owner = GetGlobal();
-    if (owner) {
-      NS_ADDREF(mOwner = owner);
+    if (aOwner) {
+      NS_ADDREF(mOwner = aOwner);
     }
 }
 
@@ -94,38 +92,6 @@ MonitorData::GetMonitoringObject(nsIVariant **aValue)
     NS_IF_ADDREF(*aValue = value);
 
     return value ? NS_OK : NS_ERROR_FAILURE;
-}
-
-nsCOMPtr<nsIDOMWindow>
-MonitorData::GetGlobal()
-{
-    nsresult rv;
-    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    if (NS_FAILED(rv))
-      return nsnull;
-
-    nsAXPCNativeCallContext *cc = nsnull;
-    xpc->GetCurrentNativeCallContext(&cc);
-    if (!cc)
-      return nsnull;
-
-    JSContext* cx;
-    rv = cc->GetJSContext(&cx);
-    if (NS_FAILED(rv) || !cx)
-      return nsnull;
-
-    JSObject *scope = ::JS_GetScopeChain(cx);
-    if (!scope)
-      return nsnull;
-
-    nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
-    xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, scope),
-                                        getter_AddRefs(wrapper));
-    if (!wrapper)
-      return nsnull;
-
-    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
-    return win ? win.get() : nsnull ;
 }
 
 /* nsITimerCallback */
