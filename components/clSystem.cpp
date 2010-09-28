@@ -128,8 +128,24 @@ clSystem::GetGlobal()
     if (!scope)
       return nsnull;
 
+    nsCOMPtr<nsISupports> supports = do_QueryInterface(static_cast<clISystem *>(this));
+    nsCOMPtr<nsIXPConnectJSObjectHolder> holder;
+    rv = xpc->WrapNative(cx, scope, supports, NS_GET_IID(nsISupports), getter_AddRefs(holder));
+    if (NS_FAILED(rv))
+      return nsnull;
+
+    JSObject* obj;
+    rv = holder->GetJSObject(&obj);
+    if (NS_FAILED(rv) || !obj)
+      return nsnull;
+
+    while (JSObject *parent = obj->getParent())
+      obj = parent;
+    if (!obj)
+      return nsnull;
+
     nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
-    xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, scope),
+    xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, obj),
                                         getter_AddRefs(wrapper));
     if (!wrapper)
       return nsnull;
