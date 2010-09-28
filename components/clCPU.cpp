@@ -7,10 +7,6 @@
 #ifdef HAVE_LIBGTOP2
 #include <glibtop/cpu.h>
 #elif defined(XP_WIN)
-#ifdef _WIN32_WINNT
-#undef _WIN32_WINNT
-#endif
-#define _WIN32_WINNT 0x0501 /* this is required to use GetSystemTimes! (it requires 0x0501 or later) */
 #include <windows.h>
 #undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
 #undef AddMonitor /* CAUTION! Use AddMonitorW instead */
