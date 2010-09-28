@@ -7,7 +7,11 @@
 
 #include <nsStringGlue.h>
 #include <nsITimer.h>
+#include <nsIDOMWindow.h>
+#include <nsIVariant.h>
 #include <nsCOMPtr.h>
+#include <jsapi.h>
+#include <jsobj.h>
 
 class MonitorData : public nsITimerCallback
 {
@@ -26,8 +30,10 @@ private:
     nsString mTopic;
     nsCOMPtr<clISystem> mSystem;
     nsCOMPtr<nsITimer> mTimer;
+    nsCOMPtr<nsIDOMWindow> mOwner;
 
     nsresult GetMonitoringObject(nsIVariant **aValue);
+    JSObject *GetGlobal();
 };
 
 #endif /* __MONITOR_DATA_H__ */

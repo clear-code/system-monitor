@@ -5,9 +5,10 @@
 #include "MonitorData.h"
 
 #include <nsComponentManagerUtils.h>
-#include <nsITimer.h>
 #include <nsCRT.h>
-#include <nsIVariant.h>
+
+#include <nsIXPConnect.h>
+#include <nsServiceManagerUtils.h>
 
 #include "clICPU.h"
 #include "clCPU.h"
@@ -22,6 +23,13 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
     NS_ADDREF(mMonitor = aMonitor);
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
+
+    JSObject *global = GetGlobal();
+/* how to get nsISupports from JSObject?
+    nsCOMPtr<nsISupports> outer = global->outerObject;
+    nsCOMPtr<nsIDOMWindow> owner = do_QueryInterface(static_cast<nsISupports *>(outer));
+    NS_ADDREF(mOwner = owner);
+*/
 }
 
 MonitorData::~MonitorData()
@@ -37,8 +45,26 @@ MonitorData::Destroy()
       NS_RELEASE(mMonitor);
       NS_RELEASE(mSystem);
       NS_RELEASE(mTimer);
+      if (mOwner) {
+        NS_RELEASE(mOwner);
+      }
     }
     return NS_OK;
+}
+
+JSObject *
+MonitorData::GetGlobal()
+{
+    nsCOMPtr<nsIXPConnectJSObjectHolder> monitor = do_QueryInterface(static_cast<clISystemMonitor *>(mMonitor));
+
+    JSObject* obj;
+    nsresult rv = monitor->GetJSObject(&obj);
+    if (rv != NS_OK)
+      return nsnull;
+
+    while (JSObject *parent = obj->getParent())
+      obj = parent;
+    return obj;
 }
 
 nsresult
