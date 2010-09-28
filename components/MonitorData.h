@@ -10,13 +10,12 @@
 #include <nsIDOMWindow.h>
 #include <nsIVariant.h>
 #include <nsCOMPtr.h>
-#include <jsapi.h>
-#include <jsobj.h>
 
 class MonitorData : public nsITimerCallback
 {
 public:
-    MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor, nsITimer *aTimer, clISystem *aSystem);
+    MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
+                nsITimer *aTimer, clISystem *aSystem);
     virtual ~MonitorData();
 
     NS_DECL_ISUPPORTS
@@ -33,7 +32,9 @@ private:
     nsCOMPtr<nsIDOMWindow> mOwner;
 
     nsresult GetMonitoringObject(nsIVariant **aValue);
-    JSObject *GetGlobal();
+
+    nsresult RemoveSelf();
+    nsCOMPtr<nsIDOMWindow> getGlobal();
 };
 
 #endif /* __MONITOR_DATA_H__ */

@@ -84,8 +84,8 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     nsresult rv;
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
     NS_ENSURE_SUCCESS(rv, rv);
+
     nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
-    NS_ENSURE_SUCCESS(rv, rv);
 
     MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system);
     mMonitors.AppendObject(data);

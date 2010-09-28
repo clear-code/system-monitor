@@ -49,3 +49,16 @@ function testRemoveMonitor() {
   system.removeMonitor("memory-usage", listener);
 }
 
+function testAutoStop() {
+  utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
+  assert.isDefined(content.system);
+
+  var monitor = content.wrappedJSObject.monitor = new FunctionMock();
+  monitor.expect(TypeOf(Ci.clICPUTime));
+  content.setTimeout('system.addMonitor("cpu-time", monitor, 500);', 0);
+  utils.wait(600);
+  utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
+  utils.wait(600);  
+}
+
+

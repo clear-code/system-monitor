@@ -7,8 +7,12 @@
 #include <nsComponentManagerUtils.h>
 #include <nsCRT.h>
 
+#include <jsapi.h>
+#include <jsobj.h>
 #include <nsIXPConnect.h>
 #include <nsServiceManagerUtils.h>
+#include <nsIDOMWindow.h>
+#include <nsPIDOMWindow.h>
 
 #include "clICPU.h"
 #include "clCPU.h"
@@ -24,12 +28,10 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
 
-    JSObject *global = GetGlobal();
-/* how to get nsISupports from JSObject?
-    nsCOMPtr<nsISupports> outer = global->outerObject;
-    nsCOMPtr<nsIDOMWindow> owner = do_QueryInterface(static_cast<nsISupports *>(outer));
-    NS_ADDREF(mOwner = owner);
-*/
+    nsCOMPtr<nsIDOMWindow> owner = getGlobal();
+    if (owner) {
+      NS_ADDREF(mOwner = owner);
+    }
 }
 
 MonitorData::~MonitorData()
@@ -52,19 +54,13 @@ MonitorData::Destroy()
     return NS_OK;
 }
 
-JSObject *
-MonitorData::GetGlobal()
+nsresult
+MonitorData::RemoveSelf()
 {
-    nsCOMPtr<nsIXPConnectJSObjectHolder> monitor = do_QueryInterface(static_cast<clISystemMonitor *>(mMonitor));
-
-    JSObject* obj;
-    nsresult rv = monitor->GetJSObject(&obj);
-    if (rv != NS_OK)
-      return nsnull;
-
-    while (JSObject *parent = obj->getParent())
-      obj = parent;
-    return obj;
+    if (mTimer) {
+      mSystem->RemoveMonitor(mTopic, mMonitor);
+    }
+    return NS_OK;
 }
 
 nsresult
@@ -100,10 +96,59 @@ MonitorData::GetMonitoringObject(nsIVariant **aValue)
     return value ? NS_OK : NS_ERROR_FAILURE;
 }
 
+nsCOMPtr<nsIDOMWindow>
+MonitorData::getGlobal()
+{
+    nsresult rv;
+    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
+    if (NS_FAILED(rv))
+      return nsnull;
+
+    nsAXPCNativeCallContext *cc = nsnull;
+    xpc->GetCurrentNativeCallContext(&cc);
+    if (!cc)
+      return nsnull;
+
+    JSContext* cx;
+    rv = cc->GetJSContext(&cx);
+    if (NS_FAILED(rv) || !cx)
+      return nsnull;
+
+    JSObject *scope = ::JS_GetScopeChain(cx);
+    if (!scope)
+      return nsnull;
+
+    nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
+    xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, scope),
+                                        getter_AddRefs(wrapper));
+    if (!wrapper)
+      return nsnull;
+
+    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
+    return win ? win.get() : nsnull ;
+}
+
 /* nsITimerCallback */
 NS_IMETHODIMP
 MonitorData::Notify(nsITimer *aTimer)
 {
+    if (mOwner != nsnull) {
+      nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(static_cast<nsIDOMWindow*>(mOwner));
+      if (window) {
+        PRBool closed = PR_FALSE;
+        window->GetClosed(&closed);
+        if (closed) {
+          RemoveSelf();
+          return NS_OK;
+        }
+        nsPIDOMWindow* outer = window->GetOuterWindow();
+        if (!outer || outer->GetCurrentInnerWindow() != window) {
+          RemoveSelf();
+          return NS_OK;
+        }
+      }
+    }
+
     nsCOMPtr<nsIVariant> value;
     GetMonitoringObject(getter_AddRefs(value));
 
