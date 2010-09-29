@@ -14,6 +14,7 @@ endif
 
 if PLATFORM_DARWIN
 platform_sources =
+platform_ldflags = -shrext .dylib
 endif
 
 if PLATFORM_LINUX
@@ -45,7 +46,7 @@ clSystemMonitor_la_LDFLAGS = 	\
 	-avoid-version		\
 	-export-dynamic $(no_undefined)		\
 	-module 		\
-	-shrext $(SHARED_LIBRARY_SUFFIX) \
+	$(platform_ldflags)	\
 	$(XPCOM_LDFLAGS)
 
 IDL_FILES = 			\
