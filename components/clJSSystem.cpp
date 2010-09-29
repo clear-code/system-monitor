@@ -16,6 +16,8 @@
 #include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
+#include <stdio.h>
+
 static void
 ConvertJSValToStr(nsString& aString, JSContext *aContext, jsval aValue)
 {
@@ -234,13 +236,13 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(monitorType, cx, argv[1]);
+    ConvertJSValToStr(monitorType, cx, argv[0]);
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[2]);
+    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);
 
     uint32 interval;
-    JS_ValueToECMAUint32(cx, argv[3], &interval);
+    JS_ValueToECMAUint32(cx, argv[2], &interval);
 
     PRBool nativeRet = PR_FALSE;
     rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
@@ -272,16 +274,16 @@ SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv,
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(monitorType, cx, argv[1]);
+    ConvertJSValToStr(monitorType, cx, argv[0]);
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[2]);
+    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);
 
     uint32 interval;
-    JS_ValueToECMAUint32(cx, argv[3], &interval);
+    JS_ValueToECMAUint32(cx, argv[2], &interval);
 
     nsCOMPtr<nsIDOMWindow> owner;
-    ConvertJSValToWindow(getter_AddRefs(owner), cx, argv[4]);
+    ConvertJSValToWindow(getter_AddRefs(owner), cx, argv[3]);
 
     PRBool nativeRet = PR_FALSE;
     rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
@@ -311,10 +313,10 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(monitorType, cx, argv[1]);
+    ConvertJSValToStr(monitorType, cx, argv[0]);
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[2]);
+    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);
 
     PRBool nativeRet = PR_FALSE;
     nsresult rv = nativeThis->RemoveMonitor(monitorType, monitor, &nativeRet);
