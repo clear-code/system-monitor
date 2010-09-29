@@ -14,6 +14,6 @@ interface clISystem : nsISupports
 {
   readonly attribute clICPU cpu;
   boolean addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
-  boolean addMonitorWith(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval, in nsIDOMWindow aOwner);
+  boolean addMonitorWithOwner(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval, in nsIDOMWindow aOwner);
   boolean removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
 };

@@ -243,7 +243,7 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     JS_ValueToECMAUint32(cx, argv[3], &interval);
 
     PRBool nativeRet = PR_FALSE;
-    rv = nativeThis->AddMonitorWith(monitorType, monitor, interval, owner, &nativeRet);
+    rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
     if (NS_FAILED(rv))
         return JS_FALSE;
 
@@ -252,7 +252,7 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
 }
 
 static JSBool
-SystemAddMonitorWith(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
     nsresult rv;
 
@@ -284,7 +284,7 @@ SystemAddMonitorWith(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsva
     ConvertJSValToWindow(getter_AddRefs(owner), cx, argv[4]);
 
     PRBool nativeRet = PR_FALSE;
-    rv = nativeThis->AddMonitorWith(monitorType, monitor, interval, owner, &nativeRet);
+    rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
     if (NS_FAILED(rv))
         return JS_FALSE;
 
@@ -332,7 +332,7 @@ static JSPropertySpec SystemProperties[] = {
 
 static JSFunctionSpec SystemMethods[] = {
     { "addMonitor", SystemAddMonitor, 0, 0, 0 },
-    { "addMonitorWith", SystemAddMonitorWith, 0, 0, 0 },
+    { "addMonitorWithOwner", SystemAddMonitorWithOwner, 0, 0, 0 },
     { "removeMonitor", SystemRemoveMonitor, 0, 0, 0 },
     JS_FS_END
 };
