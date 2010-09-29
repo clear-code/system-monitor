@@ -1,5 +1,6 @@
 #include "nsISupports.idl"
 #include "nsIVariant.idl"
+#include "nsIDOMWindow.idl"
 #include "clICPU.idl"
 
 [scriptable, function, uuid(f2d40ab4-7d4a-4626-a0b6-e6c8acc6f170)]
@@ -13,5 +14,6 @@ interface clISystem : nsISupports
 {
   readonly attribute clICPU cpu;
   boolean addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
+  boolean addMonitorWith(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval, in nsIDOMWindow aOwner);
   boolean removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
 };

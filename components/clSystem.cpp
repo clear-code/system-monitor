@@ -11,13 +11,6 @@
 #include <nsCRT.h>
 #include <nsIVariant.h>
 
-#include <jsapi.h>
-#include <jsobj.h>
-#include <nsIXPConnect.h>
-#include <nsServiceManagerUtils.h>
-#include <nsIDOMWindow.h>
-#include <nsPIDOMWindow.h>
-
 #ifdef HAVE_LIBGTOP2
 #include <glibtop.h>
 #include <glibtop/global.h>
@@ -90,6 +83,13 @@ clSystem::GetCpu(clICPU **aCPU)
 NS_IMETHODIMP
 clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval, PRBool *_retval NS_OUTPARAM)
 {
+    nsresult rv = AddMonitorWith(aTopic, aMonitor, aInterval, nsnull, _retval);
+    return NS_FAILED(rv) ? NS_ERROR_FAILURE : NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::AddMonitorWith(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval, nsIDOMWindow *aOwner, PRBool *_retval NS_OUTPARAM)
+{
     *_retval = PR_FALSE;
 
     nsresult rv;
@@ -98,10 +98,7 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
 
     nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
 
-    nsCOMPtr<nsIDOMWindow> owner;
-    GetGlobal(getter_AddRefs(owner));
-
-    MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system, owner);
+    MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system, aOwner);
     mMonitors.AppendObject(data);
 
     rv = timer->InitWithCallback(data,
@@ -110,58 +107,6 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     NS_ENSURE_SUCCESS(rv, rv);
 
     *_retval = PR_TRUE;
-    return NS_OK;
-}
-
-nsresult
-clSystem::GetGlobal(nsIDOMWindow **aGlobal)
-{
-    nsresult rv;
-    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    nsAXPCNativeCallContext *cc = nsnull;
-    rv = xpc->GetCurrentNativeCallContext(&cc);
-    if (NS_FAILED(rv) || !cc)
-        return NS_ERROR_FAILURE;
-
-    JSContext* cx;
-    rv = cc->GetJSContext(&cx);
-    if (NS_FAILED(rv) || !cx)
-        return NS_ERROR_FAILURE;
-
-    JSObject *scope = ::JS_GetScopeChain(cx);
-    if (!scope)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsISupports> supports = do_QueryInterface(static_cast<clISystem *>(this));
-    nsCOMPtr<nsIXPConnectJSObjectHolder> holder;
-    rv = xpc->WrapNative(cx, scope, supports, NS_GET_IID(nsISupports), getter_AddRefs(holder));
-    if (NS_FAILED(rv))
-        return NS_ERROR_FAILURE;
-
-    JSObject* obj;
-    rv = holder->GetJSObject(&obj);
-    if (NS_FAILED(rv) || !obj)
-        return NS_ERROR_FAILURE;
-
-    while (JSObject *parent = obj->getParent())
-        obj = parent;
-    if (!obj)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
-    rv = xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, obj),
-                                             getter_AddRefs(wrapper));
-    if (NS_FAILED(rv) || !wrapper)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper, &rv);
-    if (NS_FAILED(rv) || !win)
-        return NS_ERROR_FAILURE;
-
-    NS_ADDREF(*aGlobal = win);
-
     return NS_OK;
 }
 
