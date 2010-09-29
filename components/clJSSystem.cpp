@@ -19,7 +19,7 @@
 #include <stdio.h>
 
 static void
-ConvertJSValToStr(nsString& aString, JSContext *aContext, jsval aValue)
+ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 {
     JSString *jsstring;
 
@@ -33,7 +33,7 @@ ConvertJSValToStr(nsString& aString, JSContext *aContext, jsval aValue)
 }
 
 static void
-ConvertJSValToVariant(nsIVariant **aVariant, JSContext *aContext, jsval aValue)
+ConvertJSValToVariant(JSContext *aContext, jsval aValue, nsIVariant **aVariant)
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
@@ -50,10 +50,10 @@ ConvertJSValToVariant(nsIVariant **aVariant, JSContext *aContext, jsval aValue)
 
 
 static void
-ConvertJSValToMonitor(clISystemMonitor **aMonitor, JSContext *aContext, jsval aValue)
+ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMonitor)
 {
     nsCOMPtr<nsIVariant> wrapper;
-    ConvertJSValToVariant(getter_AddRefs(wrapper), aContext, aValue);
+    ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
     if (!wrapper)
         return;
 
@@ -63,10 +63,10 @@ ConvertJSValToMonitor(clISystemMonitor **aMonitor, JSContext *aContext, jsval aV
 }
 
 static void
-ConvertJSValToWindow(nsIDOMWindow **aWindow, JSContext *aContext, jsval aValue)
+ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
 {
     nsCOMPtr<nsIVariant> wrapper;
-    ConvertJSValToVariant(getter_AddRefs(wrapper), aContext, aValue);
+    ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
     if (!wrapper)
         return;
 
@@ -236,10 +236,10 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(monitorType, cx, argv[0]);
+    ConvertJSValToStr(cx, argv[0], monitorType);
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);
+    ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
 
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[2], &interval);
@@ -274,16 +274,16 @@ SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv,
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(monitorType, cx, argv[0]);
+    ConvertJSValToStr(cx, argv[0], monitorType);
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);
+    ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
 
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[2], &interval);
 
     nsCOMPtr<nsIDOMWindow> owner;
-    ConvertJSValToWindow(getter_AddRefs(owner), cx, argv[3]);
+    ConvertJSValToWindow(cx, argv[3], getter_AddRefs(owner));
 
     PRBool nativeRet = PR_FALSE;
     rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
@@ -313,7 +313,7 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(monitorType, cx, argv[0]);
+    ConvertJSValToStr(cx, argv[0], monitorType);
 
     nsCOMPtr<clISystemMonitor> monitor;
     ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);

@@ -83,7 +83,7 @@ clSystem::GetCpu(clICPU **aCPU)
 NS_IMETHODIMP
 clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval, PRBool *_retval NS_OUTPARAM)
 {
-    nsresult rv = AddMonitorWithOwner(aTopic, aMonitor, aInterval, nsnull, _retval);
+    nsresult rv = AddMonitorWithOwner(aTopic, aMonitor, aInterval, nsnull, &*_retval);
     return NS_FAILED(rv) ? NS_ERROR_FAILURE : NS_OK;
 }
 
