@@ -153,13 +153,13 @@ clSystem::GetGlobal(nsIDOMWindow **aGlobal)
     if (NS_FAILED(rv) || !wrapper)
         return NS_ERROR_FAILURE;
 
-    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
-    if (win) {
-        NS_ADDREF(*aGlobal = win.get());
-        return NS_OK;
-    }
+    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper, &rv);
+    if (NS_FAILED(rv) || !win)
+        return NS_ERROR_FAILURE;
 
-    return NS_ERROR_FAILURE;
+    NS_ADDREF(*aGlobal = win);
+
+    return NS_OK;
 }
 
 static PRInt32
