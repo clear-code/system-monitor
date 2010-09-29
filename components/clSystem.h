@@ -36,7 +36,7 @@ private:
 
   nsresult Init();
 
-  nsCOMPtr<nsIDOMWindow> GetGlobal();
+  nsresult GetGlobal(nsIDOMWindow **aGlobal);
 };
 
 #endif /* __CL_SYSTEM_H__ */

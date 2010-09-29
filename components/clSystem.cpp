@@ -79,7 +79,7 @@ NS_IMPL_ISUPPORTS2_CI(clSystem,
                       nsISecurityCheckedComponent)
 
 NS_IMETHODIMP
-clSystem::GetCpu(clICPU * *aCPU)
+clSystem::GetCpu(clICPU **aCPU)
 {
     NS_ADDREF(*aCPU = mCPU);
     return NS_OK;
@@ -93,7 +93,9 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     NS_ENSURE_SUCCESS(rv, rv);
 
     nsCOMPtr<clISystem> system = do_QueryInterface(static_cast<clISystem *>(this));
-    nsCOMPtr<nsIDOMWindow> owner = GetGlobal();
+
+    nsCOMPtr<nsIDOMWindow> owner;
+    GetGlobal(getter_AddRefs(owner));
 
     MonitorData *data = new MonitorData(aTopic, aMonitor, timer, system, owner);
     mMonitors.AppendObject(data);
@@ -106,52 +108,56 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     return NS_OK;
 }
 
-nsCOMPtr<nsIDOMWindow>
-clSystem::GetGlobal()
+nsresult
+clSystem::GetGlobal(nsIDOMWindow **aGlobal)
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    if (NS_FAILED(rv))
-        return nsnull;
+    NS_ENSURE_SUCCESS(rv, rv);
 
     nsAXPCNativeCallContext *cc = nsnull;
-    xpc->GetCurrentNativeCallContext(&cc);
-    if (!cc)
-        return nsnull;
+    rv = xpc->GetCurrentNativeCallContext(&cc);
+    if (NS_FAILED(rv) || !cc)
+        return NS_ERROR_FAILURE;
 
     JSContext* cx;
     rv = cc->GetJSContext(&cx);
     if (NS_FAILED(rv) || !cx)
-        return nsnull;
+        return NS_ERROR_FAILURE;
 
     JSObject *scope = ::JS_GetScopeChain(cx);
     if (!scope)
-        return nsnull;
+        return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsISupports> supports = do_QueryInterface(static_cast<clISystem *>(this));
     nsCOMPtr<nsIXPConnectJSObjectHolder> holder;
     rv = xpc->WrapNative(cx, scope, supports, NS_GET_IID(nsISupports), getter_AddRefs(holder));
     if (NS_FAILED(rv))
-        return nsnull;
+        return NS_ERROR_FAILURE;
 
     JSObject* obj;
     rv = holder->GetJSObject(&obj);
     if (NS_FAILED(rv) || !obj)
-        return nsnull;
+        return NS_ERROR_FAILURE;
 
     while (JSObject *parent = obj->getParent())
         obj = parent;
     if (!obj)
-        return nsnull;
+        return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
     xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, obj),
                                         getter_AddRefs(wrapper));
     if (!wrapper)
-        return nsnull;
+        return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
-    return win ? win.get() : nsnull;
+    if (win) {
+        NS_ADDREF(*aGlobal = win.get());
+        return NS_OK;
+    }
+
+    return NS_ERROR_FAILURE;
 }
 
 static PRInt32
