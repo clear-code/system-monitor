@@ -8,10 +8,10 @@ interface clISystemMonitor : nsISupports
   void monitor(in nsIVariant value);
 };
 
-[scriptable, uuid(4d62df13-deee-4d5a-a7d9-2cabe54c7930)]
+[scriptable, uuid(86937840-cba8-11df-bd3b-0800200c9a66)]
 interface clISystem : nsISupports
 {
   readonly attribute clICPU cpu;
-  void addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
-  void removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
+  boolean addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
+  boolean removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
 };

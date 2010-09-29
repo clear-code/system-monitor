@@ -56,7 +56,8 @@ nsresult
 MonitorData::RemoveSelf()
 {
     if (mTimer) {
-      mSystem->RemoveMonitor(mTopic, mMonitor);
+      PRBool result;
+      mSystem->RemoveMonitor(mTopic, mMonitor, &result);
     }
     return NS_OK;
 }

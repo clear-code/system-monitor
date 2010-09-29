@@ -88,8 +88,10 @@ clSystem::GetCpu(clICPU **aCPU)
 }
 
 NS_IMETHODIMP
-clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval)
+clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval, PRBool *_retval NS_OUTPARAM)
 {
+    *_retval = PR_FALSE;
+
     nsresult rv;
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
     NS_ENSURE_SUCCESS(rv, rv);
@@ -107,6 +109,7 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
                                  nsITimer::TYPE_REPEATING_SLACK);
     NS_ENSURE_SUCCESS(rv, rv);
 
+    *_retval = PR_TRUE;
     return NS_OK;
 }
 
@@ -179,8 +182,10 @@ findMonitorIndex(nsCOMArray<MonitorData>&monitors, clISystemMonitor *aMonitor)
 }
 
 NS_IMETHODIMP
-clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
+clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRBool *_retval NS_OUTPARAM)
 {
+    *_retval = PR_FALSE;
+
     PRInt32 count = mMonitors.Count();
     if (count == 0)
         return NS_OK;
@@ -192,6 +197,7 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
         mMonitors.RemoveObjectAt(found);
     }
 
+    *_retval = PR_TRUE;
     return NS_OK;
 }
 

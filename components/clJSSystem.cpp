@@ -15,7 +15,7 @@
 #include <nsServiceManagerUtils.h>
 
 static void
-ConvertJSValToStr(nsString& aString, JSContext* aContext, jsval aValue)
+ConvertJSValToStr(nsString& aString, JSContext *aContext, jsval aValue)
 {
     JSString *jsstring;
 
@@ -29,19 +29,19 @@ ConvertJSValToStr(nsString& aString, JSContext* aContext, jsval aValue)
 }
 
 static void
-ConvertJSValToMonitor(clISystemMonitor **aMonitor, JSContext* aContext, jsval aValue)
+ConvertJSValToMonitor(clISystemMonitor **aMonitor, JSContext *aContext, jsval aValue)
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
     if (NS_FAILED(rv))
         return;
 
-    nsCOMPtr<nsIVariant> wrapped;
-    rv = xpc->JSToVariant(aContext, aValue, getter_AddRefs(wrapped));
-    if (NS_FAILED(rv) || !wrapped)
+    JSObject *js_monitor = JSVAL_TO_OBJECT(aValue);
+    nsCOMPtr<clISystemMonitor> monitor;
+    rv = xpc->WrapJS(aContext, js_monitor, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
+    if (NS_FAILED(rv))
         return;
 
-    nsCOMPtr<clISystemMonitor> monitor = do_QueryInterface(static_cast<nsIVariant *>(wrapped));
     if (monitor)
         NS_ADDREF(*aMonitor = monitor);
 }
@@ -72,8 +72,8 @@ FinalizeSystem(JSContext *cx, JSObject *obj)
         nsIScriptObjectOwner *owner = nsnull;
         if (NS_OK == nativeThis->QueryInterface(NS_GET_IID(nsIScriptObjectOwner),
                                                 (void**)&owner)) {
-          owner->SetScriptObject(nsnull);
-          NS_RELEASE(owner);
+            owner->SetScriptObject(nsnull);
+            NS_RELEASE(owner);
         }
 
         // The addref was part of JSObject construction
@@ -125,6 +125,37 @@ getNative(JSContext *cx, JSObject *obj)
 }
 
 static JSBool
+SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
+{
+    nsresult rv;
+
+    clISystem *nativeThis = getNative(cx, obj);
+    if (!nativeThis)
+        return JS_FALSE;
+
+    nsCOMPtr<clICPU> cpu;
+    rv = nativeThis->GetCpu(getter_AddRefs(cpu));
+    if (NS_FAILED(rv))
+        return JS_FALSE;
+
+    nsCOMPtr<nsIWritableVariant> variant = do_CreateInstance("@mozilla.org/variant;1");
+    const nsIID iid = cpu->GetIID();
+    variant->SetAsInterface(iid, cpu);
+
+    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
+    if (NS_FAILED(rv))
+        return JS_FALSE;
+
+    nsCOMPtr<nsIVariant> returnedVariant = do_QueryInterface(static_cast<nsIWritableVariant*>(variant));
+    JSObject *scope = ::JS_GetScopeChain(cx);
+    rv = xpc->VariantToJS(cx, scope, returnedVariant, &*rval);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
+
+    return JS_TRUE;
+}
+
+static JSBool
 SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
     clISystem *nativeThis = getNative(cx, obj);
@@ -151,7 +182,12 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[3], &interval);
 
-    nativeThis->AddMonitor(monitorType, monitor, interval);
+    PRBool nativeRet = PR_FALSE;
+    nsresult rv = nativeThis->AddMonitor(monitorType, monitor, interval, &nativeRet);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
+
+    *rval = BOOLEAN_TO_JSVAL(nativeRet);
     return JS_TRUE;
 }
 
@@ -179,14 +215,24 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     nsCOMPtr<clISystemMonitor> monitor;
     ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[2]);
 
-    nativeThis->RemoveMonitor(monitorType, monitor);
+    PRBool nativeRet = PR_FALSE;
+    nsresult rv = nativeThis->RemoveMonitor(monitorType, monitor, &nativeRet);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
+
+    *rval = BOOLEAN_TO_JSVAL(nativeRet);
     return JS_TRUE;
 }
+
+static JSPropertySpec SystemProperties[] = {
+    { "cpu", 0, (JSPROP_SHARED | JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT), SystemGetCpu, nsnull },
+    { 0, 0, 0, nsnull, nsnull }
+};
 
 static JSFunctionSpec SystemMethods[] = {
     { "addMonitor", SystemAddMonitor, 0, 0, 0 },
     { "removeMonitor", SystemRemoveMonitor, 0, 0, 0 },
-    { nsnull, nsnull, 0, 0, 0 }
+    JS_FS_END
 };
 
 nsresult
@@ -197,16 +243,16 @@ InitSystemClass(JSContext *aContext, JSObject *aGlobal, void **aPrototype)
     if (aPrototype != nsnull)
         *aPrototype = nsnull;
 
-    proto = JS_InitClass(aContext,       // context
-                         aGlobal,        // global object
-                         nsnull,         // parent proto
-                         &SystemClass,   // JSClass
-                         nsnull,         // JSNative ctor
-                         nsnull,         // ctor args
-                         nsnull,         // proto props
-                         nsnull,         // proto funcs
-                         nsnull,         // ctor props (static)
-                         SystemMethods); // ctor funcs (static)
+    proto = JS_InitClass(aContext,         // context
+                         aGlobal,          // global object
+                         nsnull,           // parent proto
+                         &SystemClass,     // JSClass
+                         nsnull,           // JSNative ctor
+                         nsnull,           // ctor args
+                         nsnull,           // proto props
+                         nsnull,           // proto funcs
+                         SystemProperties, // ctor props (static)
+                         SystemMethods);   // ctor funcs (static)
 
     if (nsnull == proto)
         return NS_ERROR_FAILURE;

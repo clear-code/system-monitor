@@ -5,9 +5,7 @@
 
 #include "clISystem.h"
 
-#define MOZILLA_INTERNAL_API
 #include <nsIScriptObjectOwner.h>
-#undef MOZILLA_INTERNAL_API
 #include <nsComponentManagerUtils.h>
 #include <nsISecurityCheckedComponent.h>
 #include <nsCOMPtr.h>
