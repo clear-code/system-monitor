@@ -38,7 +38,7 @@ clSystem::~clSystem()
         mMonitors.RemoveObjectAt(i);
     }
     if (mCPU) {
-      NS_RELEASE(mCPU);
+        NS_RELEASE(mCPU);
     }
 }
 
@@ -112,46 +112,46 @@ clSystem::GetGlobal()
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
     if (NS_FAILED(rv))
-      return nsnull;
+        return nsnull;
 
     nsAXPCNativeCallContext *cc = nsnull;
     xpc->GetCurrentNativeCallContext(&cc);
     if (!cc)
-      return nsnull;
+        return nsnull;
 
     JSContext* cx;
     rv = cc->GetJSContext(&cx);
     if (NS_FAILED(rv) || !cx)
-      return nsnull;
+        return nsnull;
 
     JSObject *scope = ::JS_GetScopeChain(cx);
     if (!scope)
-      return nsnull;
+        return nsnull;
 
     nsCOMPtr<nsISupports> supports = do_QueryInterface(static_cast<clISystem *>(this));
     nsCOMPtr<nsIXPConnectJSObjectHolder> holder;
     rv = xpc->WrapNative(cx, scope, supports, NS_GET_IID(nsISupports), getter_AddRefs(holder));
     if (NS_FAILED(rv))
-      return nsnull;
+        return nsnull;
 
     JSObject* obj;
     rv = holder->GetJSObject(&obj);
     if (NS_FAILED(rv) || !obj)
-      return nsnull;
+        return nsnull;
 
     while (JSObject *parent = obj->getParent())
-      obj = parent;
+        obj = parent;
     if (!obj)
-      return nsnull;
+        return nsnull;
 
     nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
     xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, obj),
                                         getter_AddRefs(wrapper));
     if (!wrapper)
-      return nsnull;
+        return nsnull;
 
     nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
-    return win ? win.get() : nsnull ;
+    return win ? win.get() : nsnull;
 }
 
 static PRInt32
