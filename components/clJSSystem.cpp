@@ -57,7 +57,7 @@ ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMon
     if (!wrapper)
         return;
 
-    nsCOMPtr<clISystemMonitor> monitor = do_QueryInterface(static_cast<nsIVariant*>(wrapper));
+    nsCOMPtr<clISystemMonitor> monitor(do_QueryInterface(wrapper));
     if (monitor)
         NS_ADDREF(*aMonitor = monitor);
 }
@@ -70,35 +70,9 @@ ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
     if (!wrapper)
         return;
 
-    nsCOMPtr<nsIDOMWindow> window = do_QueryInterface(static_cast<nsIVariant*>(wrapper));
+    nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(wrapper));
     if (window)
         NS_ADDREF(*aWindow = window);
-}
-
-static nsresult
-GetGlobalFromContext(JSContext *aContext, nsIDOMWindow **aGlobal)
-{
-    nsresult rv;
-    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    JSObject *scope = ::JS_GetScopeChain(aContext);
-    if (!scope)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
-    rv = xpc->GetWrappedNativeOfJSObject(aContext, ::JS_GetGlobalForObject(aContext, scope),
-                                                   getter_AddRefs(wrapper));
-    if (NS_FAILED(rv) || !wrapper)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper, &rv);
-    if (NS_FAILED(rv) || !win)
-        return NS_ERROR_FAILURE;
-
-    NS_ADDREF(*aGlobal = win);
-
-    return NS_OK;
 }
 
 static void
@@ -201,7 +175,7 @@ SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
     if (NS_FAILED(rv))
         return JS_FALSE;
 
-    nsCOMPtr<nsIVariant> returnedVariant = do_QueryInterface(static_cast<nsIWritableVariant*>(variant));
+    nsCOMPtr<nsIVariant> returnedVariant(do_QueryInterface(variant));
     JSObject *scope = ::JS_GetScopeChain(cx);
     rv = xpc->VariantToJS(cx, scope, returnedVariant, &*rval);
     if (NS_FAILED(rv))
@@ -230,10 +204,7 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     if (argc < 3)
         return JS_FALSE;
 
-    nsCOMPtr<nsIDOMWindow> owner;
-    rv = GetGlobalFromContext(cx, getter_AddRefs(owner));
-    if (NS_FAILED(rv))
-        return JS_FALSE;
+    nsCOMPtr<nsIDOMWindowInternal> owner(do_QueryInterface(globalObject));
 
     nsAutoString monitorType;
     ConvertJSValToStr(cx, argv[0], monitorType);
@@ -316,7 +287,7 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     ConvertJSValToStr(cx, argv[0], monitorType);
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(getter_AddRefs(monitor), cx, argv[1]);
+    ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
 
     PRBool nativeRet = PR_FALSE;
     nsresult rv = nativeThis->RemoveMonitor(monitorType, monitor, &nativeRet);
