@@ -44,7 +44,8 @@ clSystemMonitor_la_LDFLAGS = 	\
         -rpath `pwd`/.libs      \
 	-avoid-version		\
 	-export-dynamic $(no_undefined)		\
-	-module			\
+	-module 		\
+	-shrext $(SHARED_LIBRARY_SUFFIX) \
 	$(XPCOM_LDFLAGS)
 
 IDL_FILES = 			\
