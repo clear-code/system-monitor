@@ -278,7 +278,8 @@ CL_InitSystemClass(nsIScriptContext *aContext, void **aPrototype)
         (PR_TRUE != JS_LookupProperty(jscontext, JSVAL_TO_OBJECT(vp), "prototype", &vp)) ||
         !JSVAL_IS_OBJECT(vp)) {
         nsresult rv = InitSystemClass(jscontext, global, (void**)&proto);
-        if (NS_FAILED(rv)) return rv;
+        if (NS_FAILED(rv))
+            return rv;
     }
     else if ((nsnull != constructor) && JSVAL_IS_OBJECT(vp)) {
         proto = JSVAL_TO_OBJECT(vp);
@@ -316,10 +317,10 @@ CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, nsISuppor
         nsCOMPtr<nsIScriptGlobalObject> sgo(do_QueryInterface(aParent));
 
         if (sgo) {
-          parent = sgo->GetGlobalJSObject();
+            parent = sgo->GetGlobalJSObject();
         }
         else {
-          return NS_ERROR_FAILURE;
+            return NS_ERROR_FAILURE;
         }
     }
 
