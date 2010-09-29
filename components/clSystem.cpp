@@ -146,9 +146,9 @@ clSystem::GetGlobal(nsIDOMWindow **aGlobal)
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
-    xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, obj),
-                                        getter_AddRefs(wrapper));
-    if (!wrapper)
+    rv = xpc->GetWrappedNativeOfJSObject(cx, ::JS_GetGlobalForObject(cx, obj),
+                                             getter_AddRefs(wrapper));
+    if (NS_FAILED(rv) || !wrapper)
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper);
