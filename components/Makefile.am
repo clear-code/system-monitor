@@ -30,6 +30,7 @@ clSystemMonitor_la_SOURCES = 	\
 	clMemory.h		\
 	clMemory.cpp		\
 	clSystem.cpp		\
+	clJSSystem.cpp		\
 	clSystem.h		\
 	clSystemModule.cpp	\
 	MonitorData.cpp		\

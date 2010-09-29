@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\clJSSystem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\clSystemModule.cpp"
 				>
 			</File>

@@ -29,6 +29,7 @@
 clSystem::clSystem()
      : mMonitors(nsnull)
 {
+    mScriptObject = nsnull;
 }
 
 clSystem::~clSystem()
@@ -74,8 +75,9 @@ clSystem::Init()
     return NS_OK;
 }
 
-NS_IMPL_ISUPPORTS2_CI(clSystem,
+NS_IMPL_ISUPPORTS3_CI(clSystem,
                       clISystem,
+                      nsIScriptObjectOwner,
                       nsISecurityCheckedComponent)
 
 NS_IMETHODIMP
@@ -192,6 +194,33 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor)
 
     return NS_OK;
 }
+
+
+/* nsISctiptObjectOwner */
+NS_IMETHODIMP
+clSystem::GetScriptObject(nsIScriptContext *aContext, void **aScriptObject)
+{
+    NS_PRECONDITION(nsnull != aScriptObject, "null arg");
+    nsresult rv = NS_OK;
+
+    if (mScriptObject == nsnull) {
+        rv = CL_NewScriptSystem(aContext,
+                                (clISystem*)this,
+                                (clISystem*)aContext->GetGlobalObject(),
+                                &mScriptObject);
+    }
+
+    *aScriptObject = mScriptObject;
+    return rv;
+}
+
+NS_IMETHODIMP
+clSystem::SetScriptObject(void *aScriptObject)
+{
+    mScriptObject = aScriptObject;
+    return NS_OK;
+}
+
 
 static char *
 cloneAllAccessString (void)
