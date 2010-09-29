@@ -16,9 +16,15 @@ TARGET_FILES = 					\
 	platform				\
 	chrome.manifest
 
+if PLATFORM_WINNT
+BINARY_SOURCE_DIR = components/SystemMonitor/Release
+else
+BINARY_SOURCE_DIR = components/.libs
+endif
+
 deploy:
 	mkdir -p platform/$(PLATFORM)_$(CPU)-$(COMPILER)/components && \
-	cp components/.libs/clSystemMonitor$(SHARED_LIBRARY_SUFFIX) \
+	cp $(BINARY_SOURCE_DIR)/clSystemMonitor$(SHARED_LIBRARY_SUFFIX) \
 	platform/$(PLATFORM)_$(CPU)-$(COMPILER)/components/
 
 xpi: deploy
