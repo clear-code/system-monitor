@@ -273,8 +273,11 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     nsCOMPtr<nsIDOMWindow> owner;
     rv = GetGlobalFromObject(cx, obj, getter_AddRefs(owner));
     if (NS_FAILED(rv) || !owner) {
-        JS_ReportError(cx, "Could not get the owner window.");
-        return JS_FALSE;
+        nsCOMPtr<clISystem> nativeThis(do_GetService(clISystem::GetCID(), &rv));
+        if (NS_FAILED(rv)) {
+            JS_ReportError(cx, "Could not get global system service.");
+            return JS_FALSE;
+        }
     }
 
     PRBool nativeRet = PR_FALSE;
@@ -319,6 +322,16 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     if (NS_FAILED(rv)) {
         JS_ReportError(cx, "Invalid monitor is specified.");
         return JS_FALSE;
+    }
+
+    nsCOMPtr<nsIDOMWindow> owner;
+    rv = GetGlobalFromObject(cx, obj, getter_AddRefs(owner));
+    if (NS_FAILED(rv) || !owner) {
+        nsCOMPtr<clISystem> nativeThis(do_GetService(clISystem::GetCID(), &rv));
+        if (NS_FAILED(rv)) {
+            JS_ReportError(cx, "Could not get global system service.");
+            return JS_FALSE;
+        }
     }
 
     PRBool nativeRet = PR_FALSE;
