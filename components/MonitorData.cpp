@@ -28,7 +28,7 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
     if (aOwner) {
-      NS_ADDREF(mOwner = aOwner);
+        NS_ADDREF(mOwner = aOwner);
     }
 }
 
@@ -41,13 +41,13 @@ nsresult
 MonitorData::Destroy()
 {
     if (mTimer) {
-      mTimer->Cancel();
-      NS_RELEASE(mMonitor);
-      NS_RELEASE(mSystem);
-      NS_RELEASE(mTimer);
-      if (mOwner) {
-        NS_RELEASE(mOwner);
-      }
+        mTimer->Cancel();
+        NS_RELEASE(mMonitor);
+        NS_RELEASE(mSystem);
+        NS_RELEASE(mTimer);
+        if (mOwner) {
+            NS_RELEASE(mOwner);
+        }
     }
     return NS_OK;
 }
@@ -56,8 +56,8 @@ nsresult
 MonitorData::RemoveSelf()
 {
     if (mTimer) {
-      PRBool result;
-      mSystem->RemoveMonitor(mTopic, mMonitor, &result);
+        PRBool result;
+        mSystem->RemoveMonitor(mTopic, mMonitor, &result);
     }
     return NS_OK;
 }
@@ -99,22 +99,8 @@ MonitorData::GetMonitoringObject(nsIVariant **aValue)
 NS_IMETHODIMP
 MonitorData::Notify(nsITimer *aTimer)
 {
-    if (mOwner != nsnull) {
-      nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(static_cast<nsIDOMWindow*>(mOwner));
-      if (window) {
-        PRBool closed = PR_FALSE;
-        window->GetClosed(&closed);
-        if (closed) {
-          RemoveSelf();
-          return NS_OK;
-        }
-        nsPIDOMWindow* outer = window->GetOuterWindow();
-        if (!outer || outer->GetCurrentInnerWindow() != window) {
-          RemoveSelf();
-          return NS_OK;
-        }
-      }
-    }
+    if (!OwnerStillExists())
+        return RemoveSelf();
 
     nsCOMPtr<nsIVariant> value;
     GetMonitoringObject(getter_AddRefs(value));
@@ -122,6 +108,27 @@ MonitorData::Notify(nsITimer *aTimer)
     mMonitor->Monitor(value);
 
     return NS_OK;
+}
+
+PRBool
+MonitorData::OwnerStillExists()
+{
+    if (mOwner == nsnull)
+        return PR_TRUE;
+
+    nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(static_cast<nsIDOMWindow*>(mOwner));
+    if (window) {
+        PRBool closed = PR_FALSE;
+        window->GetClosed(&closed);
+        if (closed)
+            return PR_FALSE;
+
+        nsPIDOMWindow outer = window->GetOuterWindow();
+        if (!outer || outer->GetCurrentInnerWindow() != window)
+            return PR_FALSE;
+      }
+    }
+    return PR_TRUE;
 }
 
 NS_IMPL_ISUPPORTS1(MonitorData,

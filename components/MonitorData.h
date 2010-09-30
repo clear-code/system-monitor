@@ -33,6 +33,7 @@ private:
 
     nsresult GetMonitoringObject(nsIVariant **aValue);
 
+    PRBool OwnerStillExists();
     nsresult RemoveSelf();
 };
 
