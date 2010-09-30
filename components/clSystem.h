@@ -10,7 +10,6 @@
 #include <nsISecurityCheckedComponent.h>
 #include <nsCOMPtr.h>
 #include <nsCOMArray.h>
-#include <nsIDOMWindow.h>
 
 #include "MonitorData.h"
 
@@ -18,6 +17,7 @@
 #define CL_SYSTEM_CID {0x6f8ad6ae, 0x05d8, 0x441e, {0xa8, 0xe9, 0x51, 0x53, 0xfc, 0xa9, 0x4c, 0x48}}
 
 class clSystem : public clISystem
+               , public clISystemInternal
                , public nsIScriptObjectOwner
                , public nsISecurityCheckedComponent
 {
@@ -30,6 +30,7 @@ public:
 
   NS_DECL_ISUPPORTS
   NS_DECL_CLISYSTEM
+  NS_DECL_CLISYSTEMINTERNAL
   NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
   NS_IMETHOD GetScriptObject(nsIScriptContext *aContext, void** aScriptObject);
@@ -41,8 +42,6 @@ private:
   nsCOMPtr<clICPU> mCPU;
 
   nsresult Init();
-
-  nsresult GetGlobal(nsIDOMWindow **aGlobal);
 
   void *mScriptObject;
 };

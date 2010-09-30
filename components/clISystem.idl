@@ -14,7 +14,12 @@ interface clISystem : nsISupports
 {
   readonly attribute clICPU cpu;
   boolean addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
-  boolean addMonitorWithOwner(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval, in nsIDOMWindow aOwner);
   boolean removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
+};
+
+[scriptable, uuid(c7982e50-cc55-11df-bd3b-0800200c9a66)]
+interface clISystemInternal : nsISupports
+{
+  boolean addMonitorWithOwner(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval, in nsIDOMWindow aOwner);
   PRInt32 removeAllMonitors();
 };

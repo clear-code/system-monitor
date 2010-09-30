@@ -16,6 +16,8 @@
 #include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
+#include <stdio.h>
+
 static nsresult
 ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 {
@@ -37,8 +39,7 @@ ConvertJSValToSupports(JSContext *aContext, jsval aValue, nsISupports **aSupport
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    if (NS_FAILED(rv))
-        return NS_ERROR_FAILURE;
+    NS_ENSURE_SUCCESS(rv, rv);
 
     nsCOMPtr<nsIVariant> variant;
     rv = xpc->JSToVariant(aContext, aValue, getter_AddRefs(variant));
@@ -57,13 +58,17 @@ ConvertJSValToSupports(JSContext *aContext, jsval aValue, nsISupports **aSupport
 static nsresult
 ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMonitor)
 {
-    nsCOMPtr<nsISupports> supports;
-    nsresult rv = ConvertJSValToSupports(aContext, aValue, getter_AddRefs(supports));
-    if (NS_FAILED(rv) || !supports)
+    nsresult rv;
+    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    JSObject* monitorObject = JSVAL_TO_OBJECT(aValue);
+    if (!monitorObject)
         return NS_ERROR_FAILURE;
 
-    nsCOMPtr<clISystemMonitor> monitor(do_QueryInterface(supports));
-    if (!monitor)
+    nsCOMPtr<clISystemMonitor> monitor;
+    rv = xpc->WrapJS(aContext, monitorObject, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
+    if (NS_FAILED(rv) || !monitor)
         return NS_ERROR_FAILURE;
 
     NS_ADDREF(*aMonitor = monitor);
@@ -245,46 +250,8 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
         return JS_FALSE;
 
     PRBool nativeRet = PR_FALSE;
-    rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
-    if (NS_FAILED(rv))
-        return JS_FALSE;
-
-    *rval = BOOLEAN_TO_JSVAL(nativeRet);
-    return JS_TRUE;
-}
-
-static JSBool
-SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
-{
-    nsresult rv;
-
-    clISystem *nativeThis = getNative(cx, obj);
-    if (!nativeThis)
-        return JS_FALSE;
-
-    if (argc < 4)
-        return JS_FALSE;
-
-    nsAutoString monitorType;
-    rv = ConvertJSValToStr(cx, argv[0], monitorType);
-    if (NS_FAILED(rv))
-        return JS_FALSE;
-
-    nsCOMPtr<clISystemMonitor> monitor;
-    rv = ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
-    if (NS_FAILED(rv))
-        return JS_FALSE;
-
-    uint32 interval;
-    JS_ValueToECMAUint32(cx, argv[2], &interval);
-
-    nsCOMPtr<nsIDOMWindow> owner;
-    rv = ConvertJSValToWindow(cx, argv[3], getter_AddRefs(owner));
-    if (NS_FAILED(rv))
-        return JS_FALSE;
-
-    PRBool nativeRet = PR_FALSE;
-    rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
+    nsCOMPtr<clISystemInternal> nativeThisInternal(do_QueryInterface(nativeThis));
+    rv = nativeThisInternal->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
     if (NS_FAILED(rv))
         return JS_FALSE;
 
@@ -323,22 +290,6 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     return JS_TRUE;
 }
 
-static JSBool
-SystemRemoveAllMonitors(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
-{
-    clISystem *nativeThis = getNative(cx, obj);
-    if (!nativeThis)
-        return JS_FALSE;
-
-    PRInt32 nativeRet = 0;
-    nsresult rv = nativeThis->RemoveAllMonitors(&nativeRet);
-    if (NS_FAILED(rv))
-        return JS_FALSE;
-
-    *rval = INT_TO_JSVAL(nativeRet);
-    return JS_TRUE;
-}
-
 static JSPropertySpec SystemProperties[] = {
     { "cpu", 0, (JSPROP_SHARED | JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT), SystemGetCpu, nsnull },
     { 0, 0, 0, nsnull, nsnull }
@@ -346,9 +297,7 @@ static JSPropertySpec SystemProperties[] = {
 
 static JSFunctionSpec SystemMethods[] = {
     { "addMonitor", SystemAddMonitor, 0, 0, 0 },
-    { "addMonitorWithOwner", SystemAddMonitorWithOwner, 0, 0, 0 },
     { "removeMonitor", SystemRemoveMonitor, 0, 0, 0 },
-    { "removeAllMonitors", SystemRemoveAllMonitors, 0, 0, 0 },
     JS_FS_END
 };
 

@@ -66,8 +66,9 @@ clSystem::Init()
     return NS_OK;
 }
 
-NS_IMPL_ISUPPORTS3_CI(clSystem,
+NS_IMPL_ISUPPORTS4_CI(clSystem,
                       clISystem,
+                      clISystemInternal,
                       nsIScriptObjectOwner,
                       nsISecurityCheckedComponent)
 
