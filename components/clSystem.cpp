@@ -22,26 +22,38 @@
 clSystem::clSystem()
      : mMonitors(nsnull)
 {
+    ++clSystem::gCount;
+
     mScriptObject = nsnull;
     Init();
 }
 
 clSystem::~clSystem()
 {
+    --clSystem::gCount;
+
     PRInt32 count;
     RemoveAllMonitors(&count);
-    if (mCPU) {
-        NS_RELEASE(mCPU);
+
+    if (clSystem::gCount == 0) {
+        NS_RELEASE(gCPU);
+        gCPU = nsnull;
     }
 }
+
+PRUint64 clSystem::gCount = 0;
+clCPU * clSystem::gCPU = nsnull;
 
 nsresult
 clSystem::Init()
 {
+    if (!gCPU) {
 #ifdef HAVE_LIBGTOP2
-    glibtop_init();
+        glibtop_init();
 #endif
-    NS_ADDREF(mCPU = new clCPU());
+        gCPU = new clCPU();
+        NS_ADDREF(gCPU);
+    }
     return NS_OK;
 }
 
@@ -54,7 +66,7 @@ NS_IMPL_ISUPPORTS4_CI(clSystem,
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU **aCPU)
 {
-    NS_ADDREF(*aCPU = mCPU);
+    NS_ADDREF(*aCPU = gCPU);
     return NS_OK;
 }
 
