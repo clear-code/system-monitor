@@ -155,7 +155,7 @@ MonitorData::OwnerStillExists()
     if (mOwner == nsnull)
         return PR_TRUE;
 
-    nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(mOwner);
+    nsCOMPtr<nsPIDOMWindow> window = do_QueryReferent(mOwner);
     if (window) {
         PRBool closed = PR_FALSE;
         window->GetClosed(&closed);
