@@ -40,13 +40,13 @@ ConvertJSValToSupports(JSContext *aContext, jsval aValue, nsISupports **aSupport
     if (NS_FAILED(rv))
         return NS_ERROR_FAILURE;
 
-    nsCOMPtr<nsIVariant> wrapper;
-    rv = xpc->JSToVariant(aContext, aValue, getter_AddRefs(wrapper));
-    if (NS_FAILED(rv) || !wrapper)
+    nsCOMPtr<nsIVariant> variant;
+    rv = xpc->JSToVariant(aContext, aValue, getter_AddRefs(variant));
+    if (NS_FAILED(rv) || !variant)
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsISupports> supports;
-    rv = wrapper->GetAsISupports(getter_AddRefs(supports));
+    rv = variant->GetAsISupports(getter_AddRefs(supports));
     if (NS_FAILED(rv) || !supports)
         return NS_ERROR_FAILURE;
 
@@ -54,24 +54,20 @@ ConvertJSValToSupports(JSContext *aContext, jsval aValue, nsISupports **aSupport
     return NS_OK;
 }
 
-
 static nsresult
 ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMonitor)
 {
-    nsresult rv;
-
     nsCOMPtr<nsISupports> supports;
-    rv = ConvertJSValToSupports(aContext, aValue, getter_AddRefs(supports));
+    nsresult rv = ConvertJSValToSupports(aContext, aValue, getter_AddRefs(supports));
     if (NS_FAILED(rv) || !supports)
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<clISystemMonitor> monitor(do_QueryInterface(supports));
-    if (monitor) {
-        NS_ADDREF(*aMonitor = monitor);
-        return NS_OK;
-    }
+    if (!monitor)
+        return NS_ERROR_FAILURE;
 
-    return NS_ERROR_FAILURE;
+    NS_ADDREF(*aMonitor = monitor);
+    return NS_OK;
 }
 
 static nsresult
@@ -83,12 +79,11 @@ ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(supports));
-    if (window) {
-        NS_ADDREF(*aWindow = window);
-        return NS_OK;
-    }
+    if (!window)
+        return NS_ERROR_FAILURE;
 
-    return NS_ERROR_FAILURE;
+    NS_ADDREF(*aWindow = window);
+    return NS_OK;
 }
 
 static nsresult
@@ -103,12 +98,11 @@ GetGlobalFromContext(JSContext *aContext, nsIDOMWindow **aGlobal)
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(globalObject));
-    if (window) {
-        NS_ADDREF(*aGlobal = window);
-        return NS_OK;
-    }
+    if (!window)
+        return NS_ERROR_FAILURE;
 
-    return NS_ERROR_FAILURE;
+    NS_ADDREF(*aGlobal = window);
+    return NS_OK;
 }
 
 static void
