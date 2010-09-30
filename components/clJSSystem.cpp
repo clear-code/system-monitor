@@ -273,7 +273,8 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     nsCOMPtr<nsIDOMWindow> owner;
     rv = GetGlobalFromObject(cx, obj, getter_AddRefs(owner));
     if (NS_FAILED(rv) || !owner) {
-        nsCOMPtr<clISystem> nativeThis(do_GetService(clISystem::GetCID(), &rv));
+        static NS_DEFINE_CID(kCL_SYSTEM_CID, CL_SYSTEM_CID);
+        nsCOMPtr<clISystem> nativeThis(do_GetService(kCL_SYSTEM_CID, &rv));
         if (NS_FAILED(rv)) {
             JS_ReportError(cx, "Could not get global system service.");
             return JS_FALSE;
@@ -327,7 +328,8 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     nsCOMPtr<nsIDOMWindow> owner;
     rv = GetGlobalFromObject(cx, obj, getter_AddRefs(owner));
     if (NS_FAILED(rv) || !owner) {
-        nsCOMPtr<clISystem> nativeThis(do_GetService(clISystem::GetCID(), &rv));
+        static NS_DEFINE_CID(kCL_SYSTEM_CID, CL_SYSTEM_CID);
+        nsCOMPtr<clISystem> nativeThis(do_GetService(kCL_SYSTEM_CID, &rv));
         if (NS_FAILED(rv)) {
             JS_ReportError(cx, "Could not get global system service.");
             return JS_FALSE;
