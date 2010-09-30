@@ -16,8 +16,6 @@
 #include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
-#include <stdio.h>
-
 static nsresult
 ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 {
@@ -215,6 +213,8 @@ SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
     rv = xpc->VariantToJS(cx, scope, returnedVariant, &*rval);
     if (NS_FAILED(rv))
         return JS_FALSE;
+
+    NS_IF_ADDREF(variant);
 
     return JS_TRUE;
 }
