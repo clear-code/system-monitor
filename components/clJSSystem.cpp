@@ -233,14 +233,6 @@ SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv,
     if (!nativeThis)
         return JS_FALSE;
 
-    nsIScriptGlobalObject *globalObject = nsnull;
-    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(cx);
-    if (scriptContext)
-        globalObject = scriptContext->GetGlobalObject();
-
-    if (!globalObject)
-        return JS_FALSE;
-
     if (argc < 4)
         return JS_FALSE;
 
@@ -272,14 +264,6 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     if (!nativeThis)
         return JS_FALSE;
 
-    nsIScriptGlobalObject *globalObject = nsnull;
-    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(cx);
-    if (scriptContext)
-        globalObject = scriptContext->GetGlobalObject();
-
-    if (!globalObject)
-        return JS_FALSE;
-
     if (argc < 2)
         return JS_FALSE;
 
@@ -303,14 +287,6 @@ SystemRemoveAllMonitors(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, j
 {
     clISystem *nativeThis = getNative(cx, obj);
     if (!nativeThis)
-        return JS_FALSE;
-
-    nsIScriptGlobalObject *globalObject = nsnull;
-    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(cx);
-    if (scriptContext)
-        globalObject = scriptContext->GetGlobalObject();
-
-    if (!globalObject)
         return JS_FALSE;
 
     PRInt32 nativeRet = 0;
