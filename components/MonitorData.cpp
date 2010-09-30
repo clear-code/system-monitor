@@ -5,12 +5,12 @@
 #include "MonitorData.h"
 
 #include <nsComponentManagerUtils.h>
+#include <nsServiceManagerUtils.h>
 #include <nsCRT.h>
 
 #include <jsapi.h>
 #include <jsobj.h>
 #include <nsIXPConnect.h>
-#include <nsServiceManagerUtils.h>
 #include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
@@ -28,7 +28,9 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
     if (aOwner) {
-        NS_ADDREF(mOwner = aOwner);
+        nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(aOwner);
+        if (window)
+            mOwner = do_GetWeakReference(window->GetCurrentInnerWindow());
     }
 }
 
@@ -45,9 +47,6 @@ MonitorData::Destroy()
         NS_RELEASE(mMonitor);
         NS_RELEASE(mSystem);
         NS_RELEASE(mTimer);
-        if (mOwner) {
-            NS_RELEASE(mOwner);
-        }
     }
     return NS_OK;
 }
@@ -116,18 +115,18 @@ MonitorData::OwnerStillExists()
     if (mOwner == nsnull)
         return PR_TRUE;
 
-    nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(static_cast<nsIDOMWindow*>(mOwner));
+    nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(mOwner);
     if (window) {
         PRBool closed = PR_FALSE;
         window->GetClosed(&closed);
         if (closed)
             return PR_FALSE;
 
-        nsPIDOMWindow outer = window->GetOuterWindow();
+        nsPIDOMWindow* outer = window->GetOuterWindow();
         if (!outer || outer->GetCurrentInnerWindow() != window)
             return PR_FALSE;
-      }
     }
+
     return PR_TRUE;
 }
 

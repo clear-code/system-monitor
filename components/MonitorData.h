@@ -10,6 +10,8 @@
 #include <nsIDOMWindow.h>
 #include <nsIVariant.h>
 #include <nsCOMPtr.h>
+#include <nsIWeakReference.h>
+#include <nsIWeakReferenceUtils.h>
 
 class MonitorData : public nsITimerCallback
 {
@@ -29,7 +31,7 @@ private:
     nsString mTopic;
     nsCOMPtr<clISystem> mSystem;
     nsCOMPtr<nsITimer> mTimer;
-    nsCOMPtr<nsIDOMWindow> mOwner;
+    nsWeakPtr mOwner;
 
     nsresult GetMonitoringObject(nsIVariant **aValue);
 
