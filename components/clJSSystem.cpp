@@ -149,7 +149,6 @@ GetGlobalFromObject(JSContext *aContext, JSObject *aObject, nsIDOMWindow **aGlob
                                                    getter_AddRefs(wrapper));
     if (NS_FAILED(rv) || !wrapper)
         return NS_ERROR_FAILURE;
-    }
 
     nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper, &rv);
     if (NS_FAILED(rv) || !win)
