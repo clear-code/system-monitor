@@ -74,27 +74,6 @@ ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 }
 
 static nsresult
-ConvertJSValToSupports(JSContext *aContext, jsval aValue, nsISupports **aSupports)
-{
-    nsresult rv;
-    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    nsCOMPtr<nsIVariant> variant;
-    rv = xpc->JSToVariant(aContext, aValue, getter_AddRefs(variant));
-    if (NS_FAILED(rv) || !variant)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsISupports> supports;
-    rv = variant->GetAsISupports(getter_AddRefs(supports));
-    if (NS_FAILED(rv) || !supports)
-        return NS_ERROR_FAILURE;
-
-    NS_ADDREF(*aSupports = supports);
-    return NS_OK;
-}
-
-static nsresult
 ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMonitor)
 {
     nsresult rv;
@@ -111,22 +90,6 @@ ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMon
         return NS_ERROR_FAILURE;
 
     NS_ADDREF(*aMonitor = monitor);
-    return NS_OK;
-}
-
-static nsresult
-ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
-{
-    nsCOMPtr<nsISupports> supports;
-    nsresult rv = ConvertJSValToSupports(aContext, aValue, getter_AddRefs(supports));
-    if (NS_FAILED(rv) || !supports)
-        return NS_ERROR_FAILURE;
-
-    nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(supports));
-    if (!window)
-        return NS_ERROR_FAILURE;
-
-    NS_ADDREF(*aWindow = window);
     return NS_OK;
 }
 
@@ -317,6 +280,8 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     PRBool nativeRet = PR_FALSE;
     nsCOMPtr<clISystemInternal> nativeThisInternal(do_QueryInterface(nativeThis));
     rv = nativeThisInternal->AddMonitorWithOwner(topic, monitor, interval, owner, &nativeRet);
+    if (owner)
+        NS_RELEASE(owner);
     if (NS_FAILED(rv)) {
         JS_ReportError(cx, "Failed to add monitor.");
         return JS_FALSE;
