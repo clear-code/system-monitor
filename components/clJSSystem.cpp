@@ -223,11 +223,6 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     if (!nativeThis)
         return JS_FALSE;
 
-    nsCOMPtr<nsIDOMWindow> owner;
-    rv = GetGlobalFromContext(cx, getter_AddRefs(owner));
-    if (NS_FAILED(rv) || !owner)
-        return JS_FALSE;
-
     if (argc < 3)
         return JS_FALSE;
 
@@ -243,6 +238,11 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
 
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[2], &interval);
+
+    nsCOMPtr<nsIDOMWindow> owner;
+    rv = GetGlobalFromContext(cx, getter_AddRefs(owner));
+    if (NS_FAILED(rv) || !owner)
+        return JS_FALSE;
 
     PRBool nativeRet = PR_FALSE;
     rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
