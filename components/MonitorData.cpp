@@ -68,9 +68,7 @@ MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,
     NS_ADDREF(mSystem = aSystem);
     NS_ADDREF(mTimer = aTimer);
     if (aOwner) {
-        nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(aOwner);
-        if (window)
-            mOwner = do_GetWeakReference(window->GetCurrentInnerWindow());
+        NS_ADDREF(mOwner = aOwner);
     }
 }
 
@@ -87,6 +85,9 @@ MonitorData::Destroy()
         NS_RELEASE(mMonitor);
         NS_RELEASE(mSystem);
         NS_RELEASE(mTimer);
+        if (mOwner) {
+            NS_RELEASE(mOwner);
+        }
     }
     return NS_OK;
 }
@@ -163,7 +164,7 @@ MonitorData::OwnerStillExists()
             return PR_FALSE;
 
         nsPIDOMWindow* outer = window->GetOuterWindow();
-        if (!outer || outer->GetCurrentInnerWindow() != window)
+        if (!outer /* || outer->GetCurrentInnerWindow() != window */)
             return PR_FALSE;
     }
 

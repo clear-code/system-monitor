@@ -31,7 +31,7 @@ private:
     nsString mTopic;
     nsCOMPtr<clISystem> mSystem;
     nsCOMPtr<nsITimer> mTimer;
-    nsWeakPtr mOwner;
+    nsCOMPtr<nsIDOMWindow> mOwner;
 
     nsresult GetMonitoringObject(nsIVariant **aValue);
 
