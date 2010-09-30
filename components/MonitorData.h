@@ -10,8 +10,6 @@
 #include <nsIDOMWindow.h>
 #include <nsIVariant.h>
 #include <nsCOMPtr.h>
-#include <nsIWeakReference.h>
-#include <nsIWeakReferenceUtils.h>
 
 class MonitorData : public nsITimerCallback
 {
