@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 
-static void
+static nsresult
 ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 {
     JSString *jsstring;
@@ -26,53 +26,84 @@ ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
     if (!JSVAL_IS_NULL(aValue) &&
         (jsstring = JS_ValueToString(aContext, aValue)) != nsnull) {
         aString.Assign(reinterpret_cast<const PRUnichar*>(JS_GetStringChars(jsstring)));
+        return NS_OK;
     }
     else {
         aString.Truncate();
+        return NS_ERROR_FAILURE;
     }
 }
 
-static void
+static nsresult
 ConvertJSValToVariant(JSContext *aContext, jsval aValue, nsIVariant **aVariant)
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
     if (NS_FAILED(rv))
-        return;
+        return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIVariant> wrapper;
     rv = xpc->JSToVariant(aContext, aValue, getter_AddRefs(wrapper));
     if (NS_FAILED(rv) || !wrapper)
-        return;
+        return NS_ERROR_FAILURE;
 
     NS_ADDREF(*aVariant = wrapper);
+    return NS_OK;
 }
 
 
-static void
+static nsresult
 ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMonitor)
 {
     nsCOMPtr<nsIVariant> wrapper;
-    ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
-    if (!wrapper)
-        return;
+    nsresult rv = ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
+    if (NS_FAILED(rv) || !wrapper)
+        return NS_ERROR_FAILURE;
 
     nsCOMPtr<clISystemMonitor> monitor(do_QueryInterface(wrapper));
-    if (monitor)
+    if (monitor) {
         NS_ADDREF(*aMonitor = monitor);
+        return NS_OK;
+    }
+
+    return NS_ERROR_FAILURE;
 }
 
-static void
+static nsresult
 ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
 {
     nsCOMPtr<nsIVariant> wrapper;
-    ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
-    if (!wrapper)
-        return;
+    nsresult rv = ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
+    if (NS_FAILED(rv) || !wrapper)
+        return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(wrapper));
-    if (window)
+    if (window) {
         NS_ADDREF(*aWindow = window);
+        return NS_OK;
+    }
+
+    return NS_ERROR_FAILURE;
+}
+
+static nsresult
+GetGlobalFromContext(JSContext *aContext, nsIDOMWindow **aGlobal)
+{
+    nsIScriptGlobalObject *globalObject = nsnull;
+    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(aContext);
+    if (scriptContext)
+        globalObject = scriptContext->GetGlobalObject();
+
+    if (!globalObject)
+        return NS_ERROR_FAILURE;
+
+    nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(globalObject));
+    if (window) {
+        NS_ADDREF(*aGlobal = window);
+        return NS_OK;
+    }
+
+    return NS_ERROR_FAILURE;
 }
 
 static void
@@ -193,24 +224,23 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     if (!nativeThis)
         return JS_FALSE;
 
-    nsIScriptGlobalObject *globalObject = nsnull;
-    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(cx);
-    if (scriptContext)
-        globalObject = scriptContext->GetGlobalObject();
-
-    if (!globalObject)
+    nsCOMPtr<nsIDOMWindow> owner;
+    rv = GetGlobalFromContext(cx, getter_AddRefs(owner));
+    if (NS_FAILED(rv) || !owner)
         return JS_FALSE;
 
     if (argc < 3)
         return JS_FALSE;
 
-    nsCOMPtr<nsIDOMWindowInternal> owner(do_QueryInterface(globalObject));
-
     nsAutoString monitorType;
-    ConvertJSValToStr(cx, argv[0], monitorType);
+    rv = ConvertJSValToStr(cx, argv[0], monitorType);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
+    rv = ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[2], &interval);
@@ -237,16 +267,22 @@ SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv,
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(cx, argv[0], monitorType);
+    rv = ConvertJSValToStr(cx, argv[0], monitorType);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
+    rv = ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[2], &interval);
 
     nsCOMPtr<nsIDOMWindow> owner;
-    ConvertJSValToWindow(cx, argv[3], getter_AddRefs(owner));
+    rv = ConvertJSValToWindow(cx, argv[3], getter_AddRefs(owner));
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     PRBool nativeRet = PR_FALSE;
     rv = nativeThis->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
@@ -260,6 +296,8 @@ SystemAddMonitorWithOwner(JSContext *cx, JSObject *obj, uintN argc, jsval *argv,
 static JSBool
 SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
+    nsresult rv;
+
     clISystem *nativeThis = getNative(cx, obj);
     if (!nativeThis)
         return JS_FALSE;
@@ -268,13 +306,17 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
         return JS_FALSE;
 
     nsAutoString monitorType;
-    ConvertJSValToStr(cx, argv[0], monitorType);
+    rv = ConvertJSValToStr(cx, argv[0], monitorType);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     nsCOMPtr<clISystemMonitor> monitor;
-    ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
+    rv = ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
+    if (NS_FAILED(rv))
+        return JS_FALSE;
 
     PRBool nativeRet = PR_FALSE;
-    nsresult rv = nativeThis->RemoveMonitor(monitorType, monitor, &nativeRet);
+    rv = nativeThis->RemoveMonitor(monitorType, monitor, &nativeRet);
     if (NS_FAILED(rv))
         return JS_FALSE;
 
