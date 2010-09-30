@@ -49,7 +49,6 @@
 #include <nscore.h>
 #include <nsIXPConnect.h>
 #include <nsIScriptContext.h>
-#include <nsIScriptObjectOwner.h>
 #include <nsIScriptGlobalObject.h>
 #include <nsDOMJSUtils.h>
 #include <nsIComponentManager.h>
@@ -230,6 +229,8 @@ getNative(JSContext *cx, JSObject *obj)
 static JSBool
 SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
 {
+    *rval = nsnull;
+
     nsresult rv;
 
     clISystem *nativeThis = getNative(cx, obj);
@@ -238,8 +239,10 @@ SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
 
     nsCOMPtr<clICPU> cpu;
     rv = nativeThis->GetCpu(getter_AddRefs(cpu));
-    if (NS_FAILED(rv))
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Could not get CPU information.");
         return JS_FALSE;
+    }
 
     nsCOMPtr<nsIWritableVariant> variant = do_CreateInstance("@mozilla.org/variant;1");
     const nsIID iid = cpu->GetIID();
@@ -252,8 +255,10 @@ SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
     nsCOMPtr<nsIVariant> returnedVariant(do_QueryInterface(variant));
     JSObject *scope = ::JS_GetScopeChain(cx);
     rv = xpc->VariantToJS(cx, scope, returnedVariant, &*rval);
-    if (NS_FAILED(rv))
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Could not return CPU information as nsIVariant.");
         return JS_FALSE;
+    }
 
     NS_IF_ADDREF(variant);
 
@@ -263,38 +268,52 @@ SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
 static JSBool
 SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
+    *rval = JSVAL_FALSE;
+
     nsresult rv;
 
     clISystem *nativeThis = getNative(cx, obj);
     if (!nativeThis)
         return JS_FALSE;
 
-    if (argc < 3)
+    if (argc < 3) {
+        JS_ReportError(cx, "addMonitor() requires 3 arguments.");
         return JS_FALSE;
+    }
 
-    nsAutoString monitorType;
-    rv = ConvertJSValToStr(cx, argv[0], monitorType);
-    if (NS_FAILED(rv))
+    nsAutoString topic;
+    rv = ConvertJSValToStr(cx, argv[0], topic);
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Invalid topic is specified.");
         return JS_FALSE;
+    }
 
     nsCOMPtr<clISystemMonitor> monitor;
     rv = ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
-    if (NS_FAILED(rv))
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Invalid monitor is specified.");
         return JS_FALSE;
+    }
 
     uint32 interval;
     JS_ValueToECMAUint32(cx, argv[2], &interval);
 
     nsCOMPtr<nsIDOMWindow> owner;
     rv = GetGlobalFromContext(cx, getter_AddRefs(owner));
-    if (NS_FAILED(rv) || !owner)
+/*
+    if (NS_FAILED(rv) || !owner) {
+        JS_ReportError(cx, "Could not get the owner window.");
         return JS_FALSE;
+    }
+*/
 
     PRBool nativeRet = PR_FALSE;
     nsCOMPtr<clISystemInternal> nativeThisInternal(do_QueryInterface(nativeThis));
-    rv = nativeThisInternal->AddMonitorWithOwner(monitorType, monitor, interval, owner, &nativeRet);
-    if (NS_FAILED(rv))
+    rv = nativeThisInternal->AddMonitorWithOwner(topic, monitor, interval, owner, &nativeRet);
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Failed to add monitor.");
         return JS_FALSE;
+    }
 
     *rval = BOOLEAN_TO_JSVAL(nativeRet);
     return JS_TRUE;
@@ -303,29 +322,39 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
 static JSBool
 SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
 {
+    *rval = JSVAL_FALSE;
+
     nsresult rv;
 
     clISystem *nativeThis = getNative(cx, obj);
     if (!nativeThis)
         return JS_FALSE;
 
-    if (argc < 2)
+    if (argc < 2) {
+        JS_ReportError(cx, "removeMonitor() requires 2 arguments.");
         return JS_FALSE;
+    }
 
-    nsAutoString monitorType;
-    rv = ConvertJSValToStr(cx, argv[0], monitorType);
-    if (NS_FAILED(rv))
+    nsAutoString topic;
+    rv = ConvertJSValToStr(cx, argv[0], topic);
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Invalid topic is specified.");
         return JS_FALSE;
+    }
 
     nsCOMPtr<clISystemMonitor> monitor;
     rv = ConvertJSValToMonitor(cx, argv[1], getter_AddRefs(monitor));
-    if (NS_FAILED(rv))
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Invalid monitor is specified.");
         return JS_FALSE;
+    }
 
     PRBool nativeRet = PR_FALSE;
-    rv = nativeThis->RemoveMonitor(monitorType, monitor, &nativeRet);
-    if (NS_FAILED(rv))
+    rv = nativeThis->RemoveMonitor(topic, monitor, &nativeRet);
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Failed to remove monitor.");
         return JS_FALSE;
+    }
 
     *rval = BOOLEAN_TO_JSVAL(nativeRet);
     return JS_TRUE;

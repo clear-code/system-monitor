@@ -10,7 +10,13 @@ testDefined.description = "defined test";
 testDefined.priority = 'must';
 function testDefined() {
   assert.isDefined(system);
-  assert.isInstanceOf(Ci.clISystem, system);
+  // assert.isInstanceOf(Ci.clISystem, system);
+
+  assert.isDefined(system.cpu);
+  assert.isInstanceOf(Ci.clICPU, system.cpu);
+
+  assert.isFunction(system.addMonitor);
+  assert.isFunction(system.removeMonitor);
 }
 
 testGetService.description = "get service test";
@@ -29,9 +35,6 @@ testAddRemoveMonitor.parameters = {
 };
 function testAddRemoveMonitor(aParameter) {
   testDefined();
-
-  assert.isFunction(system.addMonitor);
-  assert.isFunction(system.removeMonitor);
 
   var functionListenerMock = new FunctionMock(aParameter.target+' function');
   functionListenerMock.expect(aParameter.expected);
