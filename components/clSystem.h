@@ -46,7 +46,6 @@ public:
   NS_IMETHOD SetScriptObject(void* aScriptObject);
 
 private:
-  static clSystem *gSystem;
   nsCOMArray<MonitorData> mMonitors;
   nsCOMPtr<clICPU> mCPU;
 

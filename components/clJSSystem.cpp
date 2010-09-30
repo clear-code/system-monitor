@@ -145,8 +145,7 @@ GetGlobalFromObject(JSContext *aContext, JSObject *aObject, nsIDOMWindow **aGlob
         return NS_ERROR_FAILURE;
 
     nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
-    rv = xpc->GetWrappedNativeOfJSObject(aContext, ::JS_GetGlobalForObject(aContext, obj),
-                                                   getter_AddRefs(wrapper));
+    rv = xpc->GetWrappedNativeOfJSObject(aContext, obj, getter_AddRefs(wrapper));
     if (NS_FAILED(rv) || !wrapper)
         return NS_ERROR_FAILURE;
 

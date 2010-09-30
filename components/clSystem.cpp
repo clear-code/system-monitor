@@ -23,6 +23,7 @@ clSystem::clSystem()
      : mMonitors(nsnull)
 {
     mScriptObject = nsnull;
+    Init();
 }
 
 clSystem::~clSystem()
@@ -32,28 +33,6 @@ clSystem::~clSystem()
     if (mCPU) {
         NS_RELEASE(mCPU);
     }
-}
-
-clSystem * clSystem::gSystem = nsnull;
-
-clSystem *
-clSystem::GetInstance()
-{
-    if (!clSystem::gSystem) {
-        clSystem::gSystem = new clSystem();
-        clSystem::gSystem->Init();
-    }
-
-    return clSystem::gSystem;
-}
-
-clSystem *
-clSystem::GetService()
-{
-    clSystem *system = clSystem::GetInstance();
-    NS_IF_ADDREF(system);
-
-    return system;
 }
 
 nsresult
