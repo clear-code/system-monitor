@@ -197,6 +197,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\clMemoryWin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\clSystem.cpp"
 				>
 			</File>

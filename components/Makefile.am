@@ -10,18 +10,21 @@ noinst_LTLIBRARIES = clSystemMonitor.la
 
 if PLATFORM_WINNT
 platform_sources = 	\
-	clCPUWin.cpp
+	clCPUWin.cpp			\
+	clMemoryWin.cpp
 endif
 
 if PLATFORM_DARWIN
 platform_sources = 	\
-	clCPUDarwin.cpp
+	clCPUDarwin.cpp			\
+	clMemoryDarwin.cpp
 platform_ldflags = -shrext .dylib
 endif
 
 if PLATFORM_LINUX
 platform_sources = 	\
-	clCPULinux.cpp
+	clCPULinux.cpp			\
+	clMemoryLinux.cpp
 endif
 
 clSystemMonitor_la_SOURCES = 	\
