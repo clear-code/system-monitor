@@ -5,7 +5,16 @@
 
 #include "clISystem.h"
 
+/**
+ * CAUTION! nsIScriptObjectOwner.h of XULRunner 1.9.2 SDK includes nsAString.h,
+ * so this module couldn't be built by default. To solve this problem, we have
+ * to block including nsAString.h and others, so I define nsAString_h___ on
+ * this point.
+ */
+#define nsAString_h___
 #include <nsIScriptObjectOwner.h>
+#undef nsAString_h___
+
 #include <nsComponentManagerUtils.h>
 #include <nsISecurityCheckedComponent.h>
 #include <nsCOMPtr.h>
