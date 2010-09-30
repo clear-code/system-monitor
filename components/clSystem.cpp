@@ -27,10 +27,8 @@ clSystem::clSystem()
 
 clSystem::~clSystem()
 {
-    PRInt32 count = mMonitors.Count();
-    for (PRInt32 i = 0; i < count; i++) {
-        mMonitors.RemoveObjectAt(i);
-    }
+    PRInt32 count;
+    RemoveAllMonitors(&count);
     if (mCPU) {
         NS_RELEASE(mCPU);
     }
@@ -143,6 +141,23 @@ clSystem::RemoveMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PR
     }
 
     *_retval = PR_TRUE;
+    return NS_OK;
+}
+
+NS_IMETHODIMP
+clSystem::RemoveAllMonitors(PRInt32 *_retval NS_OUTPARAM)
+{
+    PRInt32 count = mMonitors.Count();
+    *_retval = count;
+    if (count == 0)
+        return NS_OK;
+
+    for (PRInt32 i = 0; i < count; i++) {
+        MonitorData *data = mMonitors.ObjectAt(i);
+        data->Destroy();
+        mMonitors.RemoveObjectAt(i);
+    }
+
     return NS_OK;
 }
 

@@ -16,4 +16,5 @@ interface clISystem : nsISupports
   boolean addMonitor(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval);
   boolean addMonitorWithOwner(in AString aTopic, in clISystemMonitor aMonitor, in long aInterval, in nsIDOMWindow aOwner);
   boolean removeMonitor(in AString aTopic, in clISystemMonitor aMonitor);
+  PRInt32 removeAllMonitors();
 };

@@ -298,6 +298,30 @@ SystemRemoveMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval
     return JS_TRUE;
 }
 
+static JSBool
+SystemRemoveAllMonitors(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *rval)
+{
+    clISystem *nativeThis = getNative(cx, obj);
+    if (!nativeThis)
+        return JS_FALSE;
+
+    nsIScriptGlobalObject *globalObject = nsnull;
+    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(cx);
+    if (scriptContext)
+        globalObject = scriptContext->GetGlobalObject();
+
+    if (!globalObject)
+        return JS_FALSE;
+
+    PRInt32 nativeRet = 0;
+    nsresult rv = nativeThis->RemoveAllMonitors(&nativeRet);
+    if (NS_FAILED(rv))
+        return JS_FALSE;
+
+    *rval = INT_TO_JSVAL(nativeRet);
+    return JS_TRUE;
+}
+
 static JSPropertySpec SystemProperties[] = {
     { "cpu", 0, (JSPROP_SHARED | JSPROP_ENUMERATE | JSPROP_READONLY | JSPROP_PERMANENT), SystemGetCpu, nsnull },
     { 0, 0, 0, nsnull, nsnull }
@@ -307,6 +331,7 @@ static JSFunctionSpec SystemMethods[] = {
     { "addMonitor", SystemAddMonitor, 0, 0, 0 },
     { "addMonitorWithOwner", SystemAddMonitorWithOwner, 0, 0, 0 },
     { "removeMonitor", SystemRemoveMonitor, 0, 0, 0 },
+    { "removeAllMonitors", SystemRemoveAllMonitors, 0, 0, 0 },
     JS_FS_END
 };
 
