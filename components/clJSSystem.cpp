@@ -46,6 +46,7 @@
 #include "clSystem.h"
 
 #include <jsapi.h>
+#include <jsobj.h>
 #include <nscore.h>
 #include <nsIXPConnect.h>
 #include <nsIScriptContext.h>
@@ -130,21 +131,31 @@ ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
 }
 
 static nsresult
-GetGlobalFromContext(JSContext *aContext, nsIDOMWindow **aGlobal)
+GetGlobalFromObject(JSContext *aContext, JSObject *aObject, nsIDOMWindow **aGlobal)
 {
-    nsIScriptGlobalObject *globalObject = nsnull;
-    nsIScriptContext *scriptContext = GetScriptContextFromJSContext(aContext);
-    if (scriptContext)
-        globalObject = scriptContext->GetGlobalObject();
+    nsresult rv;
+    nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
+    NS_ENSURE_SUCCESS(rv, rv);
 
-    if (!globalObject)
+    JSObject* obj = aObject;
+    while (JSObject *parent = obj->getParent()) {
+        obj = parent;
+    }
+    if (!obj)
         return NS_ERROR_FAILURE;
 
-    nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(globalObject));
-    if (!window)
+    nsCOMPtr<nsIXPConnectWrappedNative> wrapper;
+    rv = xpc->GetWrappedNativeOfJSObject(aContext, ::JS_GetGlobalForObject(aContext, obj),
+                                                   getter_AddRefs(wrapper));
+    if (NS_FAILED(rv) || !wrapper)
+        return NS_ERROR_FAILURE;
+    }
+
+    nsCOMPtr<nsPIDOMWindow> win = do_QueryWrappedNative(wrapper, &rv);
+    if (NS_FAILED(rv) || !win)
         return NS_ERROR_FAILURE;
 
-    NS_ADDREF(*aGlobal = window);
+    NS_ADDREF(*aGlobal = win);
     return NS_OK;
 }
 
@@ -299,13 +310,11 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     JS_ValueToECMAUint32(cx, argv[2], &interval);
 
     nsCOMPtr<nsIDOMWindow> owner;
-    rv = GetGlobalFromContext(cx, getter_AddRefs(owner));
-/*
+    rv = GetGlobalFromObject(cx, obj, getter_AddRefs(owner));
     if (NS_FAILED(rv) || !owner) {
         JS_ReportError(cx, "Could not get the owner window.");
         return JS_FALSE;
     }
-*/
 
     PRBool nativeRet = PR_FALSE;
     nsCOMPtr<clISystemInternal> nativeThisInternal(do_QueryInterface(nativeThis));
