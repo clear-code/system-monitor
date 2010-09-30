@@ -16,8 +16,6 @@
 #include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
-#include <stdio.h>
-
 static nsresult
 ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 {
@@ -35,7 +33,7 @@ ConvertJSValToStr(JSContext *aContext, jsval aValue, nsString& aString)
 }
 
 static nsresult
-ConvertJSValToVariant(JSContext *aContext, jsval aValue, nsIVariant **aVariant)
+ConvertJSValToSupports(JSContext *aContext, jsval aValue, nsISupports **aSupports)
 {
     nsresult rv;
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
@@ -47,7 +45,12 @@ ConvertJSValToVariant(JSContext *aContext, jsval aValue, nsIVariant **aVariant)
     if (NS_FAILED(rv) || !wrapper)
         return NS_ERROR_FAILURE;
 
-    NS_ADDREF(*aVariant = wrapper);
+    nsCOMPtr<nsISupports> supports;
+    rv = wrapper->GetAsISupports(getter_AddRefs(supports));
+    if (NS_FAILED(rv) || !supports)
+        return NS_ERROR_FAILURE;
+
+    NS_ADDREF(*aSupports = supports);
     return NS_OK;
 }
 
@@ -55,12 +58,14 @@ ConvertJSValToVariant(JSContext *aContext, jsval aValue, nsIVariant **aVariant)
 static nsresult
 ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMonitor)
 {
-    nsCOMPtr<nsIVariant> wrapper;
-    nsresult rv = ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
-    if (NS_FAILED(rv) || !wrapper)
+    nsresult rv;
+
+    nsCOMPtr<nsISupports> supports;
+    rv = ConvertJSValToSupports(aContext, aValue, getter_AddRefs(supports));
+    if (NS_FAILED(rv) || !supports)
         return NS_ERROR_FAILURE;
 
-    nsCOMPtr<clISystemMonitor> monitor(do_QueryInterface(wrapper));
+    nsCOMPtr<clISystemMonitor> monitor(do_QueryInterface(supports));
     if (monitor) {
         NS_ADDREF(*aMonitor = monitor);
         return NS_OK;
@@ -72,12 +77,12 @@ ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMon
 static nsresult
 ConvertJSValToWindow(JSContext *aContext, jsval aValue, nsIDOMWindow **aWindow)
 {
-    nsCOMPtr<nsIVariant> wrapper;
-    nsresult rv = ConvertJSValToVariant(aContext, aValue, getter_AddRefs(wrapper));
-    if (NS_FAILED(rv) || !wrapper)
+    nsCOMPtr<nsISupports> supports;
+    nsresult rv = ConvertJSValToSupports(aContext, aValue, getter_AddRefs(supports));
+    if (NS_FAILED(rv) || !supports)
         return NS_ERROR_FAILURE;
 
-    nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(wrapper));
+    nsCOMPtr<nsIDOMWindow> window(do_QueryInterface(supports));
     if (window) {
         NS_ADDREF(*aWindow = window);
         return NS_OK;
