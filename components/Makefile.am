@@ -9,16 +9,19 @@ CLEANFILES = 			\
 noinst_LTLIBRARIES = clSystemMonitor.la
 
 if PLATFORM_WINNT
-platform_sources =
+platform_sources = 	\
+	clCPUWin.cpp
 endif
 
 if PLATFORM_DARWIN
-platform_sources =
+platform_sources = 	\
+	clCPUDarwin.cpp
 platform_ldflags = -shrext .dylib
 endif
 
 if PLATFORM_LINUX
-platform_sources =
+platform_sources = 	\
+	clCPULinux.cpp
 endif
 
 clSystemMonitor_la_SOURCES = 	\

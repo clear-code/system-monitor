@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\clCPUWin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\clCPUTime.cpp"
 				>
 			</File>
