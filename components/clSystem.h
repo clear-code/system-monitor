@@ -15,7 +15,6 @@
 #include <nsIScriptObjectOwner.h>
 #undef nsAString_h___
 
-#include <nsComponentManagerUtils.h>
 #include <nsISecurityCheckedComponent.h>
 #include <nsCOMPtr.h>
 #include <nsCOMArray.h>

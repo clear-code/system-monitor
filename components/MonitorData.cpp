@@ -45,19 +45,10 @@
 #include "MonitorData.h"
 
 #include <nsComponentManagerUtils.h>
-#include <nsServiceManagerUtils.h>
-#include <nsCRT.h>
-
-#include <jsapi.h>
-#include <jsobj.h>
-#include <nsIXPConnect.h>
-#include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
-#include "clICPU.h"
 #include "clCPU.h"
 #include "clCPUTime.h"
-#include "clIMemory.h"
 #include "clMemory.h"
 
 MonitorData::MonitorData(const nsAString &aTopic, clISystemMonitor *aMonitor,

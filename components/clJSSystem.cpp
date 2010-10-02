@@ -47,14 +47,11 @@
 
 #include <jsapi.h>
 #include <jsobj.h>
-#include <nscore.h>
 #include <nsIXPConnect.h>
-#include <nsIScriptContext.h>
 #include <nsIScriptGlobalObject.h>
 #include <nsDOMJSUtils.h>
-#include <nsIComponentManager.h>
+#include <nsComponentManagerUtils.h>
 #include <nsServiceManagerUtils.h>
-#include <nsIDOMWindow.h>
 #include <nsPIDOMWindow.h>
 
 static nsresult

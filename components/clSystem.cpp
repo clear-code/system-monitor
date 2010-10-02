@@ -10,14 +10,12 @@
 #include <nsServiceManagerUtils.h>
 #include <nsITimer.h>
 #include <nsCRT.h>
-#include <nsIVariant.h>
 
 #ifdef HAVE_LIBGTOP2
 #include <glibtop.h>
 #include <glibtop/global.h>
 #endif
 
-#include "clICPU.h"
 #include "clCPU.h"
 
 clSystem::clSystem()

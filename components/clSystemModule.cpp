@@ -6,10 +6,9 @@
 
 #include <nsIGenericFactory.h>
 #include <nsICategoryManager.h>
+#include <nsIScriptNameSpaceManager.h>
 #include <nsServiceManagerUtils.h>
 #include <nsIClassInfoImpl.h>
-
-#include <nsIScriptNameSpaceManager.h>
 
 #include "clCPU.h"
 #include "clCPUTime.h"
