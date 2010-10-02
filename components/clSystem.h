@@ -32,9 +32,6 @@ class clSystem : public clISystem
                , public nsISecurityCheckedComponent
 {
 public:
-  static clSystem *GetInstance();
-  static clSystem *GetService();
-
   clSystem();
   virtual ~clSystem();
 
@@ -47,9 +44,8 @@ public:
   NS_IMETHOD SetScriptObject(void* aScriptObject);
 
 private:
+  nsCOMPtr<clICPU> mCPU;
   nsCOMArray<MonitorData> mMonitors;
-  static clCPU *gCPU;
-  static PRUint64 gCount;
 
   nsresult Init();
 

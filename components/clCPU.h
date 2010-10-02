@@ -31,6 +31,9 @@ class clCPU : public clICPU
             , public nsISecurityCheckedComponent
 {
 public:
+    static clCPU *GetInstance();
+    static clCPU *GetService();
+
     clCPU();
     virtual ~clCPU();
 
@@ -39,6 +42,7 @@ public:
     NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
 private:
+    static clCPU *gCPU;
     CL_CPUTime mPreviousTime;
 };
 

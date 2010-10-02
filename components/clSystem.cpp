@@ -7,6 +7,7 @@
 
 #include <nsIClassInfoImpl.h>
 #include <nsComponentManagerUtils.h>
+#include <nsServiceManagerUtils.h>
 #include <nsITimer.h>
 #include <nsCRT.h>
 #include <nsIVariant.h>
@@ -21,39 +22,35 @@
 
 clSystem::clSystem()
      : mMonitors(nsnull)
+     , mScriptObject(nsnull)
 {
-    ++clSystem::gCount;
-
-    mScriptObject = nsnull;
     Init();
 }
 
 clSystem::~clSystem()
 {
-    --clSystem::gCount;
 
     PRInt32 count;
     RemoveAllMonitors(&count);
 
-    if (clSystem::gCount == 0) {
-        NS_RELEASE(gCPU);
-        gCPU = nsnull;
-    }
+    if (mCPU)
+        NS_RELEASE(mCPU);
 }
-
-PRUint64 clSystem::gCount = 0;
-clCPU * clSystem::gCPU = nsnull;
 
 nsresult
 clSystem::Init()
 {
-    if (!gCPU) {
 #ifdef HAVE_LIBGTOP2
-        glibtop_init();
+    glibtop_init();
 #endif
-        gCPU = new clCPU();
-        NS_ADDREF(gCPU);
-    }
+
+    nsresult rv;
+    static NS_DEFINE_CID(kCL_CPU_CID, CL_CPU_CID);
+    nsCOMPtr<clICPU> cpu(do_GetService(kCL_CPU_CID, &rv));
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    NS_ADDREF(mCPU = cpu);
+
     return NS_OK;
 }
 
@@ -66,7 +63,7 @@ NS_IMPL_ISUPPORTS4_CI(clSystem,
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU **aCPU)
 {
-    NS_ADDREF(*aCPU = gCPU);
+    NS_ADDREF(*aCPU = mCPU);
     return NS_OK;
 }
 
