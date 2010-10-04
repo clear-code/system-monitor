@@ -52,6 +52,6 @@ private:
 };
 
 extern nsresult CL_InitSystemClass(nsIScriptContext *aContext, void **aPrototype);
-extern "C" nsresult CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, nsISupports *aParent, void **aReturn);
+extern "C" nsresult CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, void **aReturn);
 
 #endif /* __CL_SYSTEM_H__ */

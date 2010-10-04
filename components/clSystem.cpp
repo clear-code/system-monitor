@@ -159,7 +159,6 @@ clSystem::GetScriptObject(nsIScriptContext *aContext, void **aScriptObject)
     if (mScriptObject == nsnull) {
         rv = CL_NewScriptSystem(aContext,
                                 (clISystem*)this,
-                                (nsISupports*)aContext->GetGlobalObject(),
                                 &mScriptObject);
     }
 

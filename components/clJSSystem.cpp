@@ -415,7 +415,7 @@ CL_InitSystemClass(nsIScriptContext *aContext, void **aPrototype)
 }
 
 nsresult
-CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, nsISupports *aParent, void **aReturn)
+CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, void **aReturn)
 {
     NS_PRECONDITION(nsnull != aContext && nsnull != aSupports && nsnull != aReturn,
                     "null argument to CL_NewScriptSystem");
@@ -426,23 +426,10 @@ CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, nsISuppor
     nsresult rv = NS_OK;
     clISystem *system;
 
-    nsCOMPtr<nsIScriptObjectOwner> owner(do_QueryInterface(aParent));
-
-    if (owner) {
-        if (NS_OK != owner->GetScriptObject(aContext, (void **)&parent)) {
-            return NS_ERROR_FAILURE;
-        }
-    }
-    else {
-        nsCOMPtr<nsIScriptGlobalObject> sgo(do_QueryInterface(aParent));
-
-        if (sgo) {
-            parent = sgo->GetGlobalJSObject();
-        }
-        else {
-            return NS_ERROR_FAILURE;
-        }
-    }
+    nsCOMPtr<nsIScriptGlobalObject> global = aContext->GetGlobalObject();
+    if (!global)
+        return NS_ERROR_FAILURE;
+    parent = global->GetGlobalJSObject();
 
     rv = CL_InitSystemClass(aContext, (void **)&proto);
     if (NS_FAILED(rv))
