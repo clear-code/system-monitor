@@ -195,6 +195,7 @@ getNative(JSContext *cx, JSObject *obj)
     return native;
 }
 
+#include <stdio.h>
 static JSBool
 SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
 {
@@ -218,8 +219,10 @@ SystemGetCpu(JSContext *cx, JSObject *obj, jsid idval, jsval *rval)
     variant->SetAsInterface(iid, cpu);
 
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
-    if (NS_FAILED(rv))
+    if (NS_FAILED(rv)) {
+        JS_ReportError(cx, "Could not get XPConnect!");
         return JS_FALSE;
+    }
 
     nsCOMPtr<nsIVariant> returnedVariant(do_QueryInterface(variant));
     JSObject *scope = ::JS_GetScopeChain(cx);
