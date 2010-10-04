@@ -21,7 +21,7 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/dom" # nsIScriptNameSpaceManager.h
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/caps" # nsISecurityCheckedComponent.h
   else
-      XULRUNNER_PACKAGE_NAME="libxul-unstable"
+      XULRUNNER_PACKAGE_NAME="libxul"
       PKG_CHECK_MODULES(XPCOM, $XULRUNNER_PACKAGE_NAME)
 
       LIBXUL_SDK=`$PKG_CONFIG --variable=sdkdir $XULRUNNER_PACKAGE_NAME`
