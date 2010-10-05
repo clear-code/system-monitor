@@ -20,6 +20,12 @@ AC_DEFUN([AC_CHECK_XULRUNNER],
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/xpcom" # nsIVariant.h nsITimer.h
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/dom" # nsIScriptNameSpaceManager.h
       XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/caps" # nsISecurityCheckedComponent.h
+      # for Gecko 1.9.1
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/string" # nsAString.h
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/widget" # nsEvent.h
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/js" # jsapi.h, jsobj.h
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/xpconnect" # nsIXPConnect.h
+      XPCOM_CFLAGS="$XPCOM_CFLAGS -I$LIBXUL_SDK/include/content" # nsPIDOMEventTarget.h
   else
       XULRUNNER_PACKAGE_NAME="libxul"
       PKG_CHECK_MODULES(XPCOM, $XULRUNNER_PACKAGE_NAME)
