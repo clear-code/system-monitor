@@ -77,12 +77,8 @@ ConvertJSValToMonitor(JSContext *aContext, jsval aValue, clISystemMonitor **aMon
     nsCOMPtr<nsIXPConnect> xpc(do_GetService(nsIXPConnect::GetCID(), &rv));
     NS_ENSURE_SUCCESS(rv, rv);
 
-    JSObject* monitorObject = JSVAL_TO_OBJECT(aValue);
-    if (!monitorObject)
-        return NS_ERROR_FAILURE;
-
     nsCOMPtr<clISystemMonitor> monitor;
-    rv = xpc->WrapJS(aContext, monitorObject, NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
+    rv = xpc->WrapJS(aContext, JSVAL_TO_OBJECT(aValue), NS_GET_IID(clISystemMonitor), getter_AddRefs(monitor));
     if (NS_FAILED(rv) || !monitor)
         return NS_ERROR_FAILURE;
 
