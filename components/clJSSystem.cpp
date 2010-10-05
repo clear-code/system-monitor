@@ -134,7 +134,7 @@ FinalizeSystem(JSContext *cx, JSObject *obj)
 {
     nsISupports *nativeThis = (nsISupports*)JS_GetPrivate(cx, obj);
 
-    if (nativeThis) {
+    if (nsnull != nativeThis) {
         // get the js object
         nsIScriptObjectOwner *owner = nsnull;
         if (NS_OK == nativeThis->QueryInterface(NS_GET_IID(nsIScriptObjectOwner),
@@ -432,7 +432,7 @@ CL_NewScriptSystem(nsIScriptContext *aContext, nsISupports *aSupports, void **aR
 
     rv = CL_InitSystemClass(aContext, (void **)&proto);
     if (NS_FAILED(rv))
-        return NS_ERROR_FAILURE;
+        return rv;
 
     rv = CallQueryInterface(aSupports, &system);
     if (NS_FAILED(rv))
