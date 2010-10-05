@@ -79,6 +79,10 @@ MonitorData::Destroy()
         NS_RELEASE(mSystem);
         NS_RELEASE(mTimer);
     }
+
+    if (mCPU)
+        NS_RELEASE(mCPU);
+
     return NS_OK;
 }
 
@@ -93,20 +97,30 @@ MonitorData::RemoveSelf()
 }
 
 nsresult
+MonitorData::GetCpu(clICPU **aCPU)
+{
+    if (!mCPU)
+      NS_ADDREF(mCPU = new clCPU());
+
+    NS_ADDREF(*aCPU = mCPU);
+    return NS_OK;
+}
+
+nsresult
 MonitorData::GetMonitoringObject(nsIVariant **aValue)
 {
     nsCOMPtr<nsIWritableVariant> value;
 
     if (mTopic.Equals(NS_LITERAL_STRING("cpu-usage"))) {
         nsCOMPtr<clICPU> cpu;
-        mSystem->GetCpu(getter_AddRefs(cpu));
+        GetCpu(getter_AddRefs(cpu));
         double usage;
         cpu->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
     } else if (mTopic.Equals(NS_LITERAL_STRING("cpu-time"))) {
         nsCOMPtr<clICPU> cpu;
-        mSystem->GetCpu(getter_AddRefs(cpu));
+        GetCpu(getter_AddRefs(cpu));
         nsCOMPtr<clICPUTime> cpuTime;
         cpu->GetCurrentTime(getter_AddRefs(cpuTime));
         value = do_CreateInstance("@mozilla.org/variant;1");

@@ -41,14 +41,6 @@ clSystem::Init()
 #ifdef HAVE_LIBGTOP2
     glibtop_init();
 #endif
-
-    nsresult rv;
-    static NS_DEFINE_CID(kCL_CPU_CID, CL_CPU_CID);
-    nsCOMPtr<clICPU> cpu(do_GetService(kCL_CPU_CID, &rv));
-    NS_ENSURE_SUCCESS(rv, rv);
-
-    NS_ADDREF(mCPU = cpu);
-
     return NS_OK;
 }
 
@@ -61,6 +53,9 @@ NS_IMPL_ISUPPORTS4_CI(clSystem,
 NS_IMETHODIMP
 clSystem::GetCpu(clICPU **aCPU)
 {
+    if (!mCPU)
+      NS_ADDREF(mCPU = new clCPU());
+
     NS_ADDREF(*aCPU = mCPU);
     return NS_OK;
 }

@@ -4,6 +4,7 @@
 #include <mozilla-config.h>
 
 #include "clISystem.h"
+#include "clCPU.h"
 
 #include <nsStringGlue.h>
 #include <nsITimer.h>
@@ -30,6 +31,7 @@ public:
 private:
     nsString mTopic;
     nsCOMPtr<clISystem> mSystem;
+    nsCOMPtr<clICPU> mCPU;
     nsCOMPtr<nsITimer> mTimer;
     nsWeakPtr mOwner;
 
@@ -37,6 +39,7 @@ private:
 
     PRBool OwnerStillExists();
     nsresult RemoveSelf();
+    nsresult GetCpu(clICPU **aCPU);
 };
 
 #endif /* __MONITOR_DATA_H__ */
