@@ -292,7 +292,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     var item = this.item;
     if (!this.initialized ||
         !item ||
-        this.listening)
+        this.listening )
         return;
 
     this.size = this.getPref(this.domain+this.type+".size");
@@ -305,7 +305,10 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.initValueArray();
     this.drawGraph();
 
-    window.system.addMonitor(this.type, this, this.interval);
+    if (window.system)
+        window.system.addMonitor(this.type, this, this.interval);
+    else
+        this.drawDisabled();
     this.addPrefListener(this);
     this.startObserve();
 
@@ -319,7 +322,10 @@ SystemMonitorSimpleGraphItem.prototype = {
         !this.listening)
         return;
 
-    window.system.removeMonitor(this.type, this);
+    if (window.system)
+        window.system.removeMonitor(this.type, this);
+    else
+        this.drawDisabled();
     this.removePrefListener(this);
     this.stopObserve();
 
@@ -392,6 +398,32 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
       x = x + 2;
     }, this);
+    context.restore();
+  },
+
+  drawDisabled : function() {
+    var canvasElement = this.canvas;
+    var context = canvasElement.getContext("2d")
+    var w = canvasElement.width;
+    var h = canvasElement.height;
+
+    context.fillStyle = this.colorBackground;
+    context.fillRect(0, 0, w, h);
+
+    context.save();
+
+    context.beginPath();
+    context.strokeStyle = this.colorForeground;
+    context.lineWidth = 1.0;
+    context.lineCap = "square";
+    context.globalCompositeOperation = "copy";
+    context.moveTo(0, 0);
+    context.lineTo(w, h);
+    context.moveTo(0, h);
+    context.lineTo(w, 0);
+    context.closePath();
+    context.stroke();
+
     context.restore();
   },
 
