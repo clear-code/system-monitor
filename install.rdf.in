@@ -3,12 +3,12 @@
          xmlns:em="http://www.mozilla.org/2004/em-rdf#"
 	 xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <RDF:Description RDF:about="urn:mozilla:install-manifest"
-                 em:id="system-monitor@clear-code.com"
+                 em:id="@PACKAGE_NAME@@clear-code.com"
                  em:name="System Monitor"
                  em:version="@PACKAGE_VERSION@"
                  em:unpack="true"
-                 em:iconURL="chrome://system-monitor/content/icon.png"
-                 em:optionsURL="chrome://system-monitor/content/config.xul">
+                 em:iconURL="chrome://@PACKAGE_NAME@/content/icon.png"
+                 em:optionsURL="chrome://@PACKAGE_NAME@/content/config.xul">
   <em:updateURL>http://www.clear-code.com/update.rdf</em:updateURL>
   <em:updateKey>MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDN4ESXDa0ljqzSDoGs9yy82aR+8tPBIPT8O3FwvXleCB815eOCIKH4lT7L7nK9LKOzdrP5EwiqfugyM+SEXSikbgi+UEfM04HqAomXWUqc7tvXb1kmqx2VwLHxm1tiKuulv1HgHmJtYOh09Tv3+q6VOGX2SDcNe6dgnhnAIP4kYwIDAQAB</em:updateKey>
   <em:localized>
