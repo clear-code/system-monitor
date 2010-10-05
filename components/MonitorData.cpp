@@ -73,15 +73,16 @@ MonitorData::~MonitorData()
 nsresult
 MonitorData::Destroy()
 {
-    if (mTimer) {
-        mTimer->Cancel();
-        NS_RELEASE(mMonitor);
-        NS_RELEASE(mSystem);
-        NS_RELEASE(mTimer);
-    }
+    if (!mMonitor)
+        return NS_OK;
 
-    if (mCPU)
-        NS_RELEASE(mCPU);
+    if (mTimer)
+        mTimer->Cancel();
+
+    NS_IF_RELEASE(mTimer);
+    NS_IF_RELEASE(mMonitor);
+    NS_IF_RELEASE(mSystem);
+    NS_IF_RELEASE(mCPU);
 
     return NS_OK;
 }
@@ -89,7 +90,7 @@ MonitorData::Destroy()
 nsresult
 MonitorData::RemoveSelf()
 {
-    if (mTimer) {
+    if (mMonitor) {
         PRBool result;
         mSystem->RemoveMonitor(mTopic, mMonitor, &result);
     }
