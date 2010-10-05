@@ -305,10 +305,12 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.initValueArray();
     this.drawGraph();
 
-    if (window.system)
+    try {
         window.system.addMonitor(this.type, this, this.interval);
-    else
+    }
+    catch(e) {
         this.drawDisabled();
+    }
     this.addPrefListener(this);
     this.startObserve();
 
@@ -322,10 +324,12 @@ SystemMonitorSimpleGraphItem.prototype = {
         !this.listening)
         return;
 
-    if (window.system)
+    try {
         window.system.removeMonitor(this.type, this);
-    else
+    }
+    catch(e) {
         this.drawDisabled();
+    }
     this.removePrefListener(this);
     this.stopObserve();
 
