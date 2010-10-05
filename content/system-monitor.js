@@ -14,6 +14,12 @@ var SystemMonitorService = {
     return document.getElementById("system-monitor-bundle");
   },
 
+  get system() {
+    if (!this._system)
+      this._system = Components.classes["@clear-code.com/system;1"].getService(Components.interfaces.clISystem);
+    return this._system;
+  },
+
   init : function() {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
@@ -306,7 +312,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.drawGraph();
 
     try {
-        window.system.addMonitor(this.type, this, this.interval);
+        this.system.addMonitor(this.type, this, this.interval);
     }
     catch(e) {
         dump('system-monitor: addMonitor() failed\n'+
@@ -329,7 +335,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         return;
 
     try {
-        window.system.removeMonitor(this.type, this);
+        this.system.removeMonitor(this.type, this);
     }
     catch(e) {
         dump('system-monitor: removeMonitor() failed\n'+
