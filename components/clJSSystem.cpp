@@ -98,7 +98,7 @@ GetGlobalFromObject(JSContext *aContext, JSObject *aObject, nsIDOMWindow **aGlob
     NS_ENSURE_SUCCESS(rv, rv);
 
     JSObject* obj = aObject;
-    while (JSObject *parent = obj->getParent()) {
+    while (JSObject *parent = JS_GetParent(aContext, obj)) {
         obj = parent;
     }
     if (!obj)
