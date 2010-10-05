@@ -38,16 +38,16 @@ function testAddRemoveMonitor(aParameter) {
 
   var functionListenerMock = new FunctionMock(aParameter.target+' function');
   functionListenerMock.expect(aParameter.expected);
-  system.addMonitor(aParameter.target, functionListenerMock, 300);
+  assert.isTrue(system.addMonitor(aParameter.target, functionListenerMock, 300));
 
   var objectListenerMock = new Mock(aParameter.target+' object');
   objectListenerMock.expect('monitor', aParameter.expected);
-  system.addMonitor(aParameter.target, objectListenerMock, 300);
+  assert.isTrue(system.addMonitor(aParameter.target, objectListenerMock, 300));
 
   utils.wait(500);
 
-  system.removeMonitor(aParameter.target, functionListenerMock);
-  system.removeMonitor(aParameter.target, objectListenerMock);
+  assert.isTrue(system.removeMonitor(aParameter.target, functionListenerMock));
+  assert.isTrue(system.removeMonitor(aParameter.target, objectListenerMock));
 
   utils.wait(500);
 }
@@ -66,7 +66,7 @@ function testAutoStop() {
 
   monitor = new FunctionMock('added on a context in a chrome window');
   monitor.expect(TypeOf(Ci.clICPUTime));
-  content.system.addMonitor("cpu-time", monitor, 500);
+  assert.isTrue(content.system.addMonitor("cpu-time", monitor, 500));
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   utils.wait(600);
