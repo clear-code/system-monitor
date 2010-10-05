@@ -280,8 +280,6 @@ SystemAddMonitor(JSContext *cx, JSObject *obj, uintN argc, jsval *argv, jsval *r
     PRBool nativeRet = PR_FALSE;
     nsCOMPtr<clISystemInternal> nativeThisInternal(do_QueryInterface(nativeThis));
     rv = nativeThisInternal->AddMonitorWithOwner(topic, monitor, interval, owner, &nativeRet);
-    if (owner)
-        NS_RELEASE(owner);
     if (NS_FAILED(rv)) {
         JS_ReportError(cx, "Failed to add monitor.");
         return JS_FALSE;
