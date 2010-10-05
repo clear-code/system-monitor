@@ -309,6 +309,10 @@ SystemMonitorSimpleGraphItem.prototype = {
         window.system.addMonitor(this.type, this, this.interval);
     }
     catch(e) {
+        dump('system-monitor: addMonitor() failed\n'+
+             '  type: '+this.type+'\n'+
+             '  interval: '+this.interval+'\n'+
+             '  error:\n'+e.toString().replace(/^/gm, '    ')+'\n');
         this.drawDisabled();
     }
     this.addPrefListener(this);
@@ -328,6 +332,9 @@ SystemMonitorSimpleGraphItem.prototype = {
         window.system.removeMonitor(this.type, this);
     }
     catch(e) {
+        dump('system-monitor: removeMonitor() failed\n'+
+             '  type: '+this.type+'\n'+
+             '  error:\n'+e.toString().replace(/^/gm, '    ')+'\n');
         this.drawDisabled();
     }
     this.removePrefListener(this);
