@@ -6,30 +6,32 @@
 #undef AddMonitor /* CAUTION! Use AddMonitorW instead */
 #define FILETIME_TO_UINT64(v) (v.dwLowDateTime + ((UINT64)v.dwHighDateTime << 32))
 
-CL_CPUTime
-CL_GetCPUTime()
+nsAutoVoidArray*
+CL_GetCPUTimeInfoArray()
 {
+    nsAutoVoidArray *array = new nsAutoVoidArray();
+
     FILETIME idleTime, kernelTime, userTime;
     GetSystemTimes(&idleTime, &kernelTime, &userTime);
 
-    CL_CPUTime info = {
+    CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
         FILETIME_TO_UINT64(userTime),   // userTime
         FILETIME_TO_UINT64(kernelTime), // systemTime,
         0,                              // niceTime
         FILETIME_TO_UINT64(idleTime),   // idleTime
         0                               // IOWaitTime
     };
-    return info;
+    array->AppendElement(info);
+
+    return array;
 }
 
-CL_CPUTime
-CL_GetCPUTime(CL_CPUTime *aPrevious, clICPUTime **aCPUTime)
+nsresult
+CL_GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
 {
-    CL_CPUTime current = CL_GetCPUTime();
-
-    UINT64 user = current.userTime - aPrevious->userTime;
-    UINT64 kernel = current.systemTime - aPrevious->systemTime;
-    UINT64 idle = current.idleTime - aPrevious->idleTime;
+    UINT64 user = aCurrent->userTime - aPrevious->userTime;
+    UINT64 kernel = aCurrent->systemTime - aPrevious->systemTime;
+    UINT64 idle = aCurrent->idleTime - aPrevious->idleTime;
 
     UINT64 total = user + kernel;
 
@@ -57,5 +59,5 @@ CL_GetCPUTime(CL_CPUTime *aPrevious, clICPUTime **aCPUTime)
     }
 
     NS_ADDREF(*aCPUTime);
-    return current;
+    return NS_OK;
 }

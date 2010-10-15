@@ -1,10 +1,13 @@
 #include "nsISupports.idl"
 #include "clICPUTime.idl"
+#include "nsIVariant.idl"
 
 [scriptable, uuid(c98bfcd7-fa23-4d81-97a5-59eff0b2bacc)]
 
 interface clICPU : nsISupports
 {
   clICPUTime getCurrentTime();
+  nsIVariant getCurrentTimes();
   readonly attribute double usage;
+  readonly attribute nsIVariant usages;
 };

@@ -3,32 +3,34 @@
 
 #include <glibtop/cpu.h>
 
-CL_CPUTime
-CL_GetCPUTime()
+nsAutoVoidArray*
+CL_GetCPUTimeInfoArray()
 {
+    nsAutoVoidArray *array = new nsAutoVoidArray();
+
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
-    CL_CPUTime info = {
+    CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
         cpu.user,                          // userTime
         cpu.sys,                           // systemTime,
         cpu.nice,                          // niceTime
         cpu.idle,                          // idleTime
         cpu.iowait + cpu.irq + cpu.softirq // IOWaitTime
-    };
-    return info;
+    );
+    array->AppendElement(info);
+
+    return array;
 }
 
-CL_CPUTime
-CL_GetCPUTime(CL_CPUTime *aPrevious, clICPUTime **aCPUTime)
+nsresult
+CL_GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
 {
-    CL_CPUTime current = CL_GetCPUTime();
-
-    guint64 user = current.userTime - aPrevious->userTime;
-    guint64 system = current.systemTime - aPrevious->systemTime;
-    guint64 nice = current.niceTime - aPrevious->niceTime;
-    guint64 idle = current.idleTime - aPrevious->idleTime;
-    guint64 io_wait = current.IOWaitTime - aPrevious->IOWaitTime;
+    guint64 user = aCurrent->userTime - aPrevious->userTime;
+    guint64 system = aCurrent->systemTime - aPrevious->systemTime;
+    guint64 nice = aCurrent->niceTime - aPrevious->niceTime;
+    guint64 idle = aCurrent->idleTime - aPrevious->idleTime;
+    guint64 io_wait = aCurrent->IOWaitTime - aPrevious->IOWaitTime;
 
     guint64 total = user + system + nice + idle + io_wait;
 
@@ -43,5 +45,5 @@ CL_GetCPUTime(CL_CPUTime *aPrevious, clICPUTime **aCPUTime)
     }
 
     NS_ADDREF(*aCPUTime);
-    return current;
+    return NS_OK;
 }
