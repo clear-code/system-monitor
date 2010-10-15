@@ -45,7 +45,8 @@ public:
 
 private:
     nsAutoVoidArray *mPreviousTimes;
-    void UpdatePreviousTimes(nsAutoVoidArray *aCurrentTimes);
+    void SetPreviousTimes(nsAutoVoidArray *aCurrentTimes);
+    void DestroyPreviousTimes();
 };
 
 #endif /* __CL_CPU_H__ */

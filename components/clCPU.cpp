@@ -48,6 +48,7 @@ clCPU::clCPU()
 
 clCPU::~clCPU()
 {
+    DestroyPreviousTimes();
 }
 
 NS_IMPL_ISUPPORTS2_CI(clCPU,
@@ -55,7 +56,7 @@ NS_IMPL_ISUPPORTS2_CI(clCPU,
                       nsISecurityCheckedComponent)
 
 void
-clCPU::UpdatePreviousTimes(nsAutoVoidArray *aCurrentTimes)
+clCPU::DestroyPreviousTimes()
 {
     PRInt32 count = mPreviousTimes->Count();
     for (PRInt32 i = 0; i < count; i++) {
@@ -64,7 +65,12 @@ clCPU::UpdatePreviousTimes(nsAutoVoidArray *aCurrentTimes)
         mPreviousTimes->RemoveElementAt(i);
     }
     delete mPreviousTimes;
+}
 
+void
+clCPU::SetPreviousTimes(nsAutoVoidArray *aCurrentTimes)
+{
+    DestroyPreviousTimes();
     mPreviousTimes = aCurrentTimes;
 }
 
@@ -74,7 +80,7 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     nsAutoVoidArray *currentTimes = CL_GetCPUTimeInfoArray();
     CL_CPUTimeInfo currentTime = CL_SumCPUTimeInfoArray(currentTimes);
     CL_CPUTimeInfo previousTime = CL_SumCPUTimeInfoArray(mPreviousTimes);
-    UpdatePreviousTimes(currentTimes);
+    SetPreviousTimes(currentTimes);
 
     nsCOMPtr<clICPUTime> cpuTime;
     nsresult rv = CL_GetCPUTime(&previousTime, &currentTime, getter_AddRefs(cpuTime));
