@@ -117,7 +117,7 @@ var SystemMonitorService = {
       var buttons = currentset.replace(/__empty/, "").split(',');
 
       this.items.forEach(function(aItem) {
-        if (this.getPref(this.domain+aItem.type+".initialShow"))
+        if (this.getPref(this.domain+aItem.id+".initialShow"))
           return;
 
         if (currentset.indexOf(aItem.itemId) < 0) {
@@ -128,7 +128,7 @@ var SystemMonitorService = {
             buttons.push("spring");
           buttons.push(aItem.itemId);
         }
-        this.setPref(this.domain+aItem.type+".initialShow", true);
+        this.setPref(this.domain+aItem.id+".initialShow", true);
       }, this);
       currentset = bar.currentSet.replace(/__empty/, "");
       var newset = buttons.join(",");
@@ -255,7 +255,7 @@ SystemMonitorItem.prototype = {
   __proto__ : SystemMonitorService,
   item : null,
   itemId : null,
-  type : null,
+  id   : null,
   init : function() {
   },
   destroy : function() {
@@ -269,6 +269,7 @@ function SystemMonitorSimpleGraphItem()
 SystemMonitorSimpleGraphItem.prototype = {
   __proto__ : SystemMonitorItem.prototype,
 
+  id       : '',
   type     : '',
   itemId   : '',
   imageId  : '',
@@ -301,10 +302,10 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.listening )
         return;
 
-    this.size = this.getPref(this.domain+this.type+".size");
-    this.interval = this.getPref(this.domain+this.type+".interval");
-    this.colorBackground = this.getPref(this.domain+this.type+".color.background");
-    this.colorForeground = this.getPref(this.domain+this.type+".color.foreground");
+    this.size = this.getPref(this.domain+this.id+".size");
+    this.interval = this.getPref(this.domain+this.id+".interval");
+    this.colorBackground = this.getPref(this.domain+this.id+".color.background");
+    this.colorForeground = this.getPref(this.domain+this.id+".color.foreground");
 
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
@@ -389,7 +390,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.lineTo(aX, aEndY);
     aContext.closePath();
     aContext.stroke();
-    return aEndY - 1;
+    return aEndY;
   },
 
   drawGraph : function() {
@@ -408,10 +409,20 @@ SystemMonitorSimpleGraphItem.prototype = {
       let y_to = y_from;
       if (aValue == undefined) {
         this.drawLine(context, this.colorBackground, x, y_from, 0);
-      } else {
-        y_to = y_to - (y * Math.max(0, Math.min(1, aValue)));
+      }
+      else if (typeof aValue == 'object') { // array
+        let each_y = Math.max(1, y) / aValue.length;
+        aValue.forEach(function(aValue) {
+          y_to = y_from - (each_y * Math.max(0, Math.min(1, aValue)));
+          y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
+          y_from = this.drawLine(context, this.colorBackground, x, y_from, y_to);
+          y_from -= 0.5;
+        }, this);
+      }
+      else {
+        y_to = y - (y * Math.max(0, Math.min(1, aValue)));
         y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
-        this.drawLine(context, this.colorBackground, x, y_from, y_to);
+        this.drawLine(context, this.colorBackground, x, y_from, 0);
       }
       x = x + 2;
     }, this);
@@ -453,7 +464,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   // preferences listener
   onChangePref : function(aData) {
-    switch (aData.replace(this.domain+this.type+'.', '')) {
+    switch (aData.replace(this.domain+this.id+'.', '')) {
       case "size":
         this.size = this.getPref(aData);
         this.update();
@@ -496,7 +507,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         if (aData.indexOf(this.itemId) > -1) {
           this.image.src = "";
           this.setPref(
-            this.domain+this.type+".size",
+            this.domain+this.id+".size",
             this.canvas.parentNode.boxObject.width
           );
           this.init();
@@ -512,7 +523,8 @@ function SystemMonitorCPUItem()
 }
 SystemMonitorCPUItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  type     : 'cpu-usage',
+  id       : 'cpu-usage',
+  type     : 'cpu-usages',
   itemId   : 'system-monitor-cpu-usage',
   imageId  : 'system-monitor-cpu-usage-backup',
   canvasId : 'system-monitor-cpu-usage-canvas',
@@ -522,11 +534,26 @@ SystemMonitorCPUItem.prototype = {
   // clISystemMonitor
   monitor : function(aValue) {
     this.valueArray.shift();
+    if (aValue.length > 1 && !this.getPref(this.domain+this.id+'.multiple')) {
+      let total = 0;
+      aValue.forEach(function(aEachValue) {
+        total += aEachValue;
+      });
+      total = total / aValue.length;
+      aValue = [total];
+    }
     this.valueArray.push(aValue);
     this.drawGraph();
+    var parts = aValue.map(function(aValue) {
+          return this.bundle.getFormattedString(
+                   'cpu_usage_tooltip_part',
+                   [parseInt(aValue * 100)]
+                 );
+        }, this);
+    parts = parts.join(this.bundle.getString('cpu_usage_tooltip_delimiter'));
     this.tooltip.textContent = this.bundle.getFormattedString(
                                  'cpu_usage_tooltip',
-                                 [parseInt(aValue * 100)]
+                                 [parts]
                                );
   }
 };
@@ -536,6 +563,7 @@ function SystemMonitorMemoryItem()
 }
 SystemMonitorMemoryItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  id       : 'memory-usage',
   type     : 'memory-usage',
   itemId   : 'system-monitor-memory-usage',
   imageId  : 'system-monitor-memory-usage-backup',
