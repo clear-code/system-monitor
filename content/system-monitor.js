@@ -412,11 +412,15 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
       else if (typeof aValue == 'object') { // array
         let each_y = Math.max(1, y) / aValue.length;
-        aValue.forEach(function(aValue) {
+        let last = aValue.length - 1;
+        aValue.forEach(function(aValue, aIndex) {
           y_to = y_from - (each_y * Math.max(0, Math.min(1, aValue)));
           y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
-          y_from = this.drawLine(context, this.colorBackground, x, y_from, y_to);
-          y_from -= 0.5;
+          if (aIndex != last) {
+            context.globalAlpha = 0.5;
+            y_from = this.drawLine(context, this.colorBackground, x, y_from, y_to - 1);
+            context.globalAlpha = 1;
+          }
         }, this);
       }
       else {
