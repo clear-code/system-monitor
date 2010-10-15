@@ -28,7 +28,7 @@ CL_GetCPUTimeInfoArray()
             processorInfos[i].cpu_ticks[CPU_STATE_NICE],
             processorInfos[i].cpu_ticks[CPU_STATE_IDLE],
             0
-        };
+        );
         array->AppendElement(info);
     }
     return array;
