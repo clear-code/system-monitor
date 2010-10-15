@@ -20,7 +20,7 @@ CL_GetCPUTimeInfoArray()
         0,                              // niceTime
         FILETIME_TO_UINT64(idleTime),   // idleTime
         0                               // IOWaitTime
-    };
+    );
     array->AppendElement(info);
 
     return array;
