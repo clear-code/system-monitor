@@ -119,6 +119,13 @@ MonitorData::GetMonitoringObject(nsIVariant **aValue)
         cpu->GetUsage(&usage);
         value = do_CreateInstance("@mozilla.org/variant;1");
         value->SetAsDouble(usage);
+    } else if (mTopic.Equals(NS_LITERAL_STRING("cpu-usages"))) {
+        nsCOMPtr<clICPU> cpu;
+        GetCpu(getter_AddRefs(cpu));
+        nsCOMPtr<nsIVariant> reader;
+        cpu->GetUsages(getter_AddRefs(reader));
+        value = do_CreateInstance("@mozilla.org/variant;1");
+        value->SetFromVariant(reader);
     } else if (mTopic.Equals(NS_LITERAL_STRING("cpu-time"))) {
         nsCOMPtr<clICPU> cpu;
         GetCpu(getter_AddRefs(cpu));
@@ -127,6 +134,13 @@ MonitorData::GetMonitoringObject(nsIVariant **aValue)
         value = do_CreateInstance("@mozilla.org/variant;1");
         const nsIID iid = cpuTime->GetIID();
         value->SetAsInterface(iid, cpuTime);
+    } else if (mTopic.Equals(NS_LITERAL_STRING("cpu-times"))) {
+        nsCOMPtr<clICPU> cpu;
+        GetCpu(getter_AddRefs(cpu));
+        nsCOMPtr<nsIVariant> reader;
+        cpu->GetCurrentTimes(getter_AddRefs(reader));
+        value = do_CreateInstance("@mozilla.org/variant;1");
+        value->SetFromVariant(reader);
     } else if (mTopic.Equals(NS_LITERAL_STRING("memory-usage"))) {
         nsCOMPtr<clIMemory> memory;
         NS_ADDREF(memory = new clMemory());
