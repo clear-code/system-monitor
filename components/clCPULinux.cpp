@@ -11,14 +11,16 @@ CL_GetCPUTimeInfoArray()
     glibtop_cpu cpu;
     glibtop_get_cpu(&cpu);
 
-    CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
-        cpu.user,                          // userTime
-        cpu.sys,                           // systemTime,
-        cpu.nice,                          // niceTime
-        cpu.idle,                          // idleTime
-        cpu.iowait + cpu.irq + cpu.softirq // IOWaitTime
-    );
-    array->AppendElement(info);
+    for (unsigned int i = 0; i < GLIBTOP_NCPU && cpu.xcpu_total[i] != 0; i++) {
+        CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
+            cpu.xcpu_user[i],                          // userTime
+            cpu.xcpu_sys[i],                           // systemTime,
+            cpu.xcpu_nice[i],                          // niceTime
+            cpu.xcpu_idle[i],                          // idleTime
+            cpu.xcpu_iowait[i] + cpu.xcpu_irq[i] + cpu.xcpu_softirq[i] // IOWaitTime
+        );
+        array->AppendElement(info);
+    }
 
     return array;
 }
