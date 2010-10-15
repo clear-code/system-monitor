@@ -44,6 +44,8 @@ public:
     NS_DECL_NSISECURITYCHECKEDCOMPONENT
 
 private:
+    nsTArray<clICPUTime*> GetCurrentCPUTimesArray();
+
     nsAutoVoidArray *mPreviousTimes;
     void SetPreviousTimes(nsAutoVoidArray *aCurrentTimes);
     void DestroyPreviousTimes();

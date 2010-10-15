@@ -6,8 +6,9 @@
 
 interface clICPU : nsISupports
 {
-  clICPUTime getCurrentTime();
-  nsIVariant getCurrentTimes();
-  readonly attribute double usage;
-  readonly attribute nsIVariant usages;
+    clICPUTime getCurrentTime();
+    nsIVariant getCurrentTimes();
+
+    readonly attribute double usage;
+    readonly attribute nsIVariant usages;
 };

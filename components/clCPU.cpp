@@ -1,5 +1,6 @@
 #include "clCPU.h"
 
+#include <nsComponentManagerUtils.h>
 #include <nsIClassInfoImpl.h>
 #include <nsMemory.h>
 #include <nsCOMPtr.h>
@@ -90,10 +91,43 @@ clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
     return rv;
 }
 
+nsTArray<clICPUTime*>
+clCPU::GetCurrentCPUTimesArray()
+{
+    nsresult rv;
+
+    nsTArray<clICPUTime*> cpuTimes;
+
+    nsAutoVoidArray *currentTimes = CL_GetCPUTimeInfoArray();
+    PRInt32 count = currentTimes->Count();
+    for (PRInt32 i = 0; i < count; i++) {
+        CL_CPUTimeInfo *previousTime = static_cast<CL_CPUTimeInfo*>(mPreviousTimes->ElementAt(i));
+        CL_CPUTimeInfo *currentTime = static_cast<CL_CPUTimeInfo*>(currentTimes->ElementAt(i));
+
+        nsCOMPtr<clICPUTime> cpuTime;
+        rv = CL_GetCPUTime(previousTime, currentTime, getter_AddRefs(cpuTime));
+        NS_ADDREF(cpuTime);
+        cpuTimes.AppendElement(cpuTime);
+    }
+
+    SetPreviousTimes(currentTimes);
+
+    return cpuTimes;
+}
+
 NS_IMETHODIMP
 clCPU::GetCurrentTimes(nsIVariant **_retval NS_OUTPARAM)
 {
-    return NS_ERROR_NOT_IMPLEMENTED;
+    nsTArray<clICPUTime*> cpuTimes = GetCurrentCPUTimesArray();
+
+    nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
+    nsresult rv = value->SetAsArray(nsIDataType::VTYPE_INTERFACE,
+                                    &NS_GET_IID(clICPUTime),
+                                    cpuTimes.Length(),
+                                    const_cast<void*>(static_cast<const void*>(cpuTimes.Elements())));
+    NS_ENSURE_SUCCESS(rv, rv);
+    NS_ADDREF(*_retval = value);
+    return rv;
 }
 
 NS_IMETHODIMP
@@ -114,7 +148,25 @@ clCPU::GetUsage(double *aUsage)
 NS_IMETHODIMP
 clCPU::GetUsages(nsIVariant * *aUsages)
 {
-    return NS_ERROR_NOT_IMPLEMENTED;
+    nsTArray<clICPUTime*> cpuTimes = GetCurrentCPUTimesArray();
+    PRInt32 count = cpuTimes.Length();
+    double usages[count];
+    for (PRInt32 i = 0; i < count; i++) {
+        double user, system;
+        cpuTimes[i]->GetUser(&user);
+        cpuTimes[i]->GetSystem(&system);
+        usages[i] = user + system;
+    }
+
+    nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
+    nsresult rv = value->SetAsArray(nsIDataType::VTYPE_DOUBLE,
+                                    nsnull,
+                                    count,
+                                    usages);
+    NS_ENSURE_SUCCESS(rv, rv);
+    NS_ADDREF(*aUsages = value);
+
+    return NS_OK;
 }
 
 static char *
