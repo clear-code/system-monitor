@@ -11,8 +11,11 @@
 const PRUnichar kNTLibraryName[] = L"ntdll.dll";
 const unsigned int MAX_CPU_COUNT = 32;
 
+/**
+ * Fallback: this returns the total usage of all CPUs.
+ */
 nsAutoVoidArray*
-CL_GetCPUTimeInfoArrayTotal()
+GetCPUTimeInfoArrayTotal()
 {
     nsAutoVoidArray *array = new nsAutoVoidArray();
 
@@ -31,11 +34,9 @@ CL_GetCPUTimeInfoArrayTotal()
     return array;
 }
 
-#include <stdio.h>
 nsAutoVoidArray*
-CL_GetCPUTimeInfoArray()
+clCPU::GetCPUTimeInfoArray()
 {
-
     typedef HRESULT (WINAPI * NtQuerySystemInformationPtr)
                     (SYSTEM_INFORMATION_CLASS SystemInformationClass,
                      PVOID SystemInformation,
@@ -53,7 +54,7 @@ CL_GetCPUTimeInfoArray()
                                             sizeof system_basic_info,
                                             0))) {
         FreeLibrary(hDLL);
-        return CL_GetCPUTimeInfoArrayTotal();
+        return GetCPUTimeInfoArrayTotal();
     }
 
     unsigned int cpuCount = system_basic_info.NumberOfProcessors;
@@ -64,7 +65,7 @@ CL_GetCPUTimeInfoArray()
                                             sizeof performance_info,
                                             0))) {
         FreeLibrary(hDLL);
-        return CL_GetCPUTimeInfoArrayTotal();
+        return GetCPUTimeInfoArrayTotal();
     }
 
     nsAutoVoidArray *array = new nsAutoVoidArray();
@@ -73,9 +74,9 @@ CL_GetCPUTimeInfoArray()
         CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
             LARGE_INTEGER_TO_UINT64(performance_info[i].UserTime),   // userTime
             LARGE_INTEGER_TO_UINT64(performance_info[i].KernelTime), // systemTime,
-            0,                              // niceTime
+            0,                                                       // niceTime
             LARGE_INTEGER_TO_UINT64(performance_info[i].IdleTime),   // idleTime
-            0                               // IOWaitTime
+            0                                                        // IOWaitTime
         );
         array->AppendElement(info);
     }
@@ -86,7 +87,7 @@ CL_GetCPUTimeInfoArray()
 }
 
 nsresult
-CL_GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
+clCPU::GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
 {
     UINT64 user = aCurrent->userTime - aPrevious->userTime;
     UINT64 kernel = aCurrent->systemTime - aPrevious->systemTime;

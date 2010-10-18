@@ -5,7 +5,7 @@
 #include <mach/vm_map.h>
 
 nsAutoVoidArray*
-CL_GetCPUTimeInfoArray()
+clCPU::GetCPUTimeInfoArray()
 {
     nsAutoVoidArray *array = new nsAutoVoidArray();
 
@@ -35,7 +35,7 @@ CL_GetCPUTimeInfoArray()
 }
 
 nsresult
-CL_GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
+clCPU::GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
 {
     PRUint64 user, nice, system, idle, total;
     user = aCurrent->userTime - aPrevious->userTime;

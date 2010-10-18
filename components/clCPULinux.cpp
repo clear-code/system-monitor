@@ -4,7 +4,7 @@
 #include <glibtop/cpu.h>
 
 nsAutoVoidArray*
-CL_GetCPUTimeInfoArray()
+clCPU::GetCPUTimeInfoArray()
 {
     nsAutoVoidArray *array = new nsAutoVoidArray();
 
@@ -26,7 +26,7 @@ CL_GetCPUTimeInfoArray()
 }
 
 nsresult
-CL_GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
+clCPU::GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime)
 {
     guint64 user = aCurrent->userTime - aPrevious->userTime;
     guint64 system = aCurrent->systemTime - aPrevious->systemTime;

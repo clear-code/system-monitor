@@ -26,24 +26,8 @@ CL_CPUTimeInfo::~CL_CPUTimeInfo()
 }
 
 
-CL_CPUTimeInfo
-CL_SumCPUTimeInfoArray(nsAutoVoidArray *aCPUTimeInfos)
-{
-    CL_CPUTimeInfo info = CL_CPUTimeInfo();
-    PRInt32 count = aCPUTimeInfos->Count();
-    for (PRInt32 i = 0; i < count; i++) {
-        CL_CPUTimeInfo *oneInfo = static_cast<CL_CPUTimeInfo*>(aCPUTimeInfos->ElementAt(i));
-        info.userTime += oneInfo->userTime;
-        info.systemTime += oneInfo->systemTime;
-        info.niceTime += oneInfo->niceTime;
-        info.idleTime += oneInfo->idleTime;
-    }
-    return info;
-}
-
-
 clCPU::clCPU()
-     : mPreviousTimes(CL_GetCPUTimeInfoArray())
+     : mPreviousTimes(GetCPUTimeInfoArray())
 {
 }
 
@@ -75,16 +59,31 @@ clCPU::SetPreviousTimes(nsAutoVoidArray *aCurrentTimes)
     mPreviousTimes = aCurrentTimes;
 }
 
+CL_CPUTimeInfo
+clCPU::SumCPUTimeInfoArray(nsAutoVoidArray *aCPUTimeInfos)
+{
+    CL_CPUTimeInfo info = CL_CPUTimeInfo();
+    PRInt32 count = aCPUTimeInfos->Count();
+    for (PRInt32 i = 0; i < count; i++) {
+        CL_CPUTimeInfo *oneInfo = static_cast<CL_CPUTimeInfo*>(aCPUTimeInfos->ElementAt(i));
+        info.userTime += oneInfo->userTime;
+        info.systemTime += oneInfo->systemTime;
+        info.niceTime += oneInfo->niceTime;
+        info.idleTime += oneInfo->idleTime;
+    }
+    return info;
+}
+
 NS_IMETHODIMP
 clCPU::GetCurrentTime(clICPUTime **result NS_OUTPARAM)
 {
-    nsAutoVoidArray *currentTimes = CL_GetCPUTimeInfoArray();
-    CL_CPUTimeInfo currentTime = CL_SumCPUTimeInfoArray(currentTimes);
-    CL_CPUTimeInfo previousTime = CL_SumCPUTimeInfoArray(mPreviousTimes);
+    nsAutoVoidArray *currentTimes = GetCPUTimeInfoArray();
+    CL_CPUTimeInfo currentTime = SumCPUTimeInfoArray(currentTimes);
+    CL_CPUTimeInfo previousTime = SumCPUTimeInfoArray(mPreviousTimes);
     SetPreviousTimes(currentTimes);
 
     nsCOMPtr<clICPUTime> cpuTime;
-    nsresult rv = CL_GetCPUTime(&previousTime, &currentTime, getter_AddRefs(cpuTime));
+    nsresult rv = GetCPUTime(&previousTime, &currentTime, getter_AddRefs(cpuTime));
     NS_ENSURE_SUCCESS(rv, rv);
 
     NS_ADDREF(*result = cpuTime);
@@ -98,14 +97,14 @@ clCPU::GetCurrentCPUTimesArray()
 
     nsTArray<clICPUTime*> cpuTimes;
 
-    nsAutoVoidArray *currentTimes = CL_GetCPUTimeInfoArray();
+    nsAutoVoidArray *currentTimes = GetCPUTimeInfoArray();
     PRInt32 count = currentTimes->Count();
     for (PRInt32 i = 0; i < count; i++) {
         CL_CPUTimeInfo *previousTime = static_cast<CL_CPUTimeInfo*>(mPreviousTimes->ElementAt(i));
         CL_CPUTimeInfo *currentTime = static_cast<CL_CPUTimeInfo*>(currentTimes->ElementAt(i));
 
         nsCOMPtr<clICPUTime> cpuTime;
-        rv = CL_GetCPUTime(previousTime, currentTime, getter_AddRefs(cpuTime));
+        rv = GetCPUTime(previousTime, currentTime, getter_AddRefs(cpuTime));
         NS_ADDREF(cpuTime);
         cpuTimes.AppendElement(cpuTime);
     }
