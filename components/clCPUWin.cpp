@@ -2,12 +2,17 @@
 #include "clCPUTime.h"
 
 #include <windows.h>
+#include <winternl.h>
 #undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
 #undef AddMonitor /* CAUTION! Use AddMonitorW instead */
 #define FILETIME_TO_UINT64(v) (v.dwLowDateTime + ((UINT64)v.dwHighDateTime << 32))
+#define LARGE_INTEGER_TO_UINT64(v) (v.QuadPart)
+
+const PRUnichar kNTLibraryName[] = L"ntdll.dll";
+const unsigned int MAX_CPU_COUNT = 32;
 
 nsAutoVoidArray*
-CL_GetCPUTimeInfoArray()
+CL_GetCPUTimeInfoArrayTotal()
 {
     nsAutoVoidArray *array = new nsAutoVoidArray();
 
@@ -22,6 +27,60 @@ CL_GetCPUTimeInfoArray()
         0                               // IOWaitTime
     );
     array->AppendElement(info);
+
+    return array;
+}
+
+#include <stdio.h>
+nsAutoVoidArray*
+CL_GetCPUTimeInfoArray()
+{
+
+    typedef HRESULT (WINAPI * NtQuerySystemInformationPtr)
+                    (SYSTEM_INFORMATION_CLASS SystemInformationClass,
+                     PVOID SystemInformation,
+                     ULONG SystemInformationLength,
+                     PULONG **ReturnLength);
+    NtQuerySystemInformationPtr NtQuerySystemInformationFunc = nsnull;
+
+    HMODULE hDLL = ::LoadLibraryW(kNTLibraryName);
+    NtQuerySystemInformationFunc = (NtQuerySystemInformationPtr)
+                                   GetProcAddress(hDLL, "NtQuerySystemInformation");
+
+    SYSTEM_BASIC_INFORMATION system_basic_info;
+    if (FAILED(NtQuerySystemInformationFunc(SystemBasicInformation,
+                                            &system_basic_info,
+                                            sizeof system_basic_info,
+                                            0))) {
+        FreeLibrary(hDLL);
+        return CL_GetCPUTimeInfoArrayTotal();
+    }
+
+    unsigned int cpuCount = system_basic_info.NumberOfProcessors;
+
+    SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION performance_info[MAX_CPU_COUNT];
+    if (FAILED(NtQuerySystemInformationFunc(SystemProcessorPerformanceInformation,
+                                            &performance_info,
+                                            sizeof performance_info,
+                                            0))) {
+        FreeLibrary(hDLL);
+        return CL_GetCPUTimeInfoArrayTotal();
+    }
+
+    nsAutoVoidArray *array = new nsAutoVoidArray();
+
+    for (unsigned int i = 0; i < cpuCount; i++) {
+        CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
+            LARGE_INTEGER_TO_UINT64(performance_info[i].UserTime),   // userTime
+            LARGE_INTEGER_TO_UINT64(performance_info[i].KernelTime), // systemTime,
+            0,                              // niceTime
+            LARGE_INTEGER_TO_UINT64(performance_info[i].IdleTime),   // idleTime
+            0                               // IOWaitTime
+        );
+        array->AppendElement(info);
+    }
+
+    FreeLibrary(hDLL);
 
     return array;
 }
