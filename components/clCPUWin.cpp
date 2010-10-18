@@ -55,8 +55,6 @@ GetCPUTimeInfoArrayTotal()
 nsAutoVoidArray*
 clCPU::GetCPUTimeInfoArray()
 {
-        return GetCPUTimeInfoArrayTotal();
-
     SYSTEM_BASIC_INFORMATION system_basic_info;
     if (FAILED((*mNtQuerySystemInformation)(SystemBasicInformation,
                                             &system_basic_info,
