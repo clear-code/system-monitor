@@ -281,6 +281,8 @@ SystemMonitorSimpleGraphItem.prototype = {
   size : 48,
   colorForeground : "green",
   colorBackground : "black",
+  gradientEndAlpha : 0.5,
+  styleForMultiplexValue : 0,
   valueArray : [],
 
   get item() {
@@ -307,11 +309,12 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.onChangePref(this.domain+this.id+".color.background");
     this.onChangePref(this.domain+this.id+".color.foreground");
     this.onChangePref(this.domain+this.id+".color.gradientEndAlpha");
+    this.onChangePref(this.domain+this.id+".styleForMultiplexValue");
 
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
     this.initValueArray();
-    this.drawGraph();
+    this.drawGraph(true);
 
     try {
         this.system.addMonitor(this.type, this, this.interval);
@@ -381,51 +384,93 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  drawLine : function(aContext, aFGColor, aBGColor, aX, aBeginY, aEndY) {
-    var offset = ((aEndY - aBeginY) * (1 / Math.max(0.01, 1 - this.gradientEndAlpha)));
-    var gradient = aContext.createLinearGradient(0, aBeginY - offset, 0, aEndY);
-    gradient.addColorStop(0, aBGColor);
-    gradient.addColorStop(1, aFGColor);
+  drawLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
+    aContext.save();
 
+    aContext.translate(aX, aMaxY);
+
+    var deltaY = aEndY - aBeginY;
+    if (typeof aColors == 'object') {
+      let offset = aMaxY * (1 - this.gradientEndAlpha);
+      let gradient = aContext.createLinearGradient(0, offset, 0, -deltaY);
+      gradient.addColorStop(0, aColors[0]);
+      gradient.addColorStop(1, aColors[1]);
+      aContext.strokeStyle = gradient;
+    } else {
+      aContext.strokeStyle = aColors;
+    }
     aContext.beginPath();
-    aContext.strokeStyle = gradient;
     aContext.lineWidth = 1.0;
     aContext.lineCap = "square";
     aContext.globalCompositeOperation = "source-over";
-    aContext.moveTo(aX, aBeginY);
-    aContext.lineTo(aX, aEndY);
+    aContext.moveTo(0, -aBeginY);
+    aContext.lineTo(0, -deltaY);
     aContext.closePath();
     aContext.stroke();
-    return aEndY;
+
+    aContext.restore();
   },
 
-  drawGraph : function() {
-    var canvasElement = this.canvas;
-    let context = canvasElement.getContext("2d")
-    let y = canvasElement.height;
+  STYLE_UNIFIED : 1,
+  STYLE_STACKED : 2,
+  STYLE_LAYERED : 4,
+  STYLE_LINE    : 128,
+  drawMultiplexGraph : function(aContext, aValues, aX, aMaxY) {
+    aContext.globalAlpha = 1;
+    if (this.styleForMultiplexValue & this.STYLE_UNIFIED) {
+      let total = 0;
+      aValues.forEach(function(aValue) {
+        total += aValue;
+      });
+      total = Math.max(0, Math.min(1, total));
+      total = total / aValues.length;
+      this.drawLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, aMaxY * total);
+    } else if (this.styleForMultiplexValue & this.STYLE_STACKED) {
+      let beginY = 0;
+      aEachMaxY = Math.max(1, aMaxY) / aValues.length;
+      aValues.forEach(function(aValue) {
+        let endY = beginY + (aEachMaxY * Math.max(0, Math.min(1, aValue)));
+        this.drawLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, beginY, endY);
+        beginY = endY;
+      }, this);
+    } else if (this.styleForMultiplexValue & this.STYLE_LAYERED) {
+      aValues.slice().sort().reverse().forEach(function(aValue, aIndex) {
+        let endY = aMaxY * Math.max(0, Math.min(1, aValue));
+        aContext.globalAlpha = 1;
+        this.drawLine(aContext, this.colorBackground, aX, aMaxY, 0, endY);
+        aContext.globalAlpha = 0.2 + (1 / aValues.length * (aIndex+1) * 0.8);
+        this.drawLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
+      }, this);
+      aContext.globalAlpha = 1;
+    }
+  },
+
+  drawGraph : function(aDrawAll) {
+    var canvas = this.canvas;
+    let context = canvas.getContext("2d")
+    let y = canvas.height;
     let x = 0;
 
-    context.fillStyle = this.colorBackground;
-    context.fillRect(0, 0, canvasElement.width, canvasElement.height);
-    context.globalCompositeOperation = "source-over";
+    var values = this.valueArray;
+    if (aDrawAll) {
+      context.fillStyle = this.colorBackground;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.globalCompositeOperation = "source-over";
+    } else {
+      context.drawImage(canvas, -2, 0);
+      x = (values.length - 1) * 2;
+      values = values.slice(-1);
+      this.drawLine(context, this.colorBackground, x, y, 0, y);
+    }
 
     context.save();
-    this.valueArray.forEach(function(aValue) {
-      let y_from = canvasElement.height;
-      let y_to = y_from;
-      if (aValue == undefined) {
-      }
-      else if (typeof aValue == 'object') { // array
-        let each_y = Math.max(1, y) / aValue.length;
-        let last = aValue.length - 1;
-        aValue.forEach(function(aValue, aIndex) {
-          y_to = y_from - (each_y * Math.max(0, Math.min(1, aValue)));
-          y_from = this.drawLine(context, this.colorForeground, this.colorBackground, x, y_from, y_to);
-        }, this);
-      }
-      else {
-        y_to = y - (y * Math.max(0, Math.min(1, aValue)));
-        y_from = this.drawLine(context, this.colorForeground, this.colorBackground, x, y_from, y_to);
+    values.forEach(function(aValue) {
+      if (aValue === undefined) {
+      } else if (typeof aValue == 'object') { // array
+        this.drawMultiplexGraph(context, aValue, x, y);
+      } else {
+        aValue = Math.max(0, Math.min(1, aValue));
+        this.drawLine(context, [this.colorBackground, this.colorForeground], x, y, 0, y * aValue);
       }
       x = x + 2;
     }, this);
@@ -433,10 +478,10 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   drawDisabled : function() {
-    var canvasElement = this.canvas;
-    var context = canvasElement.getContext("2d")
-    var w = canvasElement.width;
-    var h = canvasElement.height;
+    var canvas = this.canvas;
+    var context = canvas.getContext("2d")
+    var w = canvas.width;
+    var h = canvas.height;
 
     context.fillStyle = this.colorBackground;
     context.fillRect(0, 0, w, h);
@@ -496,6 +541,11 @@ SystemMonitorSimpleGraphItem.prototype = {
         if (this.listening)
           this.update();
         break;
+      case "styleForMultiplexValue":
+        this.styleForMultiplexValue = this.getPref(aData);
+        if (this.listening)
+          this.update();
+        break;
     }
   },
 
@@ -549,7 +599,10 @@ SystemMonitorCPUItem.prototype = {
   // clISystemMonitor
   monitor : function(aValue) {
     this.valueArray.shift();
-    if (aValue.length > 1 && !this.getPref(this.domain+this.id+'.multiple')) {
+    this.valueArray.push(aValue);
+    this.drawGraph();
+
+    if (aValue.length > 1 && this.styleForMultiplexValue & this.STYLE_UNIFIED) {
       let total = 0;
       aValue.forEach(function(aEachValue) {
         total += aEachValue;
@@ -557,8 +610,6 @@ SystemMonitorCPUItem.prototype = {
       total = total / aValue.length;
       aValue = [total];
     }
-    this.valueArray.push(aValue);
-    this.drawGraph();
     var parts = aValue.map(function(aValue) {
           return this.bundle.getFormattedString(
                    'cpu_usage_tooltip_part',
