@@ -149,20 +149,20 @@ NS_IMETHODIMP
 clCPU::GetUsages(nsIVariant * *aUsages)
 {
     nsTArray<clICPUTime*> cpuTimes = GetCurrentCPUTimesArray();
+    nsTArray<double> usages;
     PRInt32 count = cpuTimes.Length();
-    double usages[count];
     for (PRInt32 i = 0; i < count; i++) {
         double user, system;
         cpuTimes[i]->GetUser(&user);
         cpuTimes[i]->GetSystem(&system);
-        usages[i] = user + system;
+        usages.AppendElement(user + system);
     }
 
     nsCOMPtr<nsIWritableVariant> value = do_CreateInstance("@mozilla.org/variant;1");
     nsresult rv = value->SetAsArray(nsIDataType::VTYPE_DOUBLE,
                                     nsnull,
                                     count,
-                                    usages);
+                                    const_cast<void*>(static_cast<const void*>(usages.Elements())));
     NS_ENSURE_SUCCESS(rv, rv);
     NS_ADDREF(*aUsages = value);
 
