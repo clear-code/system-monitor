@@ -392,7 +392,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.scale(1, -1);
 
     if (typeof aColors == 'object') {
-      let offset = (aEndY - aBeginY) * this.gradientEndAlpha;
+      let offset = (aEndY - aBeginY) * (this.gradientEndAlpha / 1);
       let gradient = aContext.createLinearGradient(0, aBeginY-offset, 0, aEndY);
       gradient.addColorStop(0, aColors[0]);
       gradient.addColorStop(1, aColors[1]);
@@ -436,7 +436,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       }, this);
       aContext.restore();
     } else if (this.style & this.STYLE_LAYERED) {
-      let baseAlpha = 0.1;
+      let baseAlpha = 0.2;
       aValues.slice().sort().reverse().forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
         aContext.globalAlpha = 1;
