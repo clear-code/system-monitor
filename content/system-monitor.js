@@ -419,12 +419,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   drawMultiplexGraphLine : function(aContext, aValues, aX, aMaxY) {
     aContext.globalAlpha = 1;
     if (this.style & this.STYLE_UNIFIED) {
-      let total = 0;
-      aValues.forEach(function(aValue) {
-        total += aValue;
-      });
-      total = total / aValues.length;
-      this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * total);
+      this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.unifyValues(aValues));
     } else if (this.style & this.STYLE_STACKED) {
       let eachMaxY = aMaxY / aValues.length;
       let beginY = 0;
@@ -446,6 +441,19 @@ SystemMonitorSimpleGraphItem.prototype = {
       }, this);
       aContext.globalAlpha = 1;
     }
+  },
+  unifyValues : function(aValues) {
+    if (!aValues)
+      return 0;
+
+    if (typeof aValues == 'number')
+      return aValues;
+
+    let total = 0;
+    aValues.forEach(function(aValue) {
+      total += aValue;
+    });
+    return total / aValues.length;
   },
 
   drawPolygonalGraph : function(aContext, aValues, aMaxY) {
@@ -482,15 +490,21 @@ SystemMonitorSimpleGraphItem.prototype = {
       context.fillStyle = this.colorBackground;
       context.fillRect(0, 0, canvas.width, canvas.height);
       if (this.multiplexed && values[values.length-1]) {
-        for (let i = 0, maxi = values[values.length-1].length; i < maxi; i++)
-        {
+        if (this.style & this.STYLE_UNIFIED) {
           this.drawPolygonalGraph(
             context,
-            values.map(function(aValue) {
-              return aValue ? aValue[i] : 0 ;
-            }),
+            values.map(this.unifyValues),
             y
           );
+        } else {
+          for (let i = 0, maxi = values[values.length-1].length; i < maxi; i++)
+          {
+            this.drawPolygonalGraph(
+              context,
+              values.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
+              y
+            );
+          }
         }
       }
       else {
@@ -650,14 +664,9 @@ SystemMonitorCPUItem.prototype = {
     this.valueArray.push(aValues);
     this.drawGraph();
 
-    if (aValues.length > 1 && this.style & this.STYLE_UNIFIED) {
-      let total = 0;
-      aValues.forEach(function(aValue) {
-        total += aValue;
-      });
-      total = total / aValues.length;
-      aValues = [total];
-    }
+    if (aValues.length > 1 && this.style & this.STYLE_UNIFIED)
+      aValues = [this.unifyValues(aValues)];
+
     var parts = aValues.map(function(aValue) {
           return this.bundle.getFormattedString(
                    'cpu_usage_tooltip_part',
