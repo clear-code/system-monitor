@@ -282,7 +282,8 @@ SystemMonitorSimpleGraphItem.prototype = {
   colorForeground : "green",
   colorBackground : "black",
   gradientEndAlpha : 0.5,
-  styleForMultiplexValue : 0,
+  style : 0,
+  multiplexed : false,
   valueArray : [],
 
   get item() {
@@ -309,7 +310,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.onChangePref(this.domain+this.id+".color.background");
     this.onChangePref(this.domain+this.id+".color.foreground");
     this.onChangePref(this.domain+this.id+".color.gradientEndAlpha");
-    this.onChangePref(this.domain+this.id+".styleForMultiplexValue");
+    this.onChangePref(this.domain+this.id+".style");
 
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
@@ -384,15 +385,15 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  drawLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
+  drawGraphLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
     aContext.save();
 
     aContext.translate(aX, aMaxY);
+    aContext.scale(1, -1);
 
-    var deltaY = aEndY - aBeginY;
     if (typeof aColors == 'object') {
-      let offset = aMaxY * (1 - this.gradientEndAlpha);
-      let gradient = aContext.createLinearGradient(0, offset, 0, -deltaY);
+      let offset = (aEndY - aBeginY) * (1 - this.gradientEndAlpha);
+      let gradient = aContext.createLinearGradient(0, aBeginY-offset, 0, aEndY);
       gradient.addColorStop(0, aColors[0]);
       gradient.addColorStop(1, aColors[1]);
       aContext.strokeStyle = gradient;
@@ -403,8 +404,8 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.lineWidth = 1.0;
     aContext.lineCap = "square";
     aContext.globalCompositeOperation = "source-over";
-    aContext.moveTo(0, -aBeginY);
-    aContext.lineTo(0, -deltaY);
+    aContext.moveTo(0, aBeginY);
+    aContext.lineTo(0, aEndY);
     aContext.closePath();
     aContext.stroke();
 
@@ -414,35 +415,59 @@ SystemMonitorSimpleGraphItem.prototype = {
   STYLE_UNIFIED : 1,
   STYLE_STACKED : 2,
   STYLE_LAYERED : 4,
-  STYLE_LINE    : 128,
-  drawMultiplexGraph : function(aContext, aValues, aX, aMaxY) {
+  STYLE_POLYGONAL : 128,
+  drawMultiplexGraphLine : function(aContext, aValues, aX, aMaxY) {
     aContext.globalAlpha = 1;
-    if (this.styleForMultiplexValue & this.STYLE_UNIFIED) {
+    if (this.style & this.STYLE_UNIFIED) {
       let total = 0;
       aValues.forEach(function(aValue) {
         total += aValue;
       });
-      total = Math.max(0, Math.min(1, total));
       total = total / aValues.length;
-      this.drawLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, aMaxY * total);
-    } else if (this.styleForMultiplexValue & this.STYLE_STACKED) {
+      this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * total);
+    } else if (this.style & this.STYLE_STACKED) {
+      let eachMaxY = aMaxY / aValues.length;
       let beginY = 0;
-      aEachMaxY = Math.max(1, aMaxY) / aValues.length;
+      aContext.save();
       aValues.forEach(function(aValue) {
-        let endY = beginY + (aEachMaxY * Math.max(0, Math.min(1, aValue)));
-        this.drawLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, beginY, endY);
+        let endY = beginY + (eachMaxY * aValue);
+        this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, beginY, endY);
         beginY = endY;
       }, this);
-    } else if (this.styleForMultiplexValue & this.STYLE_LAYERED) {
+      aContext.restore();
+    } else if (this.style & this.STYLE_LAYERED) {
+      let baseAlpha = 0.1;
       aValues.slice().sort().reverse().forEach(function(aValue, aIndex) {
-        let endY = aMaxY * Math.max(0, Math.min(1, aValue));
+        let endY = aMaxY * aValue;
         aContext.globalAlpha = 1;
-        this.drawLine(aContext, this.colorBackground, aX, aMaxY, 0, endY);
-        aContext.globalAlpha = 0.2 + (1 / aValues.length * (aIndex+1) * 0.8);
-        this.drawLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
+        this.drawGraphLine(aContext, this.colorBackground, aX, aMaxY, 0, endY);
+        aContext.globalAlpha = baseAlpha + (1 / aValues.length * (aIndex+1) * (1-baseAlpha));
+        this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
       }, this);
       aContext.globalAlpha = 1;
     }
+  },
+
+  drawPolygonalGraph : function(aContext, aValues, aMaxY) {
+    aContext.save();
+
+    aContext.translate(0, aMaxY);
+    aContext.scale(1, -1);
+
+    aContext.beginPath();
+    aContext.strokeStyle = this.colorForeground;
+    aContext.lineWidth = 0.5;
+    aContext.lineCap = "square";
+    aContext.globalCompositeOperation = "source-over";
+    aContext.moveTo(0, 0);
+    aValues.forEach(function(aValue, aIndex) {
+      aContext.lineTo(aIndex * 2, aMaxY * (aValue || 0));
+    });
+    aContext.moveTo(aValues.length * 2, 0);
+    aContext.closePath();
+    aContext.stroke();
+
+    aContext.restore();
   },
 
   drawGraph : function(aDrawAll) {
@@ -452,28 +477,50 @@ SystemMonitorSimpleGraphItem.prototype = {
     let x = 0;
 
     var values = this.valueArray;
-    if (aDrawAll) {
+    if (this.style & this.STYLE_POLYGONAL) {
+      context.globalCompositeOperation = "source-over";
       context.fillStyle = this.colorBackground;
       context.fillRect(0, 0, canvas.width, canvas.height);
-      context.globalCompositeOperation = "source-over";
+      if (this.multiplexed && values[values.length-1]) {
+        for (let i = 0, maxi = values[values.length-1].length; i < maxi; i++)
+        {
+          this.drawPolygonalGraph(
+            context,
+            values.map(function(aValue) {
+              return aValue ? aValue[i] : 0 ;
+            }),
+            y
+          );
+        }
+      }
+      else {
+        this.drawPolygonalGraph(context, values || 0, y);
+      }
     } else {
-      context.drawImage(canvas, -2, 0);
-      x = (values.length - 1) * 2;
-      values = values.slice(-1);
-      this.drawLine(context, this.colorBackground, x, y, 0, y);
+      if (aDrawAll) {
+        context.globalCompositeOperation = "source-over";
+        context.fillStyle = this.colorBackground;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        context.drawImage(canvas, -2, 0);
+        x = (values.length - 1) * 2;
+        values = values.slice(-1);
+        this.drawGraphLine(context, this.colorBackground, x, y, 0, y);
+      }
+
+      context.save();
+      values.forEach(function(aValue) {
+        if (aValue) {
+          if (this.multiplexed) {
+            this.drawMultiplexGraphLine(context, aValue, x, y);
+          } else {
+            this.drawGraphLine(context, [this.colorBackground, this.colorForeground], x, y, 0, y * aValue);
+          }
+        }
+        x = x + 2;
+      }, this);
     }
 
-    context.save();
-    values.forEach(function(aValue) {
-      if (aValue === undefined) {
-      } else if (typeof aValue == 'object') { // array
-        this.drawMultiplexGraph(context, aValue, x, y);
-      } else {
-        aValue = Math.max(0, Math.min(1, aValue));
-        this.drawLine(context, [this.colorBackground, this.colorForeground], x, y, 0, y * aValue);
-      }
-      x = x + 2;
-    }, this);
     context.restore();
   },
 
@@ -541,8 +588,8 @@ SystemMonitorSimpleGraphItem.prototype = {
         if (this.listening)
           this.update();
         break;
-      case "styleForMultiplexValue":
-        this.styleForMultiplexValue = this.getPref(aData);
+      case "style":
+        this.style = this.getPref(aData);
         if (this.listening)
           this.update();
         break;
@@ -593,24 +640,25 @@ SystemMonitorCPUItem.prototype = {
   itemId   : 'system-monitor-cpu-usage',
   imageId  : 'system-monitor-cpu-usage-backup',
   canvasId : 'system-monitor-cpu-usage-canvas',
+  multiplexed : true,
   get tooltip() {
     return document.getElementById('system-monitor-cpu-usage-tooltip-label');
   },
   // clISystemMonitor
-  monitor : function(aValue) {
+  monitor : function(aValues) {
     this.valueArray.shift();
-    this.valueArray.push(aValue);
+    this.valueArray.push(aValues);
     this.drawGraph();
 
-    if (aValue.length > 1 && this.styleForMultiplexValue & this.STYLE_UNIFIED) {
+    if (aValues.length > 1 && this.style & this.STYLE_UNIFIED) {
       let total = 0;
-      aValue.forEach(function(aEachValue) {
-        total += aEachValue;
+      aValues.forEach(function(aValue) {
+        total += aValue;
       });
-      total = total / aValue.length;
-      aValue = [total];
+      total = total / aValues.length;
+      aValues = [total];
     }
-    var parts = aValue.map(function(aValue) {
+    var parts = aValues.map(function(aValue) {
           return this.bundle.getFormattedString(
                    'cpu_usage_tooltip_part',
                    [parseInt(aValue * 100)]
