@@ -27,13 +27,20 @@ CL_CPUTimeInfo::~CL_CPUTimeInfo()
 
 
 clCPU::clCPU()
-     : mPreviousTimes(GetCPUTimeInfoArray())
+     : mPreviousTimes(nsnull)
 {
+#ifdef XP_WIN
+    InitInternal();
+#endif
+    mPreviousTimes = GetCPUTimeInfoArray();
 }
 
 clCPU::~clCPU()
 {
     DestroyPreviousTimes();
+#ifdef XP_WIN
+    DestroyInternal();
+#endif
 }
 
 NS_IMPL_ISUPPORTS2_CI(clCPU,

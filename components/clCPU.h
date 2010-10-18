@@ -7,6 +7,13 @@
 #include "config.h"
 #endif /* HAVE_CONFIG_H */
 
+#ifdef XP_WIN
+#include <windows.h>
+#include <winternl.h>
+#undef GetCurrentTime /* CAUTION! Use GetTickCount instead of GetCurrentTime*/
+#undef AddMonitor /* CAUTION! Use AddMonitorW instead */
+#endif
+
 #include "clICPU.h"
 #include "clICPUTime.h"
 
@@ -49,6 +56,20 @@ private:
     nsAutoVoidArray* GetCPUTimeInfoArray();
     CL_CPUTimeInfo SumCPUTimeInfoArray(nsAutoVoidArray *aCPUTimeInfos);
     nsresult GetCPUTime(CL_CPUTimeInfo *aPrevious, CL_CPUTimeInfo *aCurrent, clICPUTime **aCPUTime);
+
+#ifdef XP_WIN
+    nsresult InitInternal();
+    nsresult DestroyInternal();
+
+    HMODULE mNTDLL;
+
+    typedef HRESULT (WINAPI * NtQuerySystemInformationPtr)
+                    (SYSTEM_INFORMATION_CLASS SystemInformationClass,
+                     PVOID SystemInformation,
+                     ULONG SystemInformationLength,
+                     PULONG **ReturnLength);
+    NtQuerySystemInformationPtr mNtQuerySystemInformation;
+#endif
 };
 
 #endif /* __CL_CPU_H__ */

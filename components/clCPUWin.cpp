@@ -11,6 +11,24 @@
 const PRUnichar kNTLibraryName[] = L"ntdll.dll";
 const unsigned int MAX_CPU_COUNT = 32;
 
+nsresult
+clCPU::InitInternal()
+{
+    mNTDLL = ::LoadLibraryW(kNTLibraryName);
+    mNtQuerySystemInformation = (NtQuerySystemInformationPtr)
+                                GetProcAddress(mNTDLL, "NtQuerySystemInformation");
+    return NS_OK;
+}
+
+nsresult
+clCPU::DestroyInternal()
+{
+    FreeLibrary(mNTDLL);
+    mNTDLL = nsnull;
+    mNtQuerySystemInformation = nsnull;
+    return NS_OK;
+}
+
 /**
  * Fallback: this returns the total usage of all CPUs.
  */
@@ -37,34 +55,23 @@ GetCPUTimeInfoArrayTotal()
 nsAutoVoidArray*
 clCPU::GetCPUTimeInfoArray()
 {
-    typedef HRESULT (WINAPI * NtQuerySystemInformationPtr)
-                    (SYSTEM_INFORMATION_CLASS SystemInformationClass,
-                     PVOID SystemInformation,
-                     ULONG SystemInformationLength,
-                     PULONG **ReturnLength);
-    NtQuerySystemInformationPtr NtQuerySystemInformationFunc = nsnull;
-
-    HMODULE hDLL = ::LoadLibraryW(kNTLibraryName);
-    NtQuerySystemInformationFunc = (NtQuerySystemInformationPtr)
-                                   GetProcAddress(hDLL, "NtQuerySystemInformation");
+        return GetCPUTimeInfoArrayTotal();
 
     SYSTEM_BASIC_INFORMATION system_basic_info;
-    if (FAILED(NtQuerySystemInformationFunc(SystemBasicInformation,
+    if (FAILED((*mNtQuerySystemInformation)(SystemBasicInformation,
                                             &system_basic_info,
                                             sizeof system_basic_info,
                                             0))) {
-        FreeLibrary(hDLL);
         return GetCPUTimeInfoArrayTotal();
     }
 
     unsigned int cpuCount = system_basic_info.NumberOfProcessors;
 
     SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION performance_info[MAX_CPU_COUNT];
-    if (FAILED(NtQuerySystemInformationFunc(SystemProcessorPerformanceInformation,
+    if (FAILED((*mNtQuerySystemInformation)(SystemProcessorPerformanceInformation,
                                             &performance_info,
                                             sizeof performance_info,
                                             0))) {
-        FreeLibrary(hDLL);
         return GetCPUTimeInfoArrayTotal();
     }
 
@@ -80,8 +87,6 @@ clCPU::GetCPUTimeInfoArray()
         );
         array->AppendElement(info);
     }
-
-    FreeLibrary(hDLL);
 
     return array;
 }
