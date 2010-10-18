@@ -305,12 +305,18 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.listening)
         return;
 
-    this.onChangePref(this.domain+this.id+".size");
-    this.onChangePref(this.domain+this.id+".interval");
-    this.onChangePref(this.domain+this.id+".color.background");
-    this.onChangePref(this.domain+this.id+".color.foreground");
-    this.onChangePref(this.domain+this.id+".color.gradientEndAlpha");
-    this.onChangePref(this.domain+this.id+".style");
+    this.size = this.getPref(this.domain+this.id+".size");
+    this.interval = this.getPref(this.domain+this.id+".interval");
+
+    this.colorBackground = this.getPref(this.domain+this.id+".color.background");
+    this.colorForeground = this.getPref(this.domain+this.id+".color.foreground");
+
+    this.gradientEndAlpha = Number(this.getPref(this.domain+this.id+".color.gradientEndAlpha"));
+    if (isNaN(this.gradientEndAlpha))
+      this.gradientEndAlpha = 0.5;
+    this.gradientEndAlpha = Math.min(1, Math.max(0, this.gradientEndAlpha));
+
+    this.style = this.getPref(this.domain+this.id+".style");
 
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
@@ -575,35 +581,11 @@ SystemMonitorSimpleGraphItem.prototype = {
   onChangePref : function(aData) {
     switch (aData.replace(this.domain+this.id+'.', '')) {
       case "size":
-        this.size = this.getPref(aData);
-        if (this.listening)
-          this.update();
-        break;
       case "interval":
-        this.interval = this.getPref(aData);
-        if (this.listening)
-          this.update();
-        break;
       case "color.background":
-        this.colorBackground = this.getPref(aData);
-        if (this.listening)
-          this.update();
-        break;
       case "color.foreground":
-        this.colorForeground = this.getPref(aData);
-        if (this.listening)
-          this.update();
-        break;
       case "color.gradientEndAlpha":
-        this.gradientEndAlpha = Number(this.getPref(aData));
-        if (isNaN(this.gradientEndAlpha))
-          this.gradientEndAlpha = 0.5;
-        this.gradientEndAlpha = Math.min(1, Math.max(0, this.gradientEndAlpha));
-        if (this.listening)
-          this.update();
-        break;
       case "style":
-        this.style = this.getPref(aData);
         if (this.listening)
           this.update();
         break;
