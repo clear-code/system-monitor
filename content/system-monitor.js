@@ -391,7 +391,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.strokeStyle = gradient;
     aContext.lineWidth = 1.0;
     aContext.lineCap = "square";
-    aContext.globalCompositeOperation = "copy";
+    aContext.globalCompositeOperation = "source-over";
     aContext.moveTo(aX, aBeginY);
     aContext.lineTo(aX, aEndY);
     aContext.closePath();
@@ -407,7 +407,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     context.fillStyle = this.colorBackground;
     context.fillRect(0, 0, canvasElement.width, canvasElement.height);
-    context.globalCompositeOperation = "copy";
+    context.globalCompositeOperation = "source-over";
 
     context.save();
     this.valueArray.forEach(function(aValue) {
