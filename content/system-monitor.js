@@ -299,13 +299,14 @@ SystemMonitorSimpleGraphItem.prototype = {
     var item = this.item;
     if (!this.initialized ||
         !item ||
-        this.listening )
+        this.listening)
         return;
 
-    this.size = this.getPref(this.domain+this.id+".size");
-    this.interval = this.getPref(this.domain+this.id+".interval");
-    this.colorBackground = this.getPref(this.domain+this.id+".color.background");
-    this.colorForeground = this.getPref(this.domain+this.id+".color.foreground");
+    this.onChangePref(this.domain+this.id+".size");
+    this.onChangePref(this.domain+this.id+".interval");
+    this.onChangePref(this.domain+this.id+".color.background");
+    this.onChangePref(this.domain+this.id+".color.foreground");
+    this.onChangePref(this.domain+this.id+".color.gradientEndAlpha");
 
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
@@ -380,9 +381,14 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  drawLine : function(aContext, aColor, aX, aBeginY, aEndY) {
+  drawLine : function(aContext, aFGColor, aBGColor, aX, aBeginY, aEndY) {
+    var offset = ((aEndY - aBeginY) * (1 / Math.max(0.01, 1 - this.gradientEndAlpha)));
+    var gradient = aContext.createLinearGradient(0, aBeginY - offset, 0, aEndY);
+    gradient.addColorStop(0, aBGColor);
+    gradient.addColorStop(1, aFGColor);
+
     aContext.beginPath();
-    aContext.strokeStyle = aColor;
+    aContext.strokeStyle = gradient;
     aContext.lineWidth = 1.0;
     aContext.lineCap = "square";
     aContext.globalCompositeOperation = "copy";
@@ -408,25 +414,18 @@ SystemMonitorSimpleGraphItem.prototype = {
       let y_from = canvasElement.height;
       let y_to = y_from;
       if (aValue == undefined) {
-        this.drawLine(context, this.colorBackground, x, y_from, 0);
       }
       else if (typeof aValue == 'object') { // array
         let each_y = Math.max(1, y) / aValue.length;
         let last = aValue.length - 1;
         aValue.forEach(function(aValue, aIndex) {
           y_to = y_from - (each_y * Math.max(0, Math.min(1, aValue)));
-          y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
-          if (aIndex != last) {
-            context.globalAlpha = 0.5;
-            y_from = this.drawLine(context, this.colorBackground, x, y_from, y_to - 1);
-            context.globalAlpha = 1;
-          }
+          y_from = this.drawLine(context, this.colorForeground, this.colorBackground, x, y_from, y_to);
         }, this);
       }
       else {
         y_to = y - (y * Math.max(0, Math.min(1, aValue)));
-        y_from = this.drawLine(context, this.colorForeground, x, y_from, y_to);
-        this.drawLine(context, this.colorBackground, x, y_from, 0);
+        y_from = this.drawLine(context, this.colorForeground, this.colorBackground, x, y_from, y_to);
       }
       x = x + 2;
     }, this);
@@ -471,19 +470,31 @@ SystemMonitorSimpleGraphItem.prototype = {
     switch (aData.replace(this.domain+this.id+'.', '')) {
       case "size":
         this.size = this.getPref(aData);
-        this.update();
+        if (this.listening)
+          this.update();
         break;
       case "interval":
         this.interval = this.getPref(aData);
-        this.update();
+        if (this.listening)
+          this.update();
         break;
       case "color.background":
         this.colorBackground = this.getPref(aData);
-        this.update();
+        if (this.listening)
+          this.update();
         break;
       case "color.foreground":
         this.colorForeground = this.getPref(aData);
-        this.update();
+        if (this.listening)
+          this.update();
+        break;
+      case "color.gradientEndAlpha":
+        this.gradientEndAlpha = Number(this.getPref(aData));
+        if (isNaN(this.gradientEndAlpha))
+          this.gradientEndAlpha = 0.5;
+        this.gradientEndAlpha = Math.min(1, Math.max(0, this.gradientEndAlpha));
+        if (this.listening)
+          this.update();
         break;
     }
   },
