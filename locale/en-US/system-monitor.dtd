@@ -1,22 +1,30 @@
-<!ENTITY toolbar.cpuUsage.label   "CPU Usage">
-<!ENTITY toolbar.memoryUsage.label   "Memory Usage">
+<!ENTITY toolbar.cpu-usage.label   "CPU Usage">
+<!ENTITY toolbar.memory-usage.label   "Memory Usage">
 
 
 <!ENTITY config.title "System Monitor Configuration">
 
-<!ENTITY config.cpuUsage.caption "CPU usage">
 
-<!ENTITY config.cpuUsage.interval.before "Update graph every ">
-<!ENTITY config.cpuUsage.interval.after "msec.">
-<!ENTITY config.cpuUsage.color.background "Background:">
-<!ENTITY config.cpuUsage.color.foreground "Foreground:">
-<!ENTITY config.cpuUsage.color.reset "Reset">
+<!ENTITY config.cpu-usage.caption "CPU usage">
 
-<!ENTITY config.memoryUsage.caption "Memory usage">
+<!ENTITY config.cpu-usage.interval.caption "Interval">
+<!ENTITY config.cpu-usage.interval.before "Update graph every ">
+<!ENTITY config.cpu-usage.interval.after "msec.">
 
-<!ENTITY config.memoryUsage.interval.before "Update graph every ">
-<!ENTITY config.memoryUsage.interval.after "msec.">
-<!ENTITY config.memoryUsage.color.background "Background:">
-<!ENTITY config.memoryUsage.color.foreground "Foreground:">
-<!ENTITY config.memoryUsage.color.reset "Reset">
+<!ENTITY config.cpu-usage.color.caption "Color">
+<!ENTITY config.cpu-usage.color.background "Background:">
+<!ENTITY config.cpu-usage.color.foreground "Foreground:">
+<!ENTITY config.cpu-usage.color.reset "Reset">
+
+
+<!ENTITY config.memory-usage.caption "Memory usage">
+
+<!ENTITY config.memory-usage.interval.caption "Interval">
+<!ENTITY config.memory-usage.interval.before "Update graph every ">
+<!ENTITY config.memory-usage.interval.after "msec.">
+
+<!ENTITY config.cpu-usage.color.caption "Color">
+<!ENTITY config.memory-usage.color.background "Background:">
+<!ENTITY config.memory-usage.color.foreground "Foreground:">
+<!ENTITY config.memory-usage.color.reset "Reset">
 

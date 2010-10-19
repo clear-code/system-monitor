@@ -5,7 +5,7 @@
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&config.title;">
 
-<prefpane id="prefpane-general">
+<prefpane id="prefpane-cpu-usage" label="&config.cpu-usage.caption;">
   <preferences>
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
@@ -16,6 +16,57 @@
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 type="string"/>
+  </preferences>
+
+  <groupbox>
+    <caption label="&config.cpu-usage.interval.caption;"/>
+    <hbox align="center">
+      <label value="&config.cpu-usage.interval.before;"
+             control="cpu-usage.interval-textbox"/>
+      <textbox id="cpu-usage.interval-textbox"
+               preference="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+               style="width: 5em;"
+               type="number"
+               min="100"
+               increment="1"/>
+      <label value="&config.cpu-usage.interval.after;"
+             control="cpu-usage.interval-textbox"/>
+    </hbox>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.cpu-usage.color.caption;"/>
+    <grid>
+      <columns>
+        <column/>
+        <column/>
+        <column/>
+      </columns>
+      <rows>
+        <row align="center">
+          <label value="&config.cpu-usage.color.background;"
+                 control="cpu-usage.color.background-colorpicker"/>
+          <colorpicker id="cpu-usage.color.background-colorpicker"
+                       type="button"
+                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
+          <button label="&config.cpu-usage.color.reset;"
+                  oncommand="resetValue(this.previousSibling, 'color');"/>
+        </row>
+        <row align="center">
+          <label value="&config.cpu-usage.color.foreground;"
+                 control="cpu-usage.color.foreground-colorpicker"/>
+          <colorpicker id="cpu-usage.color.foreground-colorpicker"
+                       type="button"
+                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
+          <button label="&config.cpu-usage.color.reset;"
+                  oncommand="resetValue(this.previousSibling, 'color');"/>
+        </row>
+      </rows>
+    </grid>
+  </groupbox>
+</prefpane>
+
+<prefpane id="prefpane-memory-usage" label="&config.memory-usage.caption;">
+  <preferences>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 name="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 type="int"/>
@@ -27,64 +78,23 @@
                 type="string"/>
   </preferences>
 
-  <groupbox orient="vertical">
-    <caption label="&config.cpuUsage.caption;"/>
+  <groupbox>
+    <caption label="&config.memory-usage.interval.caption;"/>
     <hbox align="center">
-      <label value="&config.cpuUsage.interval.before;"
-             control="cpuUsage.interval-textbox"/>
-      <textbox id="cpuUsage.interval-textbox"
-               preference="extensions.system-monitor@clear-code.com.cpu-usage.interval"
-               style="width: 5em;"
-               type="number"
-               min="100"
-               increment="1"/>
-      <label value="&config.cpuUsage.interval.after;"
-             control="cpuUsage.interval-textbox"/>
-    </hbox>
-    <grid>
-      <columns>
-        <column/>
-        <column/>
-        <column/>
-      </columns>
-      <rows>
-        <row align="center">
-          <label value="&config.cpuUsage.color.background;"
-                 control="cpuUsage.color.background-colorpicker"/>
-          <colorpicker id="cpuUsage.color.background-colorpicker"
-                       type="button"
-                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
-          <button label="&config.cpuUsage.color.reset;"
-                  oncommand="resetValue(this.previousSibling, 'color');"/>
-        </row>
-        <row align="center">
-          <label value="&config.cpuUsage.color.foreground;"
-                 control="cpuUsage.color.foreground-colorpicker"/>
-          <colorpicker id="cpuUsage.color.foreground-colorpicker"
-                       type="button"
-                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
-          <button label="&config.cpuUsage.color.reset;"
-                  oncommand="resetValue(this.previousSibling, 'color');"/>
-        </row>
-      </rows>
-    </grid>
-  </groupbox>
-
-  <groupbox orient="vertical">
-    <caption label="&config.memoryUsage.caption;"/>
-    <hbox align="center">
-      <label value="&config.memoryUsage.interval.before;"
-             control="memoryUsage.interval-textbox"/>
-      <textbox id="memoryUsage.interval-textbox"
+      <label value="&config.memory-usage.interval.before;"
+             control="memory-usage.interval-textbox"/>
+      <textbox id="memory-usage.interval-textbox"
                preference="extensions.system-monitor@clear-code.com.memory-usage.interval"
                style="width: 5em;"
                type="number"
                min="100"
-
                increment="1"/>
-      <label value="&config.memoryUsage.interval.after;"
-             control="memoryUsage.interval-textbox"/>
+      <label value="&config.memory-usage.interval.after;"
+             control="memory-usage.interval-textbox"/>
     </hbox>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.memory-usage.color.caption;"/>
     <grid>
       <columns>
         <column/>
@@ -93,29 +103,26 @@
       </columns>
       <rows>
         <row align="center">
-          <label value="&config.memoryUsage.color.background;"
-                 control="memoryUsage.color.background-colorpicker"/>
-          <colorpicker id="memoryUsage.color.background-colorpicker"
-
+          <label value="&config.memory-usage.color.background;"
+                 control="memory-usage.color.background-colorpicker"/>
+          <colorpicker id="memory-usage.color.background-colorpicker"
                        type="button"
                        preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
-          <button label="&config.memoryUsage.color.reset;"
+          <button label="&config.memory-usage.color.reset;"
                   oncommand="resetValue(this.previousSibling, 'color');"/>
         </row>
         <row align="center">
-          <label value="&config.memoryUsage.color.foreground;"
-                 control="memoryUsage.color.foreground-colorpicker"/>
-          <colorpicker id="memoryUsage.color.foreground-colorpicker"
+          <label value="&config.memory-usage.color.foreground;"
+                 control="memory-usage.color.foreground-colorpicker"/>
+          <colorpicker id="memory-usage.color.foreground-colorpicker"
                        type="button"
                        preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
-          <button label="&config.memoryUsage.color.reset;"
-
+          <button label="&config.memory-usage.color.reset;"
                   oncommand="resetValue(this.previousSibling, 'color');"/>
         </row>
       </rows>
     </grid>
   </groupbox>
-
 </prefpane>
 
 <script type="application/x-javascript" src="chrome://system-monitor/content/config.js"/>

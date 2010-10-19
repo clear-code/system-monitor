@@ -3,7 +3,7 @@
 <!DOCTYPE overlay SYSTEM "chrome://system-monitor/locale/">
 <window xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
         xmlns:html="http://www.w3.org/1999/xhtml"
-        title="&toolbar.cpuUsage.label;" 
+        title="&toolbar.cpu-usage.label;" 
         windowtype="system-monitor:main"
         onmousedown="dragStart(event)"
         onmousemove="dragMove(event)"
@@ -23,11 +23,11 @@
   <popupset>
     <tooltip id="system-monitor-cpu-usage-tooltip">
       <label id="system-monitor-cpu-usage-tooltip-label"
-        class="system-monitor-tooltip-label">&toolbar.cpuUsage.label;</label>
+        class="system-monitor-tooltip-label">&toolbar.cpu-usage.label;</label>
     </tooltip>
     <tooltip id="system-monitor-memory-usage-tooltip">
       <label id="system-monitor-memory-usage-tooltip-label"
-        class="system-monitor-tooltip-label">&toolbar.memoryUsage.label;</label>
+        class="system-monitor-tooltip-label">&toolbar.memory-usage.label;</label>
     </tooltip>
   </popupset>
 
