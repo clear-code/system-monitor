@@ -399,7 +399,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     if (typeof aColors == 'object') {
       let offset = (aEndY - aBeginY) * (1 / (1 - this.gradientEndAlpha));
-      let gradient = aContext.createLinearGradient(0, aBeginY-offset, 0, aEndY);
+      let gradient = aContext.createLinearGradient(0, aEndY-offset, 0, aEndY);
       gradient.addColorStop(0, aColors[0]);
       gradient.addColorStop(1, aColors[1]);
       aContext.strokeStyle = gradient;
