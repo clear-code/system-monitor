@@ -407,43 +407,26 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   STYLE_BAR       : 1,
   STYLE_POLYGONAL : 2,
+  STYLE_UNIFIED : 128,
+  STYLE_STACKED : 256,
+  STYLE_LAYERED : 512,
   drawGraph : function(aDrawAll) {
     var canvas = this.canvas;
-    let context = canvas.getContext("2d")
-    let y = canvas.height;
-    let x = 0;
+    var context = canvas.getContext("2d")
+    var y = canvas.height;
 
     var values = this.valueArray;
     if (this.style & this.STYLE_POLYGONAL) {
-      context.globalCompositeOperation = "source-over";
-      context.fillStyle = this.colorBackground;
-      context.fillRect(0, 0, canvas.width, canvas.height);
+      this.fillAll(this.colorBackground);
       if (this.multiplexed && values[values.length-1]) {
-        if (this.style & this.STYLE_UNIFIED) {
-          this.drawGraphPolygon(
-            context,
-            values.map(this.unifyValues),
-            y
-          );
-        } else {
-          for (let i = 0, maxi = values[values.length-1].length; i < maxi; i++)
-          {
-            this.drawGraphPolygon(
-              context,
-              values.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
-              y
-            );
-          }
-        }
-      }
-      else {
+        this.drawGraphMultiplexedPolygon(context, values, y);
+      } else {
         this.drawGraphPolygon(context, values || 0, y);
       }
     } else {
+      let x = 0;
       if (aDrawAll) {
-        context.globalCompositeOperation = "source-over";
-        context.fillStyle = this.colorBackground;
-        context.fillRect(0, 0, canvas.width, canvas.height);
+        this.fillAll(this.colorBackground);
       } else {
         context.drawImage(canvas, -2, 0);
         x = (values.length - 1) * 2;
@@ -462,6 +445,16 @@ SystemMonitorSimpleGraphItem.prototype = {
         x = x + 2;
       }, this);
     }
+  },
+
+  fillAll : function(aColor) {
+    var canvas = this.canvas;
+    var context = canvas.getContext("2d")
+    context.save();
+    context.globalCompositeOperation = "source-over";
+    context.fillStyle = aColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.restore();
   },
 
   // bar graph
@@ -492,14 +485,9 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.restore();
   },
 
-  STYLE_UNIFIED : 128,
-  STYLE_STACKED : 256,
-  STYLE_LAYERED : 512,
   drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxY) {
     aContext.globalAlpha = 1;
-    if (this.style & this.STYLE_UNIFIED) {
-      this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.unifyValues(aValues));
-    } else if (this.style & this.STYLE_STACKED) {
+    if (this.style & this.STYLE_STACKED) {
       let eachMaxY = aMaxY / aValues.length;
       let beginY = 0;
       aContext.save();
@@ -519,6 +507,8 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
       }, this);
       aContext.globalAlpha = 1;
+    } else { // unified (by default)
+      this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.unifyValues(aValues));
     }
   },
 
@@ -545,14 +535,42 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.restore();
   },
 
+  drawGraphMultiplexedPolygon : function(aContext, aValues, aMaxY) {
+    let count = aValues[aValues.length-1].length;
+    if (this.style & this.STYLE_STACKED) {
+      for (let i = 0, maxi = count; i < maxi; i++)
+      {
+        this.drawGraphPolygon(
+          aContext,
+          aValues.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
+          aMaxY
+        );
+      }
+    } else if (this.style & this.STYLE_LAYERED) {
+      for (let i = 0, maxi = count; i < maxi; i++)
+      {
+        this.drawGraphPolygon(
+          aContext,
+          aValues.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
+          aMaxY
+        );
+      }
+    } else { // unified (by default)
+      this.drawGraphPolygon(
+        aContext,
+        aValues.map(this.unifyValues),
+        aMaxY
+      );
+    }
+  },
+
   drawDisabled : function() {
+    this.fillAll(this.colorBackground);
+
     var canvas = this.canvas;
     var context = canvas.getContext("2d")
     var w = canvas.width;
     var h = canvas.height;
-
-    context.fillStyle = this.colorBackground;
-    context.fillRect(0, 0, w, h);
 
     context.save();
 
