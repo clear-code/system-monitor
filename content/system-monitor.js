@@ -423,7 +423,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       } else {
         this.drawGraphPolygon(context, values || 0, y);
       }
-    } else {
+    } else { // bar graph (by default)
       let x = 0;
       if (aDrawAll) {
         this.fillAll(this.colorBackground);
@@ -433,7 +433,6 @@ SystemMonitorSimpleGraphItem.prototype = {
         values = values.slice(-1);
         this.drawGraphBar(context, this.colorBackground, x, y, 0, y);
       }
-
       values.forEach(function(aValue) {
         if (aValue) {
           if (this.multiplexed) {
