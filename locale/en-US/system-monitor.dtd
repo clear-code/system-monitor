@@ -7,24 +7,36 @@
 
 <!ENTITY config.cpu-usage.caption "CPU usage">
 
-<!ENTITY config.cpu-usage.interval.caption "Interval">
-<!ENTITY config.cpu-usage.interval.before "Update graph every ">
-<!ENTITY config.cpu-usage.interval.after "msec.">
+<!ENTITY config.cpu-usage.style.caption "Appearance">
+<!ENTITY config.cpu-usage.style.bar "Bar graph">
+<!ENTITY config.cpu-usage.style.polygon "Polygonal graph">
+<!ENTITY config.cpu-usage.style.multiplexed.caption "for Multiple Processors">
+<!ENTITY config.cpu-usage.style.multiplexed.unified "Sum usages of all processors">
+<!ENTITY config.cpu-usage.style.multiplexed.stacked "Stack each graph">
+<!ENTITY config.cpu-usage.style.multiplexed.layered "Overlay each graph">
 
 <!ENTITY config.cpu-usage.color.caption "Color">
 <!ENTITY config.cpu-usage.color.background "Background:">
 <!ENTITY config.cpu-usage.color.foreground "Foreground:">
 <!ENTITY config.cpu-usage.color.reset "Reset">
 
+<!ENTITY config.cpu-usage.interval.caption "Interval">
+<!ENTITY config.cpu-usage.interval.before "Update graph every ">
+<!ENTITY config.cpu-usage.interval.after "msec.">
+
 
 <!ENTITY config.memory-usage.caption "Memory usage">
+
+<!ENTITY config.memory-usage.style.caption "Appearance">
+<!ENTITY config.memory-usage.style.bar "Bar graph">
+<!ENTITY config.memory-usage.style.polygon "Polygonal graph">
+
+<!ENTITY config.memory-usage.color.caption "Color">
+<!ENTITY config.memory-usage.color.background "Background:">
+<!ENTITY config.memory-usage.color.foreground "Foreground:">
+<!ENTITY config.memory-usage.color.reset "Reset">
 
 <!ENTITY config.memory-usage.interval.caption "Interval">
 <!ENTITY config.memory-usage.interval.before "Update graph every ">
 <!ENTITY config.memory-usage.interval.after "msec.">
-
-<!ENTITY config.cpu-usage.color.caption "Color">
-<!ENTITY config.memory-usage.color.background "Background:">
-<!ENTITY config.memory-usage.color.foreground "Foreground:">
-<!ENTITY config.memory-usage.color.reset "Reset">
 

@@ -1,0 +1,11 @@
+radio.image,
+radio.image .radio-label-box,
+radio.image .radio-label {
+  -moz-box-align: center;
+}
+
+radio.image[src] .radio-icon {
+  width: 48px;
+  height: 24px;
+}
+

@@ -1,23 +1,81 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://global/skin/"?>
+<?xml-stylesheet href="chrome://system-monitor/content/config.css"?>
 <!DOCTYPE prefwindow SYSTEM "chrome://system-monitor/locale/">
 <prefwindow id="system-monitor-config"
             xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
             title="&config.title;">
 
-<prefpane id="prefpane-cpu-usage" label="&config.cpu-usage.caption;">
+<prefpane id="prefpane-cpu-usage"
+          label="&config.cpu-usage.caption;"
+          onpaneload="initCPUUsagePane();">
   <preferences>
-    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
-                name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
-                type="int"/>
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.style"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.style"
+                type="int"
+                onchange="updateStyleUIFromPref('cpu-usage');"/>
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.background"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.background"
                 type="string"/>
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
+                type="int"/>
   </preferences>
 
+  <groupbox oncommand="updateStylePrefFromUI('cpu-usage');">
+    <caption label="&config.cpu-usage.style.caption;"/>
+    <radiogroup id="cpu-usage.style.base.radiogroup"
+                orient="horizontal"
+                align="center">
+      <radio class="image"
+             src="chrome://system-monitor/content/res/bar-unified.png"
+             value="1"
+             label="&config.cpu-usage.style.bar;"/>
+      <radio class="image"
+             src="chrome://system-monitor/content/res/polygon-unified.png"
+             value="2"
+             label="&config.cpu-usage.style.polygon;"/>
+    </radiogroup>
+    <separator/>
+    <label value="&config.cpu-usage.style.multiplexed.caption;"/>
+    <radiogroup id="cpu-usage.style.extra.radiogroup"
+                orient="vertical">
+      <radio class="image"
+             src="chrome://system-monitor/content/res/polygon-unified.png"
+             value="128"
+             label="&config.cpu-usage.style.multiplexed.unified;"/>
+      <radio class="image"
+             src="chrome://system-monitor/content/res/polygon-stacked.png"
+             value="256"
+             label="&config.cpu-usage.style.multiplexed.stacked;"/>
+      <radio class="image"
+             src="chrome://system-monitor/content/res/polygon-layered.png"
+             value="512"
+             label="&config.cpu-usage.style.multiplexed.layered;"/>
+    </radiogroup>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.cpu-usage.color.caption;"/>
+    <hbox align="center">
+      <label value="&config.cpu-usage.color.background;"
+             control="cpu-usage.color.background-colorpicker"/>
+      <colorpicker id="cpu-usage.color.background-colorpicker"
+                   type="button"
+                   preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
+      <button label="&config.cpu-usage.color.reset;"
+              oncommand="resetValue(this.previousSibling, 'color');"/>
+      <label value="&config.cpu-usage.color.foreground;"
+             control="cpu-usage.color.foreground-colorpicker"/>
+      <colorpicker id="cpu-usage.color.foreground-colorpicker"
+                   type="button"
+                   preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
+      <button label="&config.cpu-usage.color.reset;"
+              oncommand="resetValue(this.previousSibling, 'color');"/>
+    </hbox>
+  </groupbox>
   <groupbox>
     <caption label="&config.cpu-usage.interval.caption;"/>
     <hbox align="center">
@@ -33,57 +91,68 @@
              control="cpu-usage.interval-textbox"/>
     </hbox>
   </groupbox>
-  <groupbox>
-    <caption label="&config.cpu-usage.color.caption;"/>
-    <grid>
-      <columns>
-        <column/>
-        <column/>
-        <column/>
-      </columns>
-      <rows>
-        <row align="center">
-          <label value="&config.cpu-usage.color.background;"
-                 control="cpu-usage.color.background-colorpicker"/>
-          <colorpicker id="cpu-usage.color.background-colorpicker"
-                       type="button"
-                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
-          <button label="&config.cpu-usage.color.reset;"
-                  oncommand="resetValue(this.previousSibling, 'color');"/>
-        </row>
-        <row align="center">
-          <label value="&config.cpu-usage.color.foreground;"
-                 control="cpu-usage.color.foreground-colorpicker"/>
-          <colorpicker id="cpu-usage.color.foreground-colorpicker"
-                       type="button"
-                       preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
-          <button label="&config.cpu-usage.color.reset;"
-                  oncommand="resetValue(this.previousSibling, 'color');"/>
-        </row>
-      </rows>
-    </grid>
-  </groupbox>
 </prefpane>
 
-<prefpane id="prefpane-memory-usage" label="&config.memory-usage.caption;">
+<prefpane id="prefpane-memory-usage"
+          label="&config.memory-usage.caption;"
+          onpaneload="initMemoryUsagePane();">
   <preferences>
-    <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
-                name="extensions.system-monitor@clear-code.com.memory-usage.interval"
-                type="int"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.style"
+                name="extensions.system-monitor@clear-code.com.memory-usage.style"
+                type="int"
+                onchange="updateStyleUIFromPref('memory-usage');"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.background"
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.background"
                 type="string"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
                 type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
+                name="extensions.system-monitor@clear-code.com.memory-usage.interval"
+                type="int"/>
   </preferences>
 
+  <groupbox oncommand="updateStylePrefFromUI('memory-usage');">
+    <caption label="&config.memory-usage.style.caption;"/>
+    <radiogroup id="memory-usage.style.base.radiogroup"
+                orient="horizontal"
+                align="center">
+      <radio class="image"
+             src="chrome://system-monitor/content/res/bar-unified.png"
+             value="1"
+             label="&config.memory-usage.style.bar;"/>
+      <radio class="image"
+             src="chrome://system-monitor/content/res/polygon-unified.png"
+             value="2"
+             label="&config.memory-usage.style.polygon;"/>
+    </radiogroup>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.memory-usage.color.caption;"/>
+    <hbox align="center">
+      <label value="&config.memory-usage.color.background;"
+             control="memory-usage.color.background-colorpicker"/>
+      <colorpicker id="memory-usage.color.background-colorpicker"
+                   type="button"
+                   preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
+      <button label="&config.memory-usage.color.reset;"
+              oncommand="resetValue(this.previousSibling, 'color');"/>
+      <label value="&config.memory-usage.color.foreground;"
+             control="memory-usage.color.foreground-colorpicker"/>
+      <colorpicker id="memory-usage.color.foreground-colorpicker"
+                   type="button"
+                   preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
+      <button label="&config.memory-usage.color.reset;"
+              oncommand="resetValue(this.previousSibling, 'color');"/>
+    </hbox>
+  </groupbox>
   <groupbox>
     <caption label="&config.memory-usage.interval.caption;"/>
     <hbox align="center">
       <label value="&config.memory-usage.interval.before;"
              control="memory-usage.interval-textbox"/>
       <textbox id="memory-usage.interval-textbox"
+
                preference="extensions.system-monitor@clear-code.com.memory-usage.interval"
                style="width: 5em;"
                type="number"
@@ -92,36 +161,6 @@
       <label value="&config.memory-usage.interval.after;"
              control="memory-usage.interval-textbox"/>
     </hbox>
-  </groupbox>
-  <groupbox>
-    <caption label="&config.memory-usage.color.caption;"/>
-    <grid>
-      <columns>
-        <column/>
-        <column/>
-        <column/>
-      </columns>
-      <rows>
-        <row align="center">
-          <label value="&config.memory-usage.color.background;"
-                 control="memory-usage.color.background-colorpicker"/>
-          <colorpicker id="memory-usage.color.background-colorpicker"
-                       type="button"
-                       preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
-          <button label="&config.memory-usage.color.reset;"
-                  oncommand="resetValue(this.previousSibling, 'color');"/>
-        </row>
-        <row align="center">
-          <label value="&config.memory-usage.color.foreground;"
-                 control="memory-usage.color.foreground-colorpicker"/>
-          <colorpicker id="memory-usage.color.foreground-colorpicker"
-                       type="button"
-                       preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
-          <button label="&config.memory-usage.color.reset;"
-                  oncommand="resetValue(this.previousSibling, 'color');"/>
-        </row>
-      </rows>
-    </grid>
   </groupbox>
 </prefpane>
 

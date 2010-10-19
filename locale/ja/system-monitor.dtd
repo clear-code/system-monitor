@@ -7,24 +7,36 @@
 
 <!ENTITY config.cpu-usage.caption "CPU使用率">
 
-<!ENTITY config.cpu-usage.interval.caption "グラフの更新間隔">
-<!ENTITY config.cpu-usage.interval.before "">
-<!ENTITY config.cpu-usage.interval.after "ミリ秒">
+<!ENTITY config.cpu-usage.style.caption "スタイル">
+<!ENTITY config.cpu-usage.style.bar "棒グラフ">
+<!ENTITY config.cpu-usage.style.polygon "折れ線グラフ">
+<!ENTITY config.cpu-usage.style.multiplexed.caption "マルチCPUの場合">
+<!ENTITY config.cpu-usage.style.multiplexed.unified "合計を表示する">
+<!ENTITY config.cpu-usage.style.multiplexed.stacked "積み上げ式で表示する">
+<!ENTITY config.cpu-usage.style.multiplexed.layered "重ねて表示する">
 
 <!ENTITY config.cpu-usage.color.caption "色">
 <!ENTITY config.cpu-usage.color.background "背景色：">
 <!ENTITY config.cpu-usage.color.foreground "前景色：">
 <!ENTITY config.cpu-usage.color.reset "リセット">
 
+<!ENTITY config.cpu-usage.interval.caption "グラフの更新間隔">
+<!ENTITY config.cpu-usage.interval.before "">
+<!ENTITY config.cpu-usage.interval.after "ミリ秒">
+
 
 <!ENTITY config.memory-usage.caption "メモリ使用率">
 
-<!ENTITY config.memory-usage.interval.caption "グラフの更新間隔">
-<!ENTITY config.memory-usage.interval.before "">
-<!ENTITY config.memory-usage.interval.after "ミリ秒">
+<!ENTITY config.memory-usage.style.caption "スタイル">
+<!ENTITY config.memory-usage.style.bar "棒グラフ">
+<!ENTITY config.memory-usage.style.polygon "折れ線グラフ">
 
 <!ENTITY config.memory-usage.color.caption "色">
 <!ENTITY config.memory-usage.color.background "背景色：">
 <!ENTITY config.memory-usage.color.foreground "前景色：">
 <!ENTITY config.memory-usage.color.reset "リセット">
+
+<!ENTITY config.memory-usage.interval.caption "グラフの更新間隔">
+<!ENTITY config.memory-usage.interval.before "">
+<!ENTITY config.memory-usage.interval.after "ミリ秒">
 
