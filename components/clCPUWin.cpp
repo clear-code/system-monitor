@@ -15,17 +15,23 @@ nsresult
 clCPU::InitInternal()
 {
     mNTDLL = ::LoadLibraryW(kNTLibraryName);
-    mNtQuerySystemInformation = (NtQuerySystemInformationPtr)
-                                GetProcAddress(mNTDLL, "NtQuerySystemInformation");
+    if (mNTDLL) {
+      mNtQuerySystemInformation = (NtQuerySystemInformationPtr)
+                                  GetProcAddress(mNTDLL, "NtQuerySystemInformation");
+    }
     return NS_OK;
 }
 
 nsresult
 clCPU::DestroyInternal()
 {
-    FreeLibrary(mNTDLL);
-    mNTDLL = nsnull;
-    mNtQuerySystemInformation = nsnull;
+    if (mNTDLL) {
+        FreeLibrary(mNTDLL);
+        mNTDLL = nsnull;
+        if (mNtQuerySystemInformation) {
+            mNtQuerySystemInformation = nsnull;
+        }
+    }
     return NS_OK;
 }
 
@@ -55,6 +61,9 @@ GetCPUTimeInfoArrayTotal()
 nsAutoVoidArray*
 clCPU::GetCPUTimeInfoArray()
 {
+    if (!mNtQuerySystemInformation)
+        return GetCPUTimeInfoArrayTotal();
+
     SYSTEM_BASIC_INFORMATION system_basic_info;
     if (FAILED((*mNtQuerySystemInformation)(SystemBasicInformation,
                                             &system_basic_info,
