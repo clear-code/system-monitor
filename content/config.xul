@@ -20,6 +20,10 @@
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.gradientEndAlpha"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.color.gradientEndAlpha"
+                type="string"
+                onchange="updateAlphaUIFromPref('cpu-usage');"/>
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
                 type="int"/>
@@ -60,20 +64,39 @@
   <groupbox>
     <caption label="&config.cpu-usage.color.caption;"/>
     <hbox align="center">
-      <label value="&config.cpu-usage.color.background;"
-             control="cpu-usage.color.background-colorpicker"/>
-      <colorpicker id="cpu-usage.color.background-colorpicker"
-                   type="button"
-                   preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
-      <button label="&config.cpu-usage.color.reset;"
-              oncommand="resetValue(this.previousSibling, 'color');"/>
       <label value="&config.cpu-usage.color.foreground;"
              control="cpu-usage.color.foreground-colorpicker"/>
       <colorpicker id="cpu-usage.color.foreground-colorpicker"
                    type="button"
                    preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
       <button label="&config.cpu-usage.color.reset;"
+              class="reset"
               oncommand="resetValue(this.previousSibling, 'color');"/>
+      <label value="&config.cpu-usage.color.background;"
+             control="cpu-usage.color.background-colorpicker"/>
+      <colorpicker id="cpu-usage.color.background-colorpicker"
+                   type="button"
+                   preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
+      <button label="&config.cpu-usage.color.reset;"
+              class="reset"
+              oncommand="resetValue(this.previousSibling, 'color');"/>
+    </hbox>
+    <hbox align="center">
+      <label value="&config.cpu-usage.color.gradientEndAlpha.before;"
+             control="cpu-usage.color.gradientEndAlpha-scale"/>
+      <scale id="cpu-usage.color.gradientEndAlpha-scale"
+             orient="horizontal"
+             flex="1"
+             increment="1"
+             pageincrement="10"
+             min="0"
+             max="100"
+             onchange="updateAlphaPrefFromUI('cpu-usage');"/>
+      <label value="&config.cpu-usage.color.gradientEndAlpha.after;"
+             control="cpu-usage.color.gradientEndAlpha-scale"/>
+      <button label="&config.cpu-usage.color.reset;"
+              class="reset"
+              oncommand="resetPref('extensions.system-monitor@clear-code.com.cpu-usage.color.gradientEndAlpha');"/>
     </hbox>
   </groupbox>
   <groupbox>
@@ -107,6 +130,10 @@
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
                 type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.gradientEndAlpha"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.gradientEndAlpha"
+                type="string"
+                onchange="updateAlphaUIFromPref('memory-usage');"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 name="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 type="int"/>
@@ -130,20 +157,39 @@
   <groupbox>
     <caption label="&config.memory-usage.color.caption;"/>
     <hbox align="center">
-      <label value="&config.memory-usage.color.background;"
-             control="memory-usage.color.background-colorpicker"/>
-      <colorpicker id="memory-usage.color.background-colorpicker"
-                   type="button"
-                   preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
-      <button label="&config.memory-usage.color.reset;"
-              oncommand="resetValue(this.previousSibling, 'color');"/>
       <label value="&config.memory-usage.color.foreground;"
              control="memory-usage.color.foreground-colorpicker"/>
       <colorpicker id="memory-usage.color.foreground-colorpicker"
                    type="button"
                    preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
       <button label="&config.memory-usage.color.reset;"
+              class="reset"
               oncommand="resetValue(this.previousSibling, 'color');"/>
+      <label value="&config.memory-usage.color.background;"
+             control="memory-usage.color.background-colorpicker"/>
+      <colorpicker id="memory-usage.color.background-colorpicker"
+                   type="button"
+                   preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
+      <button label="&config.memory-usage.color.reset;"
+              class="reset"
+              oncommand="resetValue(this.previousSibling, 'color');"/>
+    </hbox>
+    <hbox align="center">
+      <label value="&config.memory-usage.color.gradientEndAlpha.before;"
+             control="memory-usage.color.gradientEndAlpha-scale"/>
+      <scale id="memory-usage.color.gradientEndAlpha-scale"
+             orient="horizontal"
+             flex="1"
+             increment="1"
+             pageincrement="10"
+             min="0"
+             max="100"
+             onchange="updateAlphaPrefFromUI('memory-usage');"/>
+      <label value="&config.memory-usage.color.gradientEndAlpha.after;"
+             control="memory-usage.color.gradientEndAlpha-scale"/>
+      <button label="&config.memory-usage.color.reset;"
+              class="reset"
+              oncommand="resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.gradientEndAlpha');"/>
     </hbox>
   </groupbox>
   <groupbox>
@@ -152,7 +198,6 @@
       <label value="&config.memory-usage.interval.before;"
              control="memory-usage.interval-textbox"/>
       <textbox id="memory-usage.interval-textbox"
-
                preference="extensions.system-monitor@clear-code.com.memory-usage.interval"
                style="width: 5em;"
                type="number"

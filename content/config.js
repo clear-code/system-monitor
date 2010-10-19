@@ -1,9 +1,11 @@
 function initCPUUsagePane() {
   updateStyleUIFromPref('cpu-usage');
+  updateAlphaUIFromPref('cpu-usage');
 }
 
 function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
+  updateAlphaUIFromPref('memory-usage');
 }
 
 function updateStyleUIFromPref(aKey) {
@@ -47,9 +49,25 @@ function updateStylePrefFromUI(aKey) {
   slot.value = value;
 }
 
+function updateAlphaUIFromPref(aKey) {
+  var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey+'.color.gradientEndAlpha');
+  var scale = document.getElementById(aKey+'.color.gradientEndAlpha-scale');
+  scale.value = Number(slot.value) * 100;
+}
+
+function updateAlphaPrefFromUI(aKey) {
+  var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey+'.color.gradientEndAlpha');
+  var scale = document.getElementById(aKey+'.color.gradientEndAlpha-scale');
+  slot.value = parseInt(scale.value) / 100;
+}
+
 function resetValue(aNode, aProperty) {
   if (!aProperty) aProperty = 'value';
-  var preference = document.getElementById(aNode.getAttribute('preference'));
-  aNode[aProperty] = preference.value = preference.defaultValue;
+  aNode[aProperty] = resetPref(aNode.getAttribute('preference'));
+}
+
+function resetPref(aId) {
+  var preference = document.getElementById(aId);
+  return preference.value = preference.defaultValue;
 }
 

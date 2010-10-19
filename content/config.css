@@ -9,3 +9,7 @@ radio.image[src] .radio-icon {
   height: 24px;
 }
 
+button.reset {
+  min-width: 0;
+}
+
