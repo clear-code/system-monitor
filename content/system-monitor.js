@@ -391,7 +391,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  unifyValues : function(aValues) {
+  getSum : function(aValues) {
     if (!aValues)
       return 0;
 
@@ -508,7 +508,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       }, this);
       aContext.globalAlpha = 1;
     } else { // unified (by default)
-      this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.unifyValues(aValues));
+      this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
   },
 
@@ -538,27 +538,37 @@ SystemMonitorSimpleGraphItem.prototype = {
   drawGraphMultiplexedPolygon : function(aContext, aValues, aMaxY) {
     let count = aValues[aValues.length-1].length;
     if (this.style & this.STYLE_STACKED) {
+      let total = aValues.map(this.getSum);
+      let offsets = [];
       for (let i = 0, maxi = count; i < maxi; i++)
       {
+        let lastValues = aValues.map(function(aValue, aIndex) {
+              return aValue ?
+                       (((aIndex in offsets ? offsets[aIndex] : 0 ) + aValue[i]) / count) :
+                       0 ;
+            });
         this.drawGraphPolygon(
           aContext,
-          aValues.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
+          lastValues,
           aMaxY
         );
+        offsets = lastValues;
       }
     } else if (this.style & this.STYLE_LAYERED) {
       for (let i = 0, maxi = count; i < maxi; i++)
       {
         this.drawGraphPolygon(
           aContext,
-          aValues.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
+          aValues.map(function(aValue) {
+            return aValue ? aValue[i] : 0 ;
+          }),
           aMaxY
         );
       }
     } else { // unified (by default)
       this.drawGraphPolygon(
         aContext,
-        aValues.map(this.unifyValues),
+        aValues.map(this.getSum),
         aMaxY
       );
     }
@@ -666,7 +676,7 @@ SystemMonitorCPUItem.prototype = {
     this.drawGraph();
 
     if (aValues.length > 1 && this.style & this.STYLE_UNIFIED)
-      aValues = [this.unifyValues(aValues)];
+      aValues = [this.getSum(aValues)];
 
     var parts = aValues.map(function(aValue) {
           return this.bundle.getFormattedString(
