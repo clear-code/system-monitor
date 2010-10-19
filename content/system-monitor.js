@@ -391,7 +391,81 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  drawGraphLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
+  unifyValues : function(aValues) {
+    if (!aValues)
+      return 0;
+
+    if (typeof aValues == 'number')
+      return aValues;
+
+    let total = 0;
+    aValues.forEach(function(aValue) {
+      total += aValue;
+    });
+    return total / aValues.length;
+  },
+
+  STYLE_BAR       : 1,
+  STYLE_POLYGONAL : 2,
+  drawGraph : function(aDrawAll) {
+    var canvas = this.canvas;
+    let context = canvas.getContext("2d")
+    let y = canvas.height;
+    let x = 0;
+
+    var values = this.valueArray;
+    if (this.style & this.STYLE_POLYGONAL) {
+      context.globalCompositeOperation = "source-over";
+      context.fillStyle = this.colorBackground;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      if (this.multiplexed && values[values.length-1]) {
+        if (this.style & this.STYLE_UNIFIED) {
+          this.drawGraphPolygon(
+            context,
+            values.map(this.unifyValues),
+            y
+          );
+        } else {
+          for (let i = 0, maxi = values[values.length-1].length; i < maxi; i++)
+          {
+            this.drawGraphPolygon(
+              context,
+              values.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
+              y
+            );
+          }
+        }
+      }
+      else {
+        this.drawGraphPolygon(context, values || 0, y);
+      }
+    } else {
+      if (aDrawAll) {
+        context.globalCompositeOperation = "source-over";
+        context.fillStyle = this.colorBackground;
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        context.drawImage(canvas, -2, 0);
+        x = (values.length - 1) * 2;
+        values = values.slice(-1);
+        this.drawGraphBar(context, this.colorBackground, x, y, 0, y);
+      }
+
+      values.forEach(function(aValue) {
+        if (aValue) {
+          if (this.multiplexed) {
+            this.drawGraphMultiplexedBar(context, aValue, x, y);
+          } else {
+            this.drawGraphBar(context, [this.colorBackground, this.colorForeground], x, y, 0, y * aValue);
+          }
+        }
+        x = x + 2;
+      }, this);
+    }
+  },
+
+  // bar graph
+  drawGraphBar : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
     aContext.save();
 
     aContext.translate(aX, aMaxY);
@@ -418,21 +492,20 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.restore();
   },
 
-  STYLE_UNIFIED : 1,
-  STYLE_STACKED : 2,
-  STYLE_LAYERED : 4,
-  STYLE_POLYGONAL : 128,
-  drawMultiplexGraphLine : function(aContext, aValues, aX, aMaxY) {
+  STYLE_UNIFIED : 128,
+  STYLE_STACKED : 256,
+  STYLE_LAYERED : 512,
+  drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxY) {
     aContext.globalAlpha = 1;
     if (this.style & this.STYLE_UNIFIED) {
-      this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.unifyValues(aValues));
+      this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.unifyValues(aValues));
     } else if (this.style & this.STYLE_STACKED) {
       let eachMaxY = aMaxY / aValues.length;
       let beginY = 0;
       aContext.save();
       aValues.forEach(function(aValue) {
         let endY = beginY + (eachMaxY * aValue);
-        this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, beginY, endY);
+        this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, beginY, endY);
         beginY = endY;
       }, this);
       aContext.restore();
@@ -441,28 +514,16 @@ SystemMonitorSimpleGraphItem.prototype = {
       aValues.slice().sort().reverse().forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
         aContext.globalAlpha = 1;
-        this.drawGraphLine(aContext, this.colorBackground, aX, aMaxY, 0, endY);
+        this.drawGraphBar(aContext, this.colorBackground, aX, aMaxY, 0, endY);
         aContext.globalAlpha = baseAlpha + (1 / aValues.length * (aIndex+1) * (1-baseAlpha));
-        this.drawGraphLine(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
+        this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
       }, this);
       aContext.globalAlpha = 1;
     }
   },
-  unifyValues : function(aValues) {
-    if (!aValues)
-      return 0;
 
-    if (typeof aValues == 'number')
-      return aValues;
-
-    let total = 0;
-    aValues.forEach(function(aValue) {
-      total += aValue;
-    });
-    return total / aValues.length;
-  },
-
-  drawPolygonalGraph : function(aContext, aValues, aMaxY) {
+  // polygonal graph
+  drawGraphPolygon : function(aContext, aValues, aMaxY) {
     aContext.save();
 
     aContext.translate(0, aMaxY);
@@ -482,66 +543,6 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.stroke();
 
     aContext.restore();
-  },
-
-  drawGraph : function(aDrawAll) {
-    var canvas = this.canvas;
-    let context = canvas.getContext("2d")
-    let y = canvas.height;
-    let x = 0;
-
-    var values = this.valueArray;
-    if (this.style & this.STYLE_POLYGONAL) {
-      context.globalCompositeOperation = "source-over";
-      context.fillStyle = this.colorBackground;
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      if (this.multiplexed && values[values.length-1]) {
-        if (this.style & this.STYLE_UNIFIED) {
-          this.drawPolygonalGraph(
-            context,
-            values.map(this.unifyValues),
-            y
-          );
-        } else {
-          for (let i = 0, maxi = values[values.length-1].length; i < maxi; i++)
-          {
-            this.drawPolygonalGraph(
-              context,
-              values.map(function(aValue) { return aValue ? aValue[i] : 0 ; }),
-              y
-            );
-          }
-        }
-      }
-      else {
-        this.drawPolygonalGraph(context, values || 0, y);
-      }
-    } else {
-      if (aDrawAll) {
-        context.globalCompositeOperation = "source-over";
-        context.fillStyle = this.colorBackground;
-        context.fillRect(0, 0, canvas.width, canvas.height);
-      } else {
-        context.drawImage(canvas, -2, 0);
-        x = (values.length - 1) * 2;
-        values = values.slice(-1);
-        this.drawGraphLine(context, this.colorBackground, x, y, 0, y);
-      }
-
-      context.save();
-      values.forEach(function(aValue) {
-        if (aValue) {
-          if (this.multiplexed) {
-            this.drawMultiplexGraphLine(context, aValue, x, y);
-          } else {
-            this.drawGraphLine(context, [this.colorBackground, this.colorForeground], x, y, 0, y * aValue);
-          }
-        }
-        x = x + 2;
-      }, this);
-    }
-
-    context.restore();
   },
 
   drawDisabled : function() {
