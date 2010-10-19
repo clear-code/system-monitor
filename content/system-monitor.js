@@ -314,7 +314,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.gradientEndAlpha = Number(this.getPref(this.domain+this.id+".color.gradientEndAlpha"));
     if (isNaN(this.gradientEndAlpha))
       this.gradientEndAlpha = 0.5;
-    this.gradientEndAlpha = Math.min(1, Math.max(0, this.gradientEndAlpha));
+    this.gradientEndAlpha = Math.min(0.999999, Math.max(0, this.gradientEndAlpha));
 
     this.style = this.getPref(this.domain+this.id+".style");
 
@@ -398,7 +398,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.scale(1, -1);
 
     if (typeof aColors == 'object') {
-      let offset = (aEndY - aBeginY) * this.gradientEndAlpha;
+      let offset = (aEndY - aBeginY) * (1 / (1 - this.gradientEndAlpha));
       let gradient = aContext.createLinearGradient(0, aBeginY-offset, 0, aEndY);
       gradient.addColorStop(0, aColors[0]);
       gradient.addColorStop(1, aColors[1]);
