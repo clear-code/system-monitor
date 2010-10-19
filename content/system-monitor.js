@@ -538,21 +538,19 @@ SystemMonitorSimpleGraphItem.prototype = {
   drawGraphMultiplexedPolygon : function(aContext, aValues, aMaxY) {
     let count = aValues[aValues.length-1].length;
     if (this.style & this.STYLE_STACKED) {
-      let total = aValues.map(this.getSum);
-      let offsets = [];
+      let lastValues = [];
       for (let i = 0, maxi = count; i < maxi; i++)
       {
-        let lastValues = aValues.map(function(aValue, aIndex) {
-              return aValue ?
-                       (((aIndex in offsets ? offsets[aIndex] : 0 ) + aValue[i]) / count) :
-                       0 ;
-            });
+        lastValues = aValues.map(function(aValue, aIndex) {
+          return aValue ?
+                   (((aIndex in lastValues ? lastValues[aIndex] : 0 ) + aValue[i]) / count) :
+                   0 ;
+        });
         this.drawGraphPolygon(
           aContext,
           lastValues,
           aMaxY
         );
-        offsets = lastValues;
       }
     } else if (this.style & this.STYLE_LAYERED) {
       for (let i = 0, maxi = count; i < maxi; i++)
