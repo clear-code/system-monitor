@@ -415,7 +415,8 @@ SystemMonitorSimpleGraphItem.prototype = {
     var values = this.valueArray;
     if (this.style & this.STYLE_POLYGONAL) {
       this.fillAll(this.colorBackground);
-      if (this.multiplexed && values[values.length-1]) {
+      last = values[values.length-1];
+      if (last && typeof last == 'object') {
         this.drawGraphMultiplexedPolygon(context, values, h);
       } else {
         this.drawGraphPolygon(context, values || 0, h);
@@ -432,7 +433,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
       values.forEach(function(aValue) {
         if (aValue) {
-          if (this.multiplexed) {
+          if (typeof aValue == 'object') {
             this.drawGraphMultiplexedBar(context, aValue, x, w, h);
           } else {
             this.drawGraphBar(context, [this.colorBackground, this.colorForeground], x, h, 0, h * aValue);
