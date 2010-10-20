@@ -279,11 +279,13 @@ SystemMonitorSimpleGraphItem.prototype = {
   observing : false,
   interval : 1000,
   size : 48,
+  unit : 2,
   colorForeground : "green",
   colorBackground : "black",
   gradientEndAlpha : 0.5,
   style : 0,
   multiplexed : false,
+  multiplexCount : 1,
   valueArray : [],
 
   get item() {
@@ -376,7 +378,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   initValueArray : function() {
-    var arraySize = parseInt(this.size / 2);
+    var arraySize = parseInt(this.size / this.unit);
     if (this.valueArray.length < arraySize) {
       while (this.valueArray.length < arraySize) {
         this.valueArray.unshift(undefined);
@@ -413,11 +415,14 @@ SystemMonitorSimpleGraphItem.prototype = {
     var h = canvas.height;
 
     var values = this.valueArray;
+    if (this.style & this.STYLE_SEPARATED)
+      values = values.slice(-parseInt(values.length / this.multiplexCount));
+
     if (this.style & this.STYLE_POLYGONAL) {
       this.fillAll(this.colorBackground);
       last = values[values.length-1];
       if (last && typeof last == 'object') {
-        this.drawGraphMultiplexedPolygon(context, values, h);
+        this.drawGraphMultiplexedPolygon(context, values, w, h);
       } else {
         this.drawGraphPolygon(context, values || 0, h);
       }
@@ -426,8 +431,8 @@ SystemMonitorSimpleGraphItem.prototype = {
       if (aDrawAll || this.style & this.STYLE_SEPARATED) {
         this.fillAll(this.colorBackground);
       } else {
-        context.drawImage(canvas, -2, 0);
-        x = (values.length - 1) * 2;
+        context.drawImage(canvas, -this.unit, 0);
+        x = (values.length - 1) * this.unit;
         values = values.slice(-1);
         this.drawGraphBar(context, this.colorBackground, x, h, 0, h);
       }
@@ -439,7 +444,7 @@ SystemMonitorSimpleGraphItem.prototype = {
             this.drawGraphBar(context, [this.colorBackground, this.colorForeground], x, h, 0, h * aValue);
           }
         }
-        x = x + 2;
+        x += this.unit;
       }, this);
     }
     if (this.style & this.STYLE_SEPARATED)
@@ -485,14 +490,9 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   drawSeparators : function(aContext, aMaxX, aMaxY)
   {
-    var values = this.valueArray;
-    var lastValue = values[values.length-1];
-    if (!lastValue)
-      return;
-
     aContext.save();
     aContext.globalAlpha = 0.5;
-    var count = lastValue.length;
+    var count = this.multiplexCount;
     var width = (aMaxX / count) - 1;
     for (let i = 1, maxi = count; i < maxi; i++)
     {
@@ -503,13 +503,15 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   // bar graph
   drawGraphBar : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
-    this.drawVerticalLine(aContext, aColors, aX, aMaxY, aBeginY, aEndY, 2);
+    this.drawVerticalLine(aContext, aColors, aX, aMaxY, aBeginY, aEndY, this.unit);
   },
 
   drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxX, aMaxY) {
+    aContext.save();
     aContext.globalAlpha = 1;
+    var count = this.multiplexCount;
     if (this.style & this.STYLE_STACKED) {
-      let eachMaxY = aMaxY / aValues.length;
+      let eachMaxY = aMaxY / count;
       let beginY = 0;
       aContext.save();
       aValues.forEach(function(aValue) {
@@ -524,25 +526,23 @@ SystemMonitorSimpleGraphItem.prototype = {
         let endY = aMaxY * aValue;
         aContext.globalAlpha = 1;
         this.drawGraphBar(aContext, this.colorBackground, aX, aMaxY, 0, endY);
-        aContext.globalAlpha = baseAlpha + (1 / aValues.length * (aIndex+1) * (1-baseAlpha));
+        aContext.globalAlpha = baseAlpha + (1 / count * (aIndex+1) * (1-baseAlpha));
         this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
       }, this);
       aContext.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
-      let count = aValues.length;
-      let width = (aMaxX / count) - 1;
-      let scale = 1 / count;
+      let width = Math.round(aMaxX / count) - 1;
       aValues.forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
         aContext.save();
         aContext.translate((width + 1) * aIndex, 0);
-        aContext.scale(scale, 1);
         this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
         aContext.restore();
       }, this);
     } else { // unified (by default)
       this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
+    aContext.restore();
   },
 
   // polygonal graph
@@ -559,17 +559,17 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.globalCompositeOperation = "source-over";
     aContext.moveTo(0, 0);
     aValues.forEach(function(aValue, aIndex) {
-      aContext.lineTo(aIndex * 2, aMaxY * (aValue || 0));
-    });
-    aContext.moveTo(aValues.length * 2, 0);
+      aContext.lineTo(aIndex * this.unit, aMaxY * (aValue || 0));
+    }, this);
+    aContext.moveTo(aValues.length * this.unit, 0);
     aContext.closePath();
     aContext.stroke();
 
     aContext.restore();
   },
 
-  drawGraphMultiplexedPolygon : function(aContext, aValues, aMaxY) {
-    let count = aValues[aValues.length-1].length;
+  drawGraphMultiplexedPolygon : function(aContext, aValues, aMaxX, aMaxY) {
+    let count = this.multiplexCount;
     if (this.style & this.STYLE_STACKED) {
       let lastValues = [];
       for (let i = 0, maxi = count; i < maxi; i++)
@@ -597,13 +597,11 @@ SystemMonitorSimpleGraphItem.prototype = {
         );
       }
     } else if (this.style & this.STYLE_SEPARATED) {
-      let width = (aValues.length * 2 / count) - 1;
-      let scale = 1 / count;
+      let width = Math.round(aMaxX / count) - 1;
       for (let i = 0, maxi = count; i < maxi; i++)
       {
         aContext.save();
         aContext.translate((width + 1) * i, 0);
-        aContext.scale(scale, 1);
         this.drawGraphPolygon(
           aContext,
           aValues.map(function(aValue) {
@@ -657,8 +655,9 @@ SystemMonitorSimpleGraphItem.prototype = {
   // preferences listener
   onChangePref : function(aData) {
     switch (aData.replace(this.domain+this.id+'.', '')) {
-      case "size":
       case "interval":
+        this.unit = Math.ceil(this.getPref(aData) / 500);
+      case "size":
         if (this.listening)
           this.update();
         break;
@@ -737,6 +736,9 @@ SystemMonitorCPUItem.prototype = {
   imageId  : 'system-monitor-cpu-usage-backup',
   canvasId : 'system-monitor-cpu-usage-canvas',
   multiplexed : true,
+  get multiplexCount() {
+    return this.system.cpu.count;
+  },
   get tooltip() {
     return document.getElementById('system-monitor-cpu-usage-tooltip-label');
   },
