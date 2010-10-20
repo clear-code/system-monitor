@@ -3,6 +3,17 @@
 
 #include <glibtop/cpu.h>
 
+NS_IMETHODIMP
+clCPU::GetCount(PRUint32 *aCount)
+{
+    glibtop_cpu cpu;
+    glibtop_get_cpu(&cpu);
+    for (unsigned int i = 0; i < GLIBTOP_NCPU && cpu.xcpu_total[i] != 0; i++) {
+        *aCount = i+1;
+    }
+    return NS_OK;
+}
+
 nsAutoVoidArray*
 clCPU::GetCPUTimeInfoArray()
 {

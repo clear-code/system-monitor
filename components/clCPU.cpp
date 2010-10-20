@@ -137,7 +137,7 @@ clCPU::GetCurrentTimes(nsIVariant **_retval NS_OUTPARAM)
 }
 
 NS_IMETHODIMP
-clCPU::GetUsage(double *aUsage)
+clCPU::GetUsage(double *aUsage NS_OUTPARAM)
 {
     nsCOMPtr<clICPUTime> cpuTime;
     nsresult rv = GetCurrentTime(getter_AddRefs(cpuTime));
@@ -152,7 +152,7 @@ clCPU::GetUsage(double *aUsage)
 }
 
 NS_IMETHODIMP
-clCPU::GetUsages(nsIVariant * *aUsages)
+clCPU::GetUsages(nsIVariant **aUsages NS_OUTPARAM)
 {
     nsTArray<clICPUTime*> cpuTimes = GetCurrentCPUTimesArray();
     nsTArray<double> usages;

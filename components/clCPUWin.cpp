@@ -35,6 +35,27 @@ clCPU::DestroyInternal()
     return NS_OK;
 }
 
+NS_IMETHODIMP
+clCPU::GetCount(PRUint32 *aCount)
+{
+    if (!mNtQuerySystemInformation) {
+        *aCount = 1;
+        return NS_OK;
+    }
+
+    SYSTEM_BASIC_INFORMATION system_basic_info;
+    if (FAILED((*mNtQuerySystemInformation)(SystemBasicInformation,
+                                            &system_basic_info,
+                                            sizeof system_basic_info,
+                                            0))) {
+        *aCount = 1;
+        return NS_OK;
+    }
+
+    *aCount = (PRUint32)system_basic_info.NumberOfProcessors;
+    return NS_OK;
+}
+
 /**
  * Fallback: this returns the total usage of all CPUs.
  */
@@ -61,18 +82,12 @@ GetCPUTimeInfoArrayTotal()
 nsAutoVoidArray*
 clCPU::GetCPUTimeInfoArray()
 {
-    if (!mNtQuerySystemInformation)
-        return GetCPUTimeInfoArrayTotal();
+    PRUint32 count;
+    GetCount(&count);
 
-    SYSTEM_BASIC_INFORMATION system_basic_info;
-    if (FAILED((*mNtQuerySystemInformation)(SystemBasicInformation,
-                                            &system_basic_info,
-                                            sizeof system_basic_info,
-                                            0))) {
+    if (count == 1) {
         return GetCPUTimeInfoArrayTotal();
     }
-
-    unsigned int cpuCount = system_basic_info.NumberOfProcessors;
 
     SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION performance_info[MAX_CPU_COUNT];
     if (FAILED((*mNtQuerySystemInformation)(SystemProcessorPerformanceInformation,
@@ -84,7 +99,7 @@ clCPU::GetCPUTimeInfoArray()
 
     nsAutoVoidArray *array = new nsAutoVoidArray();
 
-    for (unsigned int i = 0; i < cpuCount; i++) {
+    for (PRUint32 i = 0; i < count; i++) {
         CL_CPUTimeInfo *info = new CL_CPUTimeInfo(
             LARGE_INTEGER_TO_UINT64(performance_info[i].UserTime),   // userTime
             LARGE_INTEGER_TO_UINT64(performance_info[i].KernelTime), // systemTime,

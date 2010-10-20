@@ -4,6 +4,26 @@
 #include <mach/mach_host.h>
 #include <mach/vm_map.h>
 
+NS_IMETHODIMP
+clCPU::GetCount(PRUint32 *aCount)
+{
+    natural_t nProcessors;
+    mach_msg_type_number_t nProcessorInfos;
+    processor_cpu_load_info_data_t *processorInfos;
+
+    if (host_processor_info(mach_host_self(),
+                            PROCESSOR_CPU_LOAD_INFO,
+                            &nProcessors,
+                            (processor_info_array_t*)&processorInfos,
+                            &nProcessorInfos)) {
+        *aCount = 0;
+        return NS_OK;
+    }
+
+    *aCount = (PRUint32)nProcessors;
+    return NS_OK;
+}
+
 nsAutoVoidArray*
 clCPU::GetCPUTimeInfoArray()
 {
