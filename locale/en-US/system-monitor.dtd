@@ -14,6 +14,7 @@
 <!ENTITY config.cpu-usage.style.multiplexed.unified "Sum usages of all processors">
 <!ENTITY config.cpu-usage.style.multiplexed.stacked "Stack each graph">
 <!ENTITY config.cpu-usage.style.multiplexed.layered "Overlay each graph">
+<!ENTITY config.cpu-usage.style.multiplexed.separated "Separated graphs">
 
 <!ENTITY config.cpu-usage.color.caption "Color">
 <!ENTITY config.cpu-usage.color.background "Background:">

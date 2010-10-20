@@ -14,6 +14,7 @@
 <!ENTITY config.cpu-usage.style.multiplexed.unified "合計を表示する">
 <!ENTITY config.cpu-usage.style.multiplexed.stacked "積み上げ式で表示する">
 <!ENTITY config.cpu-usage.style.multiplexed.layered "重ねて表示する">
+<!ENTITY config.cpu-usage.style.multiplexed.separated "個別に表示する">
 
 <!ENTITY config.cpu-usage.color.caption "色">
 <!ENTITY config.cpu-usage.color.background "背景色：">

@@ -26,6 +26,8 @@ function updateStyleUIFromPref(aKey) {
       extraStyle.value = 256;
     else if (value & 512)
       extraStyle.value = 512;
+    else if (value & 1024)
+      extraStyle.value = 1024;
   }
 }
 
@@ -43,6 +45,7 @@ function updateStylePrefFromUI(aKey) {
     if (value & 128) value ^= 128;
     if (value & 256) value ^= 256;
     if (value & 512) value ^= 512;
+    if (value & 1024) value ^= 1024;
     value |= parseInt(extraStyle.value);
   }
 

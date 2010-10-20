@@ -46,19 +46,27 @@
     <separator/>
     <label value="&config.cpu-usage.style.multiplexed.caption;"/>
     <radiogroup id="cpu-usage.style.extra.radiogroup"
-                orient="vertical">
-      <radio class="image"
-             src="chrome://system-monitor/content/res/polygon-unified.png"
-             value="128"
-             label="&config.cpu-usage.style.multiplexed.unified;"/>
-      <radio class="image"
-             src="chrome://system-monitor/content/res/polygon-stacked.png"
-             value="256"
-             label="&config.cpu-usage.style.multiplexed.stacked;"/>
-      <radio class="image"
-             src="chrome://system-monitor/content/res/polygon-layered.png"
-             value="512"
-             label="&config.cpu-usage.style.multiplexed.layered;"/>
+                orient="horizontal">
+      <vbox>
+        <radio class="image"
+               src="chrome://system-monitor/content/res/polygon-unified.png"
+               value="128"
+               label="&config.cpu-usage.style.multiplexed.unified;"/>
+        <radio class="image"
+               src="chrome://system-monitor/content/res/polygon-separated.png"
+               value="1024"
+               label="&config.cpu-usage.style.multiplexed.separated;"/>
+      </vbox>
+      <vbox>
+        <radio class="image"
+               src="chrome://system-monitor/content/res/polygon-stacked.png"
+               value="256"
+               label="&config.cpu-usage.style.multiplexed.stacked;"/>
+        <radio class="image"
+               src="chrome://system-monitor/content/res/polygon-layered.png"
+               value="512"
+               label="&config.cpu-usage.style.multiplexed.layered;"/>
+      </vbox>
     </radiogroup>
   </groupbox>
   <groupbox>
@@ -164,6 +172,7 @@
                    preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
       <button label="&config.memory-usage.color.reset;"
               class="reset"
+
               oncommand="resetValue(this.previousSibling, 'color');"/>
       <label value="&config.memory-usage.color.background;"
              control="memory-usage.color.background-colorpicker"/>
