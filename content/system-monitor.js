@@ -464,7 +464,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   drawVerticalLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY, aWidth) {
     aContext.save();
 
-    aContext.translate(Math.floor(aX)+0.5, aMaxY);
+    aContext.translate(Math.floor(aX)+(aWidth/2), aMaxY);
     aContext.scale(1, -1);
 
     if (typeof aColors == 'object') {
