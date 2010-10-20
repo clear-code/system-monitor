@@ -409,15 +409,16 @@ SystemMonitorSimpleGraphItem.prototype = {
   drawGraph : function(aDrawAll) {
     var canvas = this.canvas;
     var context = canvas.getContext("2d")
-    var y = canvas.height;
+    var w = canvas.width;
+    var h = canvas.height;
 
     var values = this.valueArray;
     if (this.style & this.STYLE_POLYGONAL) {
       this.fillAll(this.colorBackground);
       if (this.multiplexed && values[values.length-1]) {
-        this.drawGraphMultiplexedPolygon(context, values, y);
+        this.drawGraphMultiplexedPolygon(context, values, h);
       } else {
-        this.drawGraphPolygon(context, values || 0, y);
+        this.drawGraphPolygon(context, values || 0, h);
       }
     } else { // bar graph (by default)
       let x = 0;
@@ -427,19 +428,21 @@ SystemMonitorSimpleGraphItem.prototype = {
         context.drawImage(canvas, -2, 0);
         x = (values.length - 1) * 2;
         values = values.slice(-1);
-        this.drawGraphBar(context, this.colorBackground, x, y, 0, y);
+        this.drawGraphBar(context, this.colorBackground, x, h, 0, h);
       }
       values.forEach(function(aValue) {
         if (aValue) {
           if (this.multiplexed) {
-            this.drawGraphMultiplexedBar(context, aValue, x, y);
+            this.drawGraphMultiplexedBar(context, aValue, x, w, h);
           } else {
-            this.drawGraphBar(context, [this.colorBackground, this.colorForeground], x, y, 0, y * aValue);
+            this.drawGraphBar(context, [this.colorBackground, this.colorForeground], x, h, 0, h * aValue);
           }
         }
         x = x + 2;
       }, this);
     }
+    if (this.style & this.STYLE_SEPARATED)
+      this.drawSeparators(context, w, h);
   },
 
   fillAll : function(aColor) {
@@ -455,7 +458,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   drawVerticalLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY, aWidth) {
     aContext.save();
 
-    aContext.translate(aX, aMaxY);
+    aContext.translate(Math.floor(aX)+0.5, aMaxY);
     aContext.scale(1, -1);
 
     if (typeof aColors == 'object') {
@@ -479,13 +482,30 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.restore();
   },
 
+  drawSeparators : function(aContext, aMaxX, aMaxY)
+  {
+    var values = this.valueArray;
+    var lastValue = values[values.length-1];
+    if (!lastValue)
+      return;
+
+    aContext.save();
+    aContext.globalAlpha = 0.5;
+    var count = lastValue.length;
+    var width = (aMaxX / count) - 1;
+    for (let i = 1, maxi = count; i < maxi; i++)
+    {
+      this.drawVerticalLine(aContext, this.colorForeground, width + 0.5, aMaxY, 0, aMaxY, 1);
+    }
+    aContext.restore();
+  },
 
   // bar graph
   drawGraphBar : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
-    this.drawVerticalLine(aContext, aColors, aX, aMaxY, aBeginY, aEndY, 1.0);
+    this.drawVerticalLine(aContext, aColors, aX, aMaxY, aBeginY, aEndY, 2);
   },
 
-  drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxY) {
+  drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxX, aMaxY) {
     aContext.globalAlpha = 1;
     if (this.style & this.STYLE_STACKED) {
       let eachMaxY = aMaxY / aValues.length;
@@ -508,6 +528,17 @@ SystemMonitorSimpleGraphItem.prototype = {
       }, this);
       aContext.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
+      let count = aValues.length;
+      let width = (aMaxX / count) - 1;
+      let scale = 1 / count;
+      aValues.forEach(function(aValue, aIndex) {
+        let endY = aMaxY * aValue;
+        aContext.save();
+        aContext.translate((width + 1) * aIndex, 0);
+        aContext.scale(scale, 1);
+        this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
+        aContext.restore();
+      }, this);
     } else { // unified (by default)
       this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
@@ -580,11 +611,6 @@ SystemMonitorSimpleGraphItem.prototype = {
           aMaxY
         );
         aContext.restore();
-        if (i) {
-          aContext.globalAlpha = 0.5;
-          this.drawVerticalLine(aContext, this.colorForeground, width + 0.5, aMaxY, 0, aMaxY, 1);
-          aContext.globalAlpha = 1;
-        }
       }
     } else { // unified (by default)
       this.drawGraphPolygon(
