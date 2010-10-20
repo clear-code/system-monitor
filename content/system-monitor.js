@@ -402,9 +402,10 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   STYLE_BAR       : 1,
   STYLE_POLYGONAL : 2,
-  STYLE_UNIFIED : 128,
-  STYLE_STACKED : 256,
-  STYLE_LAYERED : 512,
+  STYLE_UNIFIED   : 128,
+  STYLE_STACKED   : 256,
+  STYLE_LAYERED   : 512,
+  STYLE_SEPARATED : 1024,
   drawGraph : function(aDrawAll) {
     var canvas = this.canvas;
     var context = canvas.getContext("2d")
@@ -420,7 +421,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
     } else { // bar graph (by default)
       let x = 0;
-      if (aDrawAll) {
+      if (aDrawAll || this.style & this.STYLE_SEPARATED) {
         this.fillAll(this.colorBackground);
       } else {
         context.drawImage(canvas, -2, 0);
@@ -451,8 +452,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.restore();
   },
 
-  // bar graph
-  drawGraphBar : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
+  drawVerticalLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY, aWidth) {
     aContext.save();
 
     aContext.translate(aX, aMaxY);
@@ -468,7 +468,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       aContext.strokeStyle = aColors;
     }
     aContext.beginPath();
-    aContext.lineWidth = 1.0;
+    aContext.lineWidth = aWidth || 1.0;
     aContext.lineCap = "square";
     aContext.globalCompositeOperation = "source-over";
     aContext.moveTo(0, aBeginY);
@@ -477,6 +477,12 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.stroke();
 
     aContext.restore();
+  },
+
+
+  // bar graph
+  drawGraphBar : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
+    this.drawVerticalLine(aContext, aColors, aX, aMaxY, aBeginY, aEndY, 1.0);
   },
 
   drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxY) {
@@ -501,6 +507,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
       }, this);
       aContext.globalAlpha = 1;
+    } else if (this.style & this.STYLE_SEPARATED) {
     } else { // unified (by default)
       this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
@@ -556,6 +563,28 @@ SystemMonitorSimpleGraphItem.prototype = {
           }),
           aMaxY
         );
+      }
+    } else if (this.style & this.STYLE_SEPARATED) {
+      let width = (aValues.length * 2 / count) - 1;
+      let scale = 1 / count;
+      for (let i = 0, maxi = count; i < maxi; i++)
+      {
+        aContext.save();
+        aContext.translate((width + 1) * i, 0);
+        aContext.scale(scale, 1);
+        this.drawGraphPolygon(
+          aContext,
+          aValues.map(function(aValue) {
+            return aValue ? aValue[i] : 0 ;
+          }),
+          aMaxY
+        );
+        aContext.restore();
+        if (i) {
+          aContext.globalAlpha = 0.5;
+          this.drawVerticalLine(aContext, this.colorForeground, width + 0.5, aMaxY, 0, aMaxY, 1);
+          aContext.globalAlpha = 1;
+        }
       }
     } else { // unified (by default)
       this.drawGraphPolygon(

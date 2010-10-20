@@ -13,6 +13,7 @@ pref("extensions.system-monitor@clear-code.com.cpu-usage.color.gradientEndAlpha"
 //   128 = unified
 //   256 = stacked
 //   512 = layered
+//   1024 = separated
 pref("extensions.system-monitor@clear-code.com.cpu-usage.style", 513);
 
 pref("extensions.system-monitor@clear-code.com.memory-usage.initialShow", false);
