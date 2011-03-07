@@ -280,8 +280,6 @@ SystemMonitorSimpleGraphItem.prototype = {
   id       : '',
   type     : '',
   itemId   : '',
-  imageId  : '',
-  canvasId : '',
 
   listening : false,
   observing : false,
@@ -457,7 +455,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       this.drawSeparators(context, w, h);
   },
 
-  clearAll : function(aColor) { 
+  clearAll : function() { 
     var canvas = this.canvas;
     var context = canvas.getContext("2d")
     context.save();
