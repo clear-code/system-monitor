@@ -306,6 +306,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   init : function() {
+    this.valueArray = [];
     this.start();
   },
 
