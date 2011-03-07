@@ -15,8 +15,12 @@
   max-width: 8px;
 }
 
-.system-monitor-item + .system-monitor-item,
-.system-monitor-item + .system-monitor-splitter + .system-monitor-item,
+.system-monitor-splitter-spacer {
+	visibility: hidden;
+}
+
+.system-monitor-resizable-item + .system-monitor-resizable-item,
+.system-monitor-resizable-item + .system-monitor-splitter + .system-monitor-resizable-item,
 toolbarpaletteitem[id^="wrapper-system-monitor-"] + toolbarpaletteitem[id^="wrapper-system-monitor-"] {
   margin-left: 1px;
 }

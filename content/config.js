@@ -1,11 +1,13 @@
 function initCPUUsagePane() {
   updateStyleUIFromPref('cpu-usage');
-  updateAlphaUIFromPref('cpu-usage');
+  updateAlphaUIFromPref('cpu-usage.color.backgroundEndAlpha');
+  updateAlphaUIFromPref('cpu-usage.color.foregroundEndAlpha');
 }
 
 function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
-  updateAlphaUIFromPref('memory-usage');
+  updateAlphaUIFromPref('memory-usage.color.backgroundEndAlpha');
+  updateAlphaUIFromPref('memory-usage.color.foregroundEndAlpha');
 }
 
 function updateStyleUIFromPref(aKey) {
@@ -53,20 +55,21 @@ function updateStylePrefFromUI(aKey) {
 }
 
 function updateAlphaUIFromPref(aKey) {
-  var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey+'.color.gradientEndAlpha');
-  var scale = document.getElementById(aKey+'.color.gradientEndAlpha-scale');
+  var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey);
+  var scale = document.getElementById(aKey+'-scale');
   scale.value = Number(slot.value) * 100;
 }
 
 function updateAlphaPrefFromUI(aKey) {
-  var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey+'.color.gradientEndAlpha');
-  var scale = document.getElementById(aKey+'.color.gradientEndAlpha-scale');
+  var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey);
+  var scale = document.getElementById(aKey+'-scale');
   slot.value = parseInt(scale.value) / 100;
 }
 
-function resetValue(aNode, aProperty) {
+function resetValue(aId, aProperty) {
   if (!aProperty) aProperty = 'value';
-  aNode[aProperty] = resetPref(aNode.getAttribute('preference'));
+  var node = document.getElementById(aId);
+  node[aProperty] = resetPref(node.getAttribute('preference'));
 }
 
 function resetPref(aId) {

@@ -1,8 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE overlay SYSTEM "chrome://system-monitor/locale/">
 <overlay id="system-monitor"
-         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-         xmlns:html="http://www.w3.org/1999/xhtml">
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <script type="application/x-javascript" src="chrome://system-monitor/content/prefs.js"/>
   <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
@@ -19,31 +18,33 @@
   </tooltip>
 
   <toolbaritem id="system-monitor-cpu-usage"
-               class="system-monitor-item"
+               class="system-monitor-item system-monitor-resizable-item"
                tooltip="system-monitor-cpu-usage-tooltip"
                orient="vertical">
     <stack>
       <hbox class="system-monitor-canvas-background"
             flex="1"/>
       <image id="system-monitor-cpu-usage-backup" flex="1"/>
-      <html:canvas id="system-monitor-cpu-usage-canvas"
-                   width="48"
-                   height="24"/>
+      <canvas xmlns="http://www.w3.org/1999/xhtml"
+              id="system-monitor-cpu-usage-canvas"
+              width="48"
+              height="24"/>
     </stack>
     <label class="toolbarbutton-text"
            value="&toolbar.cpu-usage.label;"/>
   </toolbaritem>
   <toolbaritem id="system-monitor-memory-usage"
-               class="system-monitor-item"
+               class="system-monitor-item system-monitor-resizable-item"
                tooltip="system-monitor-memory-usage-tooltip"
                orient="vertical">
     <stack>
       <hbox class="system-monitor-canvas-background"
             flex="1"/>
       <image id="system-monitor-memory-usage-backup" flex="1"/>
-      <html:canvas id="system-monitor-memory-usage-canvas"
-                   width="48"
-                   height="24"/>
+      <canvas xmlns="http://www.w3.org/1999/xhtml"
+              id="system-monitor-memory-usage-canvas"
+              width="48"
+              height="24"/>
     </stack>
     <label class="toolbarbutton-text"
            value="&toolbar.memory-usage.label;"/>

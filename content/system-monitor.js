@@ -1,4 +1,5 @@
 var SystemMonitorService = {
+  RESIZABLE_CLASS : "system-monitor-resizable-item",
   SPLITTER_CLASS : "system-monitor-splitter",
 
   TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
@@ -153,31 +154,34 @@ var SystemMonitorService = {
   },
 
   insertSplitters : function() {
-    this.items.forEach(function(aItem) {
-      var element = aItem.item;
-      if (!element) return;
-      if (element.previousSibling &&
-          element.previousSibling.localName != "splitter")
-        this.insertSplitterBefore(element);
-      if (element.nextSibling &&
-          element.nextSibling.localName != "splitter")
-        this.insertSplitterBefore(element.nextSibling);
+    Array.forEach(document.querySelectorAll("."+this.RESIZABLE_CLASS), function(aNode) {
+      if (aNode.previousSibling &&
+          aNode.previousSibling.localName != "splitter")
+        this.insertSplitterBetween(aNode.previousSibling, aNode);
+      if (!aNode.nextSibling ||
+          aNode.nextSibling.localName != "splitter")
+        this.insertSplitterBetween(aNode, aNode.nextSibling);
     }, this);
   },
 
-  insertSplitterBefore : function(aNode) {
+  insertSplitterBetween : function(aBefore, aAfter) {
     var splitter = document.createElement("splitter");
     splitter.setAttribute("class", this.SPLITTER_CLASS);
     splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
     splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
-    aNode.parentNode.insertBefore(splitter, aNode);
+    (aAfter || aBefore).parentNode.insertBefore(splitter, aAfter);
+    if (!aAfter) {
+      var spacer = document.createElement('spacer');
+      spacer.setAttribute('flex', 1);
+      spacer.setAttribute('class', this.SPLITTER_CLASS+'-spacer');
+      aBefore.parentNode.appendChild(spacer);
+    }
   },
 
   removeSplitters : function() {
-    Array.slice(document.getElementsByAttribute("class", this.SPLITTER_CLASS))
-      .forEach(function(aNode) {
-        aNode.parentNode.removeChild(aNode);
-      });
+    Array.forEach(document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+'-spacer'), function(aNode) {
+      aNode.parentNode.removeChild(aNode);
+    });
   },
 
   onSplitterMouseDown : function(aSplitter, aEvent) {
@@ -189,10 +193,12 @@ var SystemMonitorService = {
         aEvent.metaKey)
         return;
 
+    var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || '';
+    var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || '';
     this.ObserverService.notifyObservers(
       window,
       this.TOOLBAR_RESIZE_BEGIN,
-      aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
+      previousId+'\n'+nextId
     );
 
     /* canvasを非表示にしたのと同じタイミングでリサイズを行うと、
@@ -221,10 +227,12 @@ var SystemMonitorService = {
   onSplitterMouseUp : function(aSplitter, aEvent) {
     window.setTimeout(function(aSelf) {
       if (!aSelf.resizing) return;
+      var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || '';
+      var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || '';
       aSelf.ObserverService.notifyObservers(
         window,
         aSelf.TOOLBAR_RESIZE_END,
-        aSplitter.previousSibling.id+'\n'+aSplitter.nextSibling.id
+        previousId+'\n'+nextId
       );
       aSelf.resizing = false;
     }, 10, this);
@@ -280,9 +288,10 @@ SystemMonitorSimpleGraphItem.prototype = {
   interval : 1000,
   size : 48,
   unit : 2,
-  colorForeground : "green",
-  colorBackground : "black",
-  gradientEndAlpha : 0.5,
+  foreground           : "#33FF33",
+  foregroundGradient   : ["#33FF33", "#33FF33"],
+  background           : "#000000",
+  backgroundGradient   : ["#000000", "#000000"],
   style : 0,
   multiplexed : false,
   multiplexCount : 1,
@@ -291,16 +300,22 @@ SystemMonitorSimpleGraphItem.prototype = {
   get item() {
     return document.getElementById(this.itemId);
   },
-
   get image() {
-    return document.getElementById(this.imageId);
+      return this.item.getElementsByTagName('image')[0];
   },
-
   get canvas() {
-    return document.getElementById(this.canvasId);
+      return this.item.getElementsByTagName('canvas')[0];
   },
 
   init : function() {
+    this.start();
+  },
+
+  destroy : function() {
+    this.stop();
+  },
+
+  start : function() {
     var item = this.item;
     if (!this.initialized ||
         !item ||
@@ -312,7 +327,6 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     this.onChangePref(this.domain+this.id+".color.background");
     this.onChangePref(this.domain+this.id+".color.foreground");
-    this.onChangePref(this.domain+this.id+".color.gradientEndAlpha");
     this.onChangePref(this.domain+this.id+".style");
 
     var canvas = this.canvas;
@@ -336,7 +350,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.listening = true;
   },
 
-  destroy : function() {
+  stop : function() {
     var item = this.item;
     if (!this.initialized ||
         !item ||
@@ -373,8 +387,8 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   update : function() {
-    this.destroy();
-    this.init();
+    this.stop();
+    this.start();
   },
 
   initValueArray : function() {
@@ -418,8 +432,8 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (this.style & this.STYLE_SEPARATED)
       values = values.slice(-parseInt(values.length / this.multiplexCount));
 
+    this.clearAll();
     if (this.style & this.STYLE_POLYGONAL) {
-      this.fillAll(this.colorBackground);
       last = values[values.length-1];
       if (last && typeof last == 'object') {
         this.drawGraphMultiplexedPolygon(context, values, w, h);
@@ -428,20 +442,12 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
     } else { // bar graph (by default)
       let x = 0;
-      if (aDrawAll || this.style & this.STYLE_SEPARATED) {
-        this.fillAll(this.colorBackground);
-      } else {
-        context.drawImage(canvas, -this.unit, 0);
-        x = (values.length - 1) * this.unit;
-        values = values.slice(-1);
-        this.drawGraphBar(context, this.colorBackground, x, h, 0, h);
-      }
       values.forEach(function(aValue) {
         if (aValue) {
           if (typeof aValue == 'object') {
             this.drawGraphMultiplexedBar(context, aValue, x, w, h);
           } else {
-            this.drawGraphBar(context, [this.colorBackground, this.colorForeground], x, h, 0, h * aValue);
+            this.drawGraphBar(context, this.foregroundGradient, x, h, 0, h * aValue);
           }
         }
         x += this.unit;
@@ -451,12 +457,16 @@ SystemMonitorSimpleGraphItem.prototype = {
       this.drawSeparators(context, w, h);
   },
 
-  fillAll : function(aColor) {
+  clearAll : function(aColor) { 
     var canvas = this.canvas;
     var context = canvas.getContext("2d")
     context.save();
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.globalCompositeOperation = "source-over";
-    context.fillStyle = aColor;
+    let gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+    gradient.addColorStop(0, this.backgroundGradient[0]);
+    gradient.addColorStop(1, this.backgroundGradient[1]);
+    context.fillStyle = gradient;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
   },
@@ -468,10 +478,9 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.scale(1, -1);
 
     if (typeof aColors == 'object') {
-      let offset = (aEndY - aBeginY) * (1 / (1 - this.gradientEndAlpha));
-      let gradient = aContext.createLinearGradient(0, aEndY-offset, 0, aEndY);
-      gradient.addColorStop(0, aColors[0]);
-      gradient.addColorStop(1, aColors[1]);
+      let gradient = aContext.createLinearGradient(0, aBeginY, 0, aEndY);
+      gradient.addColorStop(0, aColors[1]);
+      gradient.addColorStop(1, aColors[0]);
       aContext.strokeStyle = gradient;
     } else {
       aContext.strokeStyle = aColors;
@@ -496,7 +505,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     var width = (aMaxX / count) - 1;
     for (let i = 1, maxi = count; i < maxi; i++)
     {
-      this.drawVerticalLine(aContext, this.colorForeground, width + 0.5, aMaxY, 0, aMaxY, 1);
+      this.drawVerticalLine(aContext, this.foreground, width + 0.5, aMaxY, 0, aMaxY, 1);
     }
     aContext.restore();
   },
@@ -516,7 +525,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       aContext.save();
       aValues.forEach(function(aValue) {
         let endY = beginY + (eachMaxY * aValue);
-        this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, beginY, endY);
+        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, beginY, endY);
         beginY = endY;
       }, this);
       aContext.restore();
@@ -524,10 +533,8 @@ SystemMonitorSimpleGraphItem.prototype = {
       let baseAlpha = 0.2;
       aValues.slice().sort().reverse().forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
-        aContext.globalAlpha = 1;
-        this.drawGraphBar(aContext, this.colorBackground, aX, aMaxY, 0, endY);
         aContext.globalAlpha = baseAlpha + (1 / count * (aIndex+1) * (1-baseAlpha));
-        this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
+        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, 0, endY);
       }, this);
       aContext.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
@@ -536,11 +543,11 @@ SystemMonitorSimpleGraphItem.prototype = {
         let endY = aMaxY * aValue;
         aContext.save();
         aContext.translate((width + 1) * aIndex, 0);
-        this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, endY);
+        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, 0, endY);
         aContext.restore();
       }, this);
     } else { // unified (by default)
-      this.drawGraphBar(aContext, [this.colorBackground, this.colorForeground], aX, aMaxY, 0, aMaxY * this.getSum(aValues));
+      this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
     aContext.restore();
   },
@@ -553,7 +560,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     aContext.scale(1, -1);
 
     aContext.beginPath();
-    aContext.strokeStyle = this.colorForeground;
+    aContext.strokeStyle = this.foreground;
     aContext.lineWidth = 0.5;
     aContext.lineCap = "square";
     aContext.globalCompositeOperation = "source-over";
@@ -621,7 +628,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   drawDisabled : function() {
-    this.fillAll(this.colorBackground);
+    this.clearAll();
 
     var canvas = this.canvas;
     var context = canvas.getContext("2d")
@@ -631,7 +638,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.save();
 
     context.beginPath();
-    context.strokeStyle = this.colorForeground;
+    context.strokeStyle = this.foreground;
     context.lineWidth = 1.0;
     context.lineCap = "square";
     context.globalCompositeOperation = "copy";
@@ -663,22 +670,17 @@ SystemMonitorSimpleGraphItem.prototype = {
         break;
 
       case "color.background":
-        this.colorBackground = this.getPref(aData);
+      case "color.backgroundStartAlpha":
+      case "color.backgroundEndAlpha":
+        this.updateColors('background');
         if (this.listening)
           this.drawGraph(true);
         break;
 
       case "color.foreground":
-        this.colorForeground = this.getPref(aData);
-        if (this.listening)
-          this.drawGraph(true);
-        break;
-
-      case "color.gradientEndAlpha":
-        this.gradientEndAlpha = Number(this.getPref(aData));
-        if (isNaN(this.gradientEndAlpha))
-          this.gradientEndAlpha = 0.5;
-        this.gradientEndAlpha = Math.min(0.999999, Math.max(0, this.gradientEndAlpha));
+      case "color.foregroundStartAlpha":
+      case "color.foregroundEndAlpha":
+        this.updateColors('foreground');
         if (this.listening)
           this.drawGraph(true);
         break;
@@ -689,6 +691,40 @@ SystemMonitorSimpleGraphItem.prototype = {
           this.drawGraph(true);
         break;
     }
+  },
+
+  updateColors : function(aTarget) {
+    var key = this.domain+this.id+".color."+aTarget;
+    var base = this.getPref(key);
+    var endAlpha   = Number(this.getPref(key+"EndAlpha"));
+    var startAlpha = Math.max(endAlpha, Number(this.getPref(key+"StartAlpha")));
+
+    var startColor = base,
+        endColor = base;
+    if (base.charAt(0) == "#") {
+      base = base.substr(1);
+      startColor = this.RGBToRGBA(base, startAlpha);
+      endColor = this.RGBToRGBA(base, endAlpha);
+    }
+
+    this[aTarget] = base;
+    this[aTarget+"Gradient"] = [startColor, endColor];
+  },
+  RGBToRGBA : function(aBase, aAlpha) {
+    var rgb;
+    switch (aBase.length) {
+      case 3: rgb = aBase.split(""); break;
+      case 4: rgb = aBase.split("").slice(1); break;
+      case 6: rgb = Array.slice(aBase.match(/(..)/g)); break;
+      case 8: rgb = Array.slice(aBase.match(/(..)/g), 1); break;
+    }
+    return "rgba("+
+             rgb.map(function(aValue) {
+               return parseInt(aValue, 16);
+             }).join(", ")+
+             ", "+
+             aAlpha+
+           ")";
   },
 
   // nsIObserver
@@ -703,7 +739,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         if (aData.indexOf(this.itemId) > -1) {
           let canvas = this.canvas;
           this.image.src = canvas.toDataURL();
-          this.destroy();
+          this.stop();
           this.startObserve();
           canvas.style.width = (canvas.width = 1)+"px";
         }
@@ -717,7 +753,7 @@ SystemMonitorSimpleGraphItem.prototype = {
             this.domain+this.id+".size",
             this.canvas.parentNode.boxObject.width
           );
-          this.init();
+          this.start();
         }
         break;
     }
@@ -733,8 +769,6 @@ SystemMonitorCPUItem.prototype = {
   id       : 'cpu-usage',
   type     : 'cpu-usages',
   itemId   : 'system-monitor-cpu-usage',
-  imageId  : 'system-monitor-cpu-usage-backup',
-  canvasId : 'system-monitor-cpu-usage-canvas',
   multiplexed : true,
   get multiplexCount() {
     return this.system.cpu.count;
@@ -773,8 +807,6 @@ SystemMonitorMemoryItem.prototype = {
   id       : 'memory-usage',
   type     : 'memory-usage',
   itemId   : 'system-monitor-memory-usage',
-  imageId  : 'system-monitor-memory-usage-backup',
-  canvasId : 'system-monitor-memory-usage-canvas',
   get tooltip() {
     return document.getElementById('system-monitor-memory-usage-tooltip-label');
   },
