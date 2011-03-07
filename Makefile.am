@@ -17,6 +17,7 @@ XPI_TARGET_FILES = 					\
 	chrome				\
 	defaults				\
 	platform				\
+	modules				\
 	chrome.manifest
 
 if PLATFORM_WINNT

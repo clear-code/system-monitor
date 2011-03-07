@@ -3,7 +3,11 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
+
+const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+
 function clSystem() { 
+	this.init();
 }
 clSystem.prototype = {
 	classDescription : 'clSystem', 
@@ -11,7 +15,8 @@ clSystem.prototype = {
 	classID : Components.ID('{12ae3fc0-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
 		Ci.clISystem,
-		Ci.clISystemInternal
+		Ci.clISystemInternal,
+		Ci.nsIObserver
 	]),
 
 	get cpu() {
@@ -19,15 +24,44 @@ clSystem.prototype = {
 	},
 
 	addMonitor : function(aTopic, aMonitor, aInterval) {
+		var owner = Components.utils.getGlobalForObject(aMonitor);
+		return this.addMonitorWithOwner(aTopic, aMonitor, aInterval, owner);
 	},
 
 	removeMonitor : function(aTopic, aMonitor) {
+		return this.monitors.some(function(aExistingMonitor, aIndex) {
+			if (aExistingMonitor.equals(aTopic, aMonitor)) {
+				aExistingMonitor.destroy();
+				return true;
+			}
+			return false;
+		}, this);
 	},
 
-	addMonitor : function(aTopic, aMonitor, aInterval, aOwner) {
+	addMonitorWithOwner : function(aTopic, aMonitor, aInterval, aOwner) {
+		if (this.monitors.every(function(aExistingMonitor) {
+				return !aExistingMonitor.equals(aTopic, aMonitor);
+			})) {
+			this.monitors.push(new Monitor(aTopic, aMonitor, aInterval, aOwner, this));
+			return true;
+		}
+		return false;
 	},
 
 	removeAllMonitors : function() {
+		this.monitors.slice(0).forEach(function(aMonitor) {
+			aMonitor.destroy();
+		});
+	},
+
+	type : 'quit-application-granted',
+	init : function() {
+		this.monitors = [];
+		ObserverService.addObserver(this, this.type, false);
+	},
+	observe : function(aSubject, aTopic, aData) {
+		ObserverService.removeObserver(this, this.type);
+		this.removeAllMonitors();
 	}
 };
 
@@ -58,7 +92,7 @@ clCPU.prototype = {
 			total.IOWaitTime += time.IOWaitTime;
 		}
 		return total;
-	}
+	},
 
 	getCurrentTime : function() {
 		return new clCPUTime(this.getCurrentTimeInternal());
@@ -71,13 +105,13 @@ clCPU.prototype = {
 	},
 
 	getCurrentTimes : function() {
-		return this.getCurrentTimesInternal().forEach(function(aUsage) {
+		return this.getCurrentTimesInternal().map(function(aUsage) {
 				return new clCPUTime(aUsage);
 			}, this);
 	},
 	getCurrentTimesInternal : function() {
 		var current = this.utils.getCPUTimes();
-		var times = current.forEach(function(aTime, aIndex) {
+		var times = current.map(function(aTime, aIndex) {
 				return this.utils.calculateCPUUsage(this.mPreviousTimes[aIndex], aTime);
 			}, this);
 		this.mPreviousTimes = current;
@@ -91,9 +125,10 @@ clCPU.prototype = {
 
 	getUsages : function() {
 		var times = this.getCurrentTimesInternal();
-		return times.map(function(aTime) {
+		times = times.map(function(aTime) {
 			return aTime.user + aTime.system;
 		});
+		return times;
 	},
 
 	get count() {
@@ -163,6 +198,70 @@ clMemory.prototype = {
 	get virtualUsed() {
 		return 0;
 	}
+};
+
+function Monitor(aTopic, aMonitor, aInterval, aOwner, aSystem) {
+	this.topic = aTopic;
+	this.monitor = aMonitor;
+	this.interval = aInterval;
+	this.owner = aOwner;
+	this.system = aSystem;
+	this.init();
+}
+Monitor.prototype = {
+	init : function() {
+		this.timer = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
+		this.timer.initWithCallback(this, this.interval, Ci.nsITimer.TYPE_REPEATING_SLACK);
+	},
+	destroy : function() {
+		this.system.monitors.splice(this.system.monitors.indexOf(this), 1);
+		this.timer.cancel();
+		delete this.timer;
+		delete this.topic;
+		delete this.monitor;
+		delete this.interval;
+		delete this.owner;
+		delete this.system;
+	},
+	equals : function(aTopic, aMonitor) {
+		return this.topic == aTopic || this.monitor == aMonitor;
+	},
+	notify : function(aTimer) {
+		if (this.owner && this.owner.closed) {
+			this.destroy();
+			return;
+		}
+
+		var value;
+		switch (this.topic) {
+			case 'cpu-usage':
+				value = this.system.cpu.getUsage();
+				return;
+			case 'cpu-usages':
+				value = this.system.cpu.getUsages();
+				return;
+			case 'cpu-time':
+				value = this.system.cpu.getCurrentTime();
+				return;
+			case 'cpu-times':
+				value = this.system.cpu.getCurrentTimes();
+				return;
+			case 'memory-usage':
+				value = new clMemory();
+				return;
+		}
+		if (value) {
+			if (this.monitor instanceof Ci.clISystemMonitor)
+				this.monitor.monitor(value);
+			else if (typeof this.monitor == 'function')
+				this.monitor.call(null, value);
+		}
+
+		throw Components.results.NS_ERROR_FAILURE;
+	},
+	QueryInterface : XPCOMUtils.generateQI([ 
+		Ci.nsITimerCallback
+	])
 };
 
 if (XPCOMUtils.generateNSGetFactory)

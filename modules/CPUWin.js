@@ -3,6 +3,10 @@ var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage'];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+Components.utils.import('resource://gre/modules/ctypes.jsm');
+
+
 // see http://source.winehq.org/source/include/winternl.h
 const SystemBasicInformation = 0;
 const SystemProcessorPerformanceInformation = 8;
@@ -10,9 +14,6 @@ const SystemProcessorPerformanceInformation = 8;
 const NTSTATUS = ctypes.uint32_t;
 const MAX_COUNT = 32;
 
-
-Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
-Components.utils.import('resource://gre/modules/ctypes.jsm');
 
 
 XPCOMUtils.defineLazyGetter(this, 'SYSTEM_BASIC_INFORMATION_RESERVED1', function () {
@@ -123,7 +124,7 @@ function getCPUTimes() {
 			userTime   : parseInt(infoArray[i].UserTime.QuadPart),
 			systemTime : parseInt(infoArray[i].KernelTime.QuadPart),
 			niceTime   : 0,
-			userTime   : parseInt( infoArray[i].UserTime.QuadPart),
+			idleTime   : parseInt(infoArray[i].IdleTime.QuadPart),
 			IOWaitTime : 0
 		});
 	}
@@ -131,10 +132,10 @@ function getCPUTimes() {
 }
 
 function calculateCPUUsage(aPrevious, aCurrent) {
-	var user = aCurrent.userTime - aPrevious.userTime;
+	var user   = aCurrent.userTime - aPrevious.userTime;
 	var kernel = aCurrent.systemTime - aPrevious.systemTime;
-	var idle = aCurrent.idleTime - aPrevious.idleTime;
-	var total = user + kernel;
+	var idle   = aCurrent.idleTime - aPrevious.idleTime;
+	var total  = user + kernel;
 
 	/*
 	  Trick!!
@@ -148,6 +149,7 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 	  kernel time for the convinience. This value is used in GetUsage.
 	*/
 	kernel = total - idle;
+//dump('user:'+user+', kernel:'+kernel+'('+(aCurrent.systemTime - aPrevious.systemTime)+'), idle:'+idle+', total:'+total+'\n');
 
 	if (total == 0) {
 		return {
@@ -161,8 +163,8 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 	else {
 		return {
 			user   : 0,
-			system : 0,
-			nice   : kernel / total,
+			system : kernel / total,
+			nice   : 0,
 			idle   : idle / total,
 			IOWait : 0
 		}
