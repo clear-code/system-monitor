@@ -32,6 +32,7 @@ clSystem.prototype = {
 };
 
 function clCPU() { 
+	this.mPreviousTimes = this.utils.getCPUTimes();
 }
 clCPU.prototype = {
 	classDescription : 'clCPU', 
@@ -41,20 +42,58 @@ clCPU.prototype = {
 		Ci.clICPU
 	]),
 
+	sumCPUTimes : function(aCPUTimes) {
+		var total = {
+				userTime   : 0,
+				systemTime : 0,
+				niceTime   : 0,
+				userTime   : 0,
+				IOWaitTime : 0
+			};
+		for each (let time in aCPUTimes) {
+			total.userTime   += time.userTime;
+			total.systemTime += time.systemTime;
+			total.niceTime   += time.niceTime;
+			total.userTime   += time.userTime;
+			total.IOWaitTime += time.IOWaitTime;
+		}
+		return total;
+	}
+
 	getCurrentTime : function() {
-		return 0;
+		return new clCPUTime(this.getCurrentTimeInternal());
+	},
+	getCurrentTimeInternal : function() {
+		var current = this.utils.getCPUTimes();
+		var time = this.utils.calculateCPUUsage(this.sumCPUTimes(this.mPreviousTimes), this.sumCPUTimes(current));
+		this.mPreviousTimes = current;
+		return time;
 	},
 
 	getCurrentTimes : function() {
-		return [];
+		return this.getCurrentTimesInternal().forEach(function(aUsage) {
+				return new clCPUTime(aUsage);
+			}, this);
+	},
+	getCurrentTimesInternal : function() {
+		var current = this.utils.getCPUTimes();
+		var times = current.forEach(function(aTime, aIndex) {
+				return this.utils.calculateCPUUsage(this.mPreviousTimes[aIndex], aTime);
+			}, this);
+		this.mPreviousTimes = current;
+		return times;
 	},
 
 	getUsage : function() {
-		return 0;
+		var time = this.getCurrentTimeInternal();
+		return time.user + time.system;
 	},
 
 	getUsages : function() {
-		return [];
+		var times = this.getCurrentTimesInternal();
+		return times.map(function(aTime) {
+			return aTime.user + aTime.system;
+		});
 	},
 
 	get count() {
@@ -67,7 +106,8 @@ XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	return utils;
 });
 
-function clCPUTime() { 
+function clCPUTime(aCPUTime) { 
+	this.mCPUTime = aCPUTime;
 }
 clCPUTime.prototype = {
 	classDescription : 'clCPUTime', 
@@ -78,23 +118,23 @@ clCPUTime.prototype = {
 	]),
 
 	get user() {
-		return 0;
+		return this.mCPUTime.user;
 	},
 
 	get nice() {
-		return 0;
+		return this.mCPUTime.nice;
 	},
 
 	get system() {
-		return 0;
+		return this.mCPUTime.system;
 	},
 
 	get idle() {
-		return 0;
+		return this.mCPUTime.idle;
 	},
 
 	get io_wait() {
-		return 0;
+		return this.mCPUTime.IOWait;
 	}
 };
 
