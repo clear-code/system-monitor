@@ -293,7 +293,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   style : 0,
   multiplexed : false,
   multiplexCount : 1,
-  valueArray : [],
+  valueArray : null,
 
   get item() {
     return document.getElementById(this.itemId);
@@ -306,7 +306,6 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   init : function() {
-    this.valueArray = [];
     this.start();
   },
 
@@ -391,6 +390,8 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   initValueArray : function() {
+    if (this.valueArray === null)
+      this.valueArray = [];
     var arraySize = parseInt(this.size / this.unit);
     if (this.valueArray.length < arraySize) {
       while (this.valueArray.length < arraySize) {
@@ -529,11 +530,13 @@ SystemMonitorSimpleGraphItem.prototype = {
       }, this);
       aContext.restore();
     } else if (this.style & this.STYLE_LAYERED) {
-      let baseAlpha = 0.2;
-      aValues.slice().sort().reverse().forEach(function(aValue, aIndex) {
+      let minAlpha = 0.2;
+      let beginY = 0;
+      aValues.slice().sort().forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
-        aContext.globalAlpha = baseAlpha + (1 / count * (aIndex+1) * (1-baseAlpha));
-        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, 0, endY);
+        aContext.globalAlpha = minAlpha + ((1 - minAlpha) / (aIndex + 1));
+        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, beginY, endY);
+        beginY = endY + 1;
       }, this);
       aContext.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
