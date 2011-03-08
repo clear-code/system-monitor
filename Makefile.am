@@ -14,6 +14,7 @@ XPI_TARGET_FILES = 					\
 	install.rdf				\
 	components/*.js				\
 	components/*.xpt			\
+	components/gecko2*/*.xpt			\
 	chrome				\
 	defaults				\
 	platform				\
@@ -38,6 +39,8 @@ jar:
 
 xpi: deploy jar
 	(rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi && \
+	 rm -f components/*.xpt && \
+	 cp components/gecko1.9.2/*.xpt components/ && \
 	 rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
 	 zip -q -r -9 $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi $(XPI_TARGET_FILES) -x \*.git/\* && \
 	 cp -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
