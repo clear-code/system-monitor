@@ -6,25 +6,47 @@ Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
 const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
 
+function baseSecurityCheckedComponent() {
+}
+baseSecurityCheckedComponent.prototype = {
+	QueryInterface : XPCOMUtils.generateQI([
+		Ci.nsISecurityCheckedComponent
+	]),
+	canCallMethod : function(aIID, aMethodName) {
+		return 'allAccess';
+	},
+	canCreateWrapper : function(aIID) {
+		return 'allAccess';
+	},
+	canGetProperty : function(aIID, aPropertyName) {
+		return 'allAccess';
+	},
+	canSetProperty : function(aIID, aPropertyName) {
+		return 'allAccess';
+	}
+};
+
+
+
 function clSystem() { 
 	this.init();
 }
 clSystem.prototype = {
+	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clSystem', 
 	contractID : '@clear-code.com/system;2',
 	classID : Components.ID('{12ae3fc0-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
 		Ci.clISystem,
 		Ci.clISystemInternal,
-		Ci.nsIObserver
+		Ci.nsIObserver,
+		Ci.nsISecurityCheckedComponent
 	]),
 
-	get cpu() {
-		return Cc['@clear-code.com/system/cpu;2'].getService(Ci.clICPU);
-	},
-
 	addMonitor : function(aTopic, aMonitor, aInterval) {
-		var owner = Components.utils.getGlobalForObject(aMonitor);
+		var owner = Components.utils.getGlobalForObject(aMonitor.wrappedJSObject || aMonitor);
+		if (!(owner instanceof Ci.nsIDOMWindow))
+			owner = null;
 		return this.addMonitorWithOwner(aTopic, aMonitor, aInterval, owner);
 	},
 
@@ -64,16 +86,21 @@ clSystem.prototype = {
 		this.removeAllMonitors();
 	}
 };
+XPCOMUtils.defineLazyGetter(clSystem.prototype, 'cpu', function () {
+	return new clCPU();
+});
 
 function clCPU() { 
 	this.mPreviousTimes = this.utils.getCPUTimes();
 }
 clCPU.prototype = {
+	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clCPU', 
 	contractID : '@clear-code.com/system/cpu;2',
 	classID : Components.ID('{ae145a80-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clICPU
+		Ci.clICPU,
+		Ci.nsISecurityCheckedComponent
 	]),
 
 	sumCPUTimes : function(aCPUTimes) {
@@ -145,11 +172,13 @@ function clCPUTime(aCPUTime) {
 	this.mCPUTime = aCPUTime;
 }
 clCPUTime.prototype = {
+	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clCPUTime', 
 	contractID : '@clear-code.com/system/time;2',
 	classID : Components.ID('{eb5ea940-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clICPUTime
+		Ci.clICPUTime,
+		Ci.nsISecurityCheckedComponent
 	]),
 
 	get user() {
@@ -176,11 +205,13 @@ clCPUTime.prototype = {
 function clMemory() { 
 }
 clMemory.prototype = {
+	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clMemory', 
 	contractID : '@clear-code.com/system/memory;2',
 	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clIMemory
+		Ci.clIMemory,
+		Ci.nsISecurityCheckedComponent
 	]),
 
 	get total() {
@@ -197,7 +228,7 @@ clMemory.prototype = {
 
 	get virtualUsed() {
 		return this.utils.getMemory().virtualUsed;
-	}
+	}	
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	var utils = {};
@@ -241,25 +272,28 @@ Monitor.prototype = {
 		switch (this.topic) {
 			case 'cpu-usage':
 				value = this.system.cpu.getUsage();
-				return;
+				break;
 			case 'cpu-usages':
 				value = this.system.cpu.getUsages();
-				return;
+				break;
 			case 'cpu-time':
 				value = this.system.cpu.getCurrentTime();
-				return;
+				break;
 			case 'cpu-times':
 				value = this.system.cpu.getCurrentTimes();
-				return;
+				break;
 			case 'memory-usage':
 				value = new clMemory();
-				return;
+				break;
 		}
-		if (value) {
-			if (this.monitor instanceof Ci.clISystemMonitor)
+		if (value !== undefined) {
+			if (this.monitor instanceof Ci.clISystemMonitor) {
 				this.monitor.monitor(value);
-			else if (typeof this.monitor == 'function')
+			}
+			else if (typeof this.monitor == 'function') {
 				this.monitor.call(null, value);
+			}
+			return;
 		}
 
 		throw Components.results.NS_ERROR_FAILURE;
