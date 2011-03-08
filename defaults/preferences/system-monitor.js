@@ -8,7 +8,7 @@ pref("extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundStartAl
 pref("extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundEndAlpha", "0.7");
 pref("extensions.system-monitor@clear-code.com.cpu-usage.color.foreground", "#33FF33");
 pref("extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundStartAlpha", "1");
-pref("extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundEndAlpha", "0.5");
+pref("extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundEndAlpha", "0.4");
 // style flag
 //   1 = bar graph
 //   2 = polygonal graph
@@ -27,6 +27,6 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.color.backgroundStar
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.backgroundEndAlpha", "0.7");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground", "#33FFFF");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha", "1");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha", "0.5");
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.memory-usage.style", 129);
 
