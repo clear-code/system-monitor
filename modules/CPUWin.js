@@ -11,113 +11,77 @@ Components.utils.import('resource://gre/modules/ctypes.jsm');
 const SystemBasicInformation = 0;
 const SystemProcessorPerformanceInformation = 8;
 
-const NTSTATUS = ctypes.uint32_t;
 const MAX_COUNT = 32;
+const NTSTATUS = ctypes.uint32_t;
 
-
-
-XPCOMUtils.defineLazyGetter(this, 'SYSTEM_BASIC_INFORMATION_RESERVED1', function () {
-	return ctypes.ArrayType(ctypes.int8_t, 24);
-});
-
-XPCOMUtils.defineLazyGetter(this, 'SYSTEM_BASIC_INFORMATION_RESERVED2', function () {
-	return ctypes.ArrayType(ctypes.voidptr_t, 4);
-});
-
-XPCOMUtils.defineLazyGetter(this, 'SYSTEM_BASIC_INFORMATION', function () {
-	return new ctypes.StructType('SYSTEM_BASIC_INFORMATION', [
+const SYSTEM_BASIC_INFORMATION_RESERVED1 = ctypes.ArrayType(ctypes.int8_t, 24);
+const SYSTEM_BASIC_INFORMATION_RESERVED2 = ctypes.ArrayType(ctypes.voidptr_t, 4);
+const SYSTEM_BASIC_INFORMATION = new ctypes.StructType('SYSTEM_BASIC_INFORMATION', [
 		{ Reserved1 : SYSTEM_BASIC_INFORMATION_RESERVED1 },
 		{ Reserved2 : SYSTEM_BASIC_INFORMATION_RESERVED2 },
 		{ NumberOfProcessors : ctypes.uint32_t }
 	]);
-});
 
-function createNewSystemBasicInfo() {
-	var reserver1 = new SYSTEM_BASIC_INFORMATION_RESERVED1();
-	var reserver2 = new SYSTEM_BASIC_INFORMATION_RESERVED2();
-	return new SYSTEM_BASIC_INFORMATION(reserver1, reserver2, 0);
-}
-
-
-XPCOMUtils.defineLazyGetter(this, 'LARGE_INTEGER', function () {
-	return new ctypes.StructType('LARGE_INTEGER', [
+const LARGE_INTEGER = new ctypes.StructType('LARGE_INTEGER', [
 		{ LowPart : ctypes.unsigned_long },
 		{ HighPart : ctypes.long },
 		{ QuadPart : ctypes.int64_t }
 	]);
-});
-
-XPCOMUtils.defineLazyGetter(this, 'SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_RESERVED1', function () {
-	return ctypes.ArrayType(LARGE_INTEGER, 2);
-});
-
-XPCOMUtils.defineLazyGetter(this, 'SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION', function () {
-	return new ctypes.StructType('SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION', [
+const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_RESERVED1 = ctypes.ArrayType(LARGE_INTEGER, 2);
+const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION', [
 		{ IdleTime   : LARGE_INTEGER },
 		{ KernelTime : LARGE_INTEGER },
 		{ UserTime   : LARGE_INTEGER },
 		{ Reserved1  : SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_RESERVED1 },
 		{ Reserved2  : ctypes.unsigned_long }
 	]);
-});
 
-XPCOMUtils.defineLazyGetter(this, 'SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY', function () {
-	return ctypes.ArrayType(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, MAX_COUNT);
-});
-
+const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY = ctypes.ArrayType(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, MAX_COUNT);
 
 var gNtdll = ctypes.open('ntdll.dll');
 
-XPCOMUtils.defineLazyGetter(this, 'NtQuerySystemInformation_SystemBasicInformation', function () {
-	var NtQuerySystemInformation = gNtdll.declare(
-			'NtQuerySystemInformation',
-			ctypes.default_abi,
-			NTSTATUS,
-			ctypes.uint32_t,
-			SYSTEM_BASIC_INFORMATION.ptr,
-			ctypes.unsigned_long,
-			ctypes.uint32_t
-		);
-	return function(aInfo) {
-		return NtQuerySystemInformation(
-			SystemBasicInformation,
-			aInfo.address(),
-			SYSTEM_BASIC_INFORMATION.size,
-			0
-		);
-	};
-});
-
-XPCOMUtils.defineLazyGetter(this, 'NtQuerySystemInformation_SystemProcessorPerformanceInformation', function () {
-	var NtQuerySystemInformation = gNtdll.declare(
-			'NtQuerySystemInformation',
-			ctypes.default_abi,
-			NTSTATUS,
-			ctypes.uint32_t,
-			SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.ptr,
-			ctypes.unsigned_long,
-			ctypes.uint32_t
+var NtQuerySystemInformation_SystemBasicInformation = gNtdll.declare(
+		'NtQuerySystemInformation',
+		ctypes.default_abi,
+		NTSTATUS,
+		ctypes.uint32_t,
+		SYSTEM_BASIC_INFORMATION.ptr,
+		ctypes.unsigned_long,
+		ctypes.uint32_t
 	);
-	return function(aInfo) {
-		return NtQuerySystemInformation(
-			SystemProcessorPerformanceInformation,
-			aInfo.address(),
-			SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.size,
-			0
-		);
-	};
-});
+
+var NtQuerySystemInformation_SystemProcessorPerformanceInformation = gNtdll.declare(
+		'NtQuerySystemInformation',
+		ctypes.default_abi,
+		NTSTATUS,
+		ctypes.uint32_t,
+		SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.ptr,
+		ctypes.unsigned_long,
+		ctypes.uint32_t
+	);
 
 
 function getCount() {
-	var info = createNewSystemBasicInfo();
-	NtQuerySystemInformation_SystemBasicInformation(info);
+	var reserver1 = new SYSTEM_BASIC_INFORMATION_RESERVED1();
+	var reserver2 = new SYSTEM_BASIC_INFORMATION_RESERVED2();
+	var info = new SYSTEM_BASIC_INFORMATION(reserver1, reserver2, 0);
+	NtQuerySystemInformation_SystemBasicInformation(
+		SystemBasicInformation,
+		info.address(),
+		SYSTEM_BASIC_INFORMATION.size,
+		0
+	);
 	return info.NumberOfProcessors;
 }
 
 function getCPUTimes() {
 	var infoArray = new SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY();
-	NtQuerySystemInformation_SystemProcessorPerformanceInformation(infoArray);
+	NtQuerySystemInformation_SystemProcessorPerformanceInformation(
+		SystemProcessorPerformanceInformation,
+		infoArray.address(),
+		SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.size,
+		0
+	);
 	var array = [];
 	for (var i = 0, maxi = getCount(); i < maxi; i++) {
 		array.push({

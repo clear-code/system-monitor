@@ -180,25 +180,30 @@ clMemory.prototype = {
 	contractID : '@clear-code.com/system/memory;2',
 	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clICPUTime
+		Ci.clIMemory
 	]),
 
 	get total() {
-		return 0;
+		return this.utils.getMemory().total;
 	},
 
 	get used() {
-		return 0;
+		return this.utils.getMemory().used;
 	},
 
 	get free() {
-		return 0;
+		return this.utils.getMemory().free;
 	},
 
 	get virtualUsed() {
-		return 0;
+		return this.utils.getMemory().virtualUsed;
 	}
 };
+XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
+	var utils = {};
+	Components.utils.import('resource://system-monitor-modules/MemoryWin.js', utils);
+	return utils;
+});
 
 function Monitor(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.topic = aTopic;
