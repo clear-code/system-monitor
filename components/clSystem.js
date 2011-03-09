@@ -174,9 +174,9 @@ clCPU.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	var utils = {};
-	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/win/cpu.js', utils);
-	else if (OS.indexOf('linux') == 0)
+	if (OS.indexOf('win') > -1)
+		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', utils);
+	else if (OS.indexOf('linux') > -1)
 		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
 	return utils;
 });
@@ -245,9 +245,9 @@ clMemory.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	var utils = {};
-	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/win/memory.js', utils);
-	else if (OS.indexOf('linux') == 0)
+	if (OS.indexOf('win') > -1)
+		Components.utils.import('resource://system-monitor-modules/Win/memory.js', utils);
+	else if (OS.indexOf('linux') > -1)
 		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
 	return utils;
 });

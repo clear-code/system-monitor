@@ -1,5 +1,8 @@
 var EXPORTED_SYMBOLS = ['addShutdownListener'];
 
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
 XPCOMUtils.defineLazyGetter(this, 'shutdownListener', function () {
