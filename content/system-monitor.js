@@ -707,9 +707,9 @@ SystemMonitorSimpleGraphItem.prototype = {
     var startColor = base,
         endColor = base;
     if (base.charAt(0) == "#") {
-      base = base.substr(1);
-      startColor = this.RGBToRGBA(base, startAlpha);
-      endColor = this.RGBToRGBA(base, endAlpha);
+      let baseCode = base.substr(1);
+      startColor = this.RGBToRGBA(baseCode, startAlpha);
+      endColor = this.RGBToRGBA(baseCode, endAlpha);
     }
 
     this[aTarget] = base;
