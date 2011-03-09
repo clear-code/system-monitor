@@ -174,10 +174,14 @@ clCPU.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	var utils = {};
-	if (OS.indexOf('win') > -1)
+	if (OS.indexOf('win') == 0)
 		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', utils);
-	else if (OS.indexOf('linux') > -1)
+	else if (OS.indexOf('linux') == 0)
 		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import('resource://system-monitor-modules/Darwin/cpu.js', utils);
+	else
+		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
 	return utils;
 });
 
@@ -245,10 +249,14 @@ clMemory.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	var utils = {};
-	if (OS.indexOf('win') > -1)
+	if (OS.indexOf('win') == 0)
 		Components.utils.import('resource://system-monitor-modules/Win/memory.js', utils);
-	else if (OS.indexOf('linux') > -1)
+	else if (OS.indexOf('linux') == 0)
 		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import('resource://system-monitor-modules/Darwin/memory.js', utils);
+	else
+		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
 	return utils;
 });
 
