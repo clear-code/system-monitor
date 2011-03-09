@@ -22,11 +22,7 @@ const SYSTEM_BASIC_INFORMATION = new ctypes.StructType('SYSTEM_BASIC_INFORMATION
 		{ NumberOfProcessors : ctypes.uint32_t }
 	]);
 
-const LARGE_INTEGER = new ctypes.StructType('LARGE_INTEGER', [
-		{ LowPart : ctypes.unsigned_long },
-		{ HighPart : ctypes.long },
-		{ QuadPart : ctypes.int64_t }
-	]);
+const LARGE_INTEGER = ctypes.int64_t;
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_RESERVED1 = ctypes.ArrayType(LARGE_INTEGER, 2);
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION', [
 		{ IdleTime   : LARGE_INTEGER },
@@ -85,10 +81,10 @@ function getCPUTimes() {
 	var array = [];
 	for (var i = 0, maxi = getCount(); i < maxi; i++) {
 		array.push({
-			userTime   : parseInt(infoArray[i].UserTime.QuadPart),
-			systemTime : parseInt(infoArray[i].KernelTime.QuadPart),
+			userTime   : parseInt(infoArray[i].UserTime),
+			systemTime : parseInt(infoArray[i].KernelTime),
 			niceTime   : 0,
-			idleTime   : parseInt(infoArray[i].IdleTime.QuadPart),
+			idleTime   : parseInt(infoArray[i].IdleTime),
 			IOWaitTime : 0
 		});
 	}
@@ -113,7 +109,6 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 	  kernel time for the convinience. This value is used in GetUsage.
 	*/
 	kernel = total - idle;
-//dump('user:'+user+', kernel:'+kernel+'('+(aCurrent.systemTime - aPrevious.systemTime)+'), idle:'+idle+', total:'+total+'\n');
 
 	if (total == 0) {
 		return {
