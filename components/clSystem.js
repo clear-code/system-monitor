@@ -133,14 +133,14 @@ clCPU.prototype = {
 				user   : 0,
 				system : 0,
 				nice   : 0,
-				user   : 0,
+				idle   : 0,
 				iowait : 0
 			};
 		for each (let time in aCPUTimes) {
 			total.user   += time.user;
 			total.system += time.system;
 			total.nice   += time.nice;
-			total.user   += time.user;
+			total.idle   += time.idle;
 			total.iowait += time.iowait;
 		}
 		return total;
