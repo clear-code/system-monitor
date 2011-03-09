@@ -24,3 +24,7 @@
 toolbarpaletteitem[id^="wrapper-system-monitor-"] + toolbarpaletteitem[id^="wrapper-system-monitor-"] {
   margin-left: 1px;
 }
+
+#palette-box toolbarpaletteitem .system-monitor-item .toolbarbutton-text {
+  display: none;
+}
