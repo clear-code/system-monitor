@@ -11,7 +11,7 @@ CL_GetMemory()
     mach_msg_type_number_t total_count = HOST_BASIC_INFO_COUNT;
     host_info(mach_host_self(), HOST_BASIC_INFO, (host_info_t) &total_memory, &total_count);
 
-    PRUint64 total = total_memory.memory_size;
+    PRUint64 total = total_memory.max_mem;
 
     vm_statistics memory;
     mach_msg_type_number_t count = HOST_VM_INFO_COUNT;

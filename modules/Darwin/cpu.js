@@ -6,8 +6,8 @@ const Ci = Components.interfaces;
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
 
-const xxx = ctypes.open('');
-addShutdownListener(function() { xxx.close(); });
+const CoreFoundation = ctypes.open('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
+addShutdownListener(function() { CoreFoundation.close(); });
 
 
 function getCount() {
