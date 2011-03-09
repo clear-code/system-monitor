@@ -38,5 +38,6 @@
   <em:targetPlatform>Linux_x86-gcc3</em:targetPlatform>
   <em:targetPlatform>Linux_x86_64-gcc3</em:targetPlatform>
   <em:targetPlatform>Darwin_x86-gcc3</em:targetPlatform>
+  <em:targetPlatform>Darwin_x86_64-gcc3</em:targetPlatform>
 </RDF:Description>
 </RDF:RDF>
