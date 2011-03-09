@@ -1,0 +1,62 @@
+# How to build?
+
+## Ubuntu 10.04LTS Lucid Lynx (Firefox 3.6)
+
+ 1. Install required software.
+        $ sudo aptitude install automake libtool xulrunner-1.9.2-dev libgtop2-dev zip
+ 2. Download and extract sources.
+		$ wget http://git.clear-code.com/xul/extensions/system-monitor/snapshot/system-monitor-X.X.X.tar.bz2
+		$ tar xvf system-monitor-X.X.X.tar.bz2
+ 3. Build it.
+		$ cd system-monitor-X.X.X
+		$ ./automake.sh
+		$ ./configure
+		$ make
+
+## Ubuntu 9.04 Jaunty Jackalope and Ubuntu 9.10 Karmic Koala (Firefox 3.5)
+
+You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
+
+    $ sudo aptitude install automake libtool xulrunner-1.9.1-dev libgtop2-dev zip
+
+## Windows
+
+ 1. Install required software.
+    * Cygwin ( http://www.cygwin.com/ ) with following packages:
+      * automake
+      * gcc
+      * gcc4
+      * libtool
+      * make
+      * pkg-config
+      * zip
+    * Microsoft Visual C++ 2008 Express Edition
+      http://www.microsoft.com/express/Downloads/#Visual_Studio_2008_Express_Downloads
+ 2. Download and extract sources.
+ 3. Download and extract Gecko SDK.
+    For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
+    Otherwise, use 1.9.2.
+    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.1.13/sdk/xulrunner-1.9.1.13.en-US.win32.sdk.zip
+    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.10/sdk/xulrunner-1.9.2.10.en-US.win32.sdk.zip
+    Then, a folder "xulrunner-sdk" will appear, so move it to "c:\xulrunner".
+    (Note: Don't put as "c:\xulrunner\xulrunner-sdk"!)
+ 4. Start "Cygwin Bash Shell", and run start building process.
+        $ cd ~/system-monitor-X.X.X
+        $ ./autogen.sh
+        $ ./configure --with-libxul-sdk=/cygdrive/c/xulrunner
+        $ make
+    This operation will failed with some errors, because binary components
+    of this software couldn't built on Cygwin. You have to build them by
+    VC++.
+ 5. Start VC++, by double click on the file:
+    system-monitor-X.X.X\components\SystemMonitor\SystemMonitor.vcproj
+    After VC++ started and the project was completely loaded, then,
+    choose "Build" => "Build SystemMonitor" to start building process.
+    You'll see a last line of build log:
+        Build: 1 Success, 0 Fail, ....
+ 6. Create XPI files. Back to Cygwin Bash Shell and make it.
+        $ make xpi
+
+If you want to put Gecko SDK in your favorite place, you have to update
+"SystemMonitor.vcproj". Replace all "c:\xulrunner" embedded pathes in the
+file to your favorite place.
