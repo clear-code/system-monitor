@@ -21,7 +21,8 @@
                class="system-monitor-item system-monitor-resizable-item"
                tooltip="system-monitor-cpu-usage-tooltip"
                orient="vertical"
-               pack="center">
+               pack="center"
+               title="&toolbar.cpu-usage.label;">
     <stack>
       <hbox class="system-monitor-canvas-background"
             flex="1"/>
@@ -38,7 +39,8 @@
                class="system-monitor-item system-monitor-resizable-item"
                tooltip="system-monitor-memory-usage-tooltip"
                orient="vertical"
-               pack="center">
+               pack="center"
+               title="&toolbar.memory-usage.label;">
     <stack>
       <hbox class="system-monitor-canvas-background"
             flex="1"/>
