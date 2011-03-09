@@ -50,7 +50,8 @@ clSystem.prototype = {
 		Ci.clISystem,
 		Ci.clISystemInternal,
 		Ci.nsIObserver,
-		Ci.nsISecurityCheckedComponent
+		Ci.nsISecurityCheckedComponent,
+		Ci.nsIClassInfo
 	]),
 
 	addMonitor : function(aTopic, aMonitor, aInterval) {
@@ -95,6 +96,19 @@ clSystem.prototype = {
 	observe : function(aSubject, aTopic, aData) {
 		ObserverService.removeObserver(this, this.type);
 		this.removeAllMonitors();
+	},
+
+	// nsIClassInfo 
+	flags : Ci.nsIClassInfo.DOM_OBJECT | Ci.nsIClassInfo.SINGLETON,
+	getInterfaces : function(aCount)
+	{
+		var interfaces = [Ci.clISystem];
+		aCount.value = interfaces.length;
+		return interfaces;
+	},
+	getHelperForLanguage : function(aLanguage)
+	{
+		return null;
 	}
 };
 XPCOMUtils.defineLazyGetter(clSystem.prototype, 'cpu', function () {
