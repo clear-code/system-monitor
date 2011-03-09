@@ -17,7 +17,10 @@ var SystemMonitorService = {
 
   get system() {
     if (!this._system)
-      this._system = Components.classes["@clear-code.com/system;1"].getService(Components.interfaces.clISystem);
+      this._system = (
+        Components.classes["@clear-code.com/system;2"] ||
+        Components.classes["@clear-code.com/system;1"]
+      ).getService(Components.interfaces.clISystem);
     return this._system;
   },
 

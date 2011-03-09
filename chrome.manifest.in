@@ -12,3 +12,21 @@ style chrome://messenger/content/messenger.xul chrome://@PACKAGE_NAME@/skin/@PAC
 style chrome://global/content/customizeToolbar.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
 style chrome://@PACKAGE_NAME@/content/@PACKAGE_NAME@.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
 
+interfaces	components/gecko2/clICPUTime.xpt
+interfaces	components/gecko2/clICPU.xpt
+interfaces	components/gecko2/clIMemory.xpt
+interfaces	components/gecko2/clISystem.xpt
+
+component	{12ae3fc0-4883-11e0-9207-0800200c9a66}	components/clSystem.js
+contract	@clear-code.com/system;2	{12ae3fc0-4883-11e0-9207-0800200c9a66}
+
+component	{ae145a80-4883-11e0-9207-0800200c9a66}	components/clSystem.js
+contract	@clear-code.com/system/cpu;2	{ae145a80-4883-11e0-9207-0800200c9a66}
+
+component	{eb5ea940-4883-11e0-9207-0800200c9a66}	components/clSystem.js
+contract	@clear-code.com/system/time;2	{eb5ea940-4883-11e0-9207-0800200c9a66}
+
+component	{06c631d0-4884-11e0-9207-0800200c9a66}	components/clSystem.js
+contract	@clear-code.com/system/memory;2	{06c631d0-4884-11e0-9207-0800200c9a66}
+
+resource @PACKAGE_NAME@-modules modules/
