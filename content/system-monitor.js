@@ -472,6 +472,9 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   drawVerticalLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY, aWidth) {
+    // On Mac OS X, a zero-length line wrongly covers whole the canvas!
+    if (aBeginY == aEndY) return;
+
     aContext.save();
 
     aContext.translate(Math.floor(aX)+(aWidth/2), aMaxY);
