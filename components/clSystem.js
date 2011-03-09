@@ -4,7 +4,17 @@ const Ci = Components.interfaces;
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
 
-const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+XPCOMUtils.defineLazyGetter(this, 'ObserverService', function () {
+	return Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+});
+
+XPCOMUtils.defineLazyGetter(this, 'XULAppInfo', function () {
+	return Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
+});
+
+XPCOMUtils.defineLazyGetter(this, 'OS', function () {
+	return XULAppInfo.OS.toLowerCase();
+});
 
 function baseSecurityCheckedComponent() {
 }
@@ -105,18 +115,18 @@ clCPU.prototype = {
 
 	sumCPUTimes : function(aCPUTimes) {
 		var total = {
-				userTime   : 0,
-				systemTime : 0,
-				niceTime   : 0,
-				userTime   : 0,
-				IOWaitTime : 0
+				user   : 0,
+				system : 0,
+				nice   : 0,
+				user   : 0,
+				iowait : 0
 			};
 		for each (let time in aCPUTimes) {
-			total.userTime   += time.userTime;
-			total.systemTime += time.systemTime;
-			total.niceTime   += time.niceTime;
-			total.userTime   += time.userTime;
-			total.IOWaitTime += time.IOWaitTime;
+			total.user   += time.user;
+			total.system += time.system;
+			total.nice   += time.nice;
+			total.user   += time.user;
+			total.iowait += time.iowait;
 		}
 		return total;
 	},
@@ -164,7 +174,10 @@ clCPU.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	var utils = {};
-	Components.utils.import('resource://system-monitor-modules/win/cpu.js', utils);
+	if (OS.indexOf('win') == 0)
+		Components.utils.import('resource://system-monitor-modules/win/cpu.js', utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
 	return utils;
 });
 
@@ -198,7 +211,7 @@ clCPUTime.prototype = {
 	},
 
 	get io_wait() {
-		return this.mCPUTime.IOWait;
+		return this.mCPUTime.iowait;
 	}
 };
 
@@ -232,7 +245,10 @@ clMemory.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	var utils = {};
-	Components.utils.import('resource://system-monitor-modules/win/memory.js', utils);
+	if (OS.indexOf('win') == 0)
+		Components.utils.import('resource://system-monitor-modules/win/memory.js', utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
 	return utils;
 });
 

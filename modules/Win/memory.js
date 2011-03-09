@@ -21,10 +21,10 @@ const MEMORYSTATUSEX = new ctypes.StructType('MEMORYSTATUSEX', [
 		{ ullAvailExtendedVirtual : DWORDLONG }
 	]);
 
-var gKernel32 = ctypes.open('kernel32.dll');
+const gKernel32 = ctypes.open('kernel32.dll');
 addShutdownListener(function() { gKernel32.close(); });
 
-var GlobalMemoryStatusEx = gKernel32.declare(
+const GlobalMemoryStatusEx = gKernel32.declare(
 		'GlobalMemoryStatusEx',
 		ctypes.default_abi,
 		NTSTATUS,

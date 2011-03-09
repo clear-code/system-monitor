@@ -13,6 +13,7 @@ const SystemProcessorPerformanceInformation = 8;
 
 const MAX_COUNT = 32;
 const NTSTATUS = ctypes.uint32_t;
+const LARGE_INTEGER = ctypes.int64_t;
 
 const SYSTEM_BASIC_INFORMATION_RESERVED1 = ctypes.ArrayType(ctypes.int8_t, 24);
 const SYSTEM_BASIC_INFORMATION_RESERVED2 = ctypes.ArrayType(ctypes.voidptr_t, 4);
@@ -22,7 +23,6 @@ const SYSTEM_BASIC_INFORMATION = new ctypes.StructType('SYSTEM_BASIC_INFORMATION
 		{ NumberOfProcessors : ctypes.uint32_t }
 	]);
 
-const LARGE_INTEGER = ctypes.int64_t;
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_RESERVED1 = ctypes.ArrayType(LARGE_INTEGER, 2);
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION', [
 		{ IdleTime   : LARGE_INTEGER },
@@ -31,13 +31,12 @@ const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_P
 		{ Reserved1  : SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_RESERVED1 },
 		{ Reserved2  : ctypes.unsigned_long }
 	]);
-
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY = ctypes.ArrayType(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, MAX_COUNT);
 
-var gNtdll = ctypes.open('ntdll.dll');
+const gNtdll = ctypes.open('ntdll.dll');
 addShutdownListener(function() { gNtdll.close(); });
 
-var NtQuerySystemInformation_SystemBasicInformation = gNtdll.declare(
+const NtQuerySystemInformation_SystemBasicInformation = gNtdll.declare(
 		'NtQuerySystemInformation',
 		ctypes.default_abi,
 		NTSTATUS,
@@ -46,8 +45,7 @@ var NtQuerySystemInformation_SystemBasicInformation = gNtdll.declare(
 		ctypes.unsigned_long,
 		ctypes.uint32_t
 	);
-
-var NtQuerySystemInformation_SystemProcessorPerformanceInformation = gNtdll.declare(
+const NtQuerySystemInformation_SystemProcessorPerformanceInformation = gNtdll.declare(
 		'NtQuerySystemInformation',
 		ctypes.default_abi,
 		NTSTATUS,
@@ -79,23 +77,23 @@ function getCPUTimes() {
 		SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.size,
 		0
 	);
-	var array = [];
+	var times = [];
 	for (var i = 0, maxi = getCount(); i < maxi; i++) {
-		array.push({
-			userTime   : parseInt(infoArray[i].UserTime),
-			systemTime : parseInt(infoArray[i].KernelTime),
-			niceTime   : 0,
-			idleTime   : parseInt(infoArray[i].IdleTime),
-			IOWaitTime : 0
+		times.push({
+			user   : parseInt(infoArray[i].UserTime),
+			system : parseInt(infoArray[i].KernelTime),
+			nice   : 0,
+			idle   : parseInt(infoArray[i].IdleTime),
+			iowait : 0
 		});
 	}
-	return array;
+	return times;
 }
 
 function calculateCPUUsage(aPrevious, aCurrent) {
-	var user   = aCurrent.userTime - aPrevious.userTime;
-	var kernel = aCurrent.systemTime - aPrevious.systemTime;
-	var idle   = aCurrent.idleTime - aPrevious.idleTime;
+	var user   = aCurrent.user - aPrevious.user;
+	var kernel = aCurrent.system - aPrevious.system;
+	var idle   = aCurrent.idle - aPrevious.idle;
 	var total  = user + kernel;
 
 	/*
@@ -117,8 +115,8 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 			system : 0,
 			nice   : 0,
 			idle   : 0,
-			IOWait : 0
-		}
+			iowait : 0
+		};
 	}
 	else {
 		return {
@@ -126,7 +124,7 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 			system : kernel / total,
 			nice   : 0,
 			idle   : idle / total,
-			IOWait : 0
-		}
+			iowait : 0
+		};
 	}
 }
