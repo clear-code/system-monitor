@@ -54,8 +54,9 @@ clSystem.prototype = {
 	]),
 
 	addMonitor : function(aTopic, aMonitor, aInterval) {
-		var owner = Components.utils.getGlobalForObject(aMonitor.wrappedJSObject || aMonitor);
-		if (!(owner instanceof Ci.nsIDOMWindow))
+		var caller = arguments.callee.caller;
+		var owner = caller && Components.utils.getGlobalForObject(caller);
+		if (owner && !(owner instanceof Ci.nsIDOMWindow))
 			owner = null;
 		return this.addMonitorWithOwner(aTopic, aMonitor, aInterval, owner);
 	},
