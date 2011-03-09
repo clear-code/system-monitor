@@ -3,8 +3,8 @@ var EXPORTED_SYMBOLS = ['getMemory'];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 Components.utils.import('resource://gre/modules/ctypes.jsm');
+Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
 
 const NTSTATUS  = ctypes.uint32_t;
 const DWORD     = ctypes.uint32_t;
@@ -22,6 +22,7 @@ const MEMORYSTATUSEX = new ctypes.StructType('MEMORYSTATUSEX', [
 	]);
 
 var gKernel32 = ctypes.open('kernel32.dll');
+addShutdownListener(function() { gKernel32.close(); });
 
 var GlobalMemoryStatusEx = gKernel32.declare(
 		'GlobalMemoryStatusEx',
@@ -40,16 +41,3 @@ function getMemory() {
 		virtualUsed : parseInt(info.ullTotalVirtual - info.ullAvailVirtual)
 	};
 }
-
-const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
-var shutdownListener = {
-		type : 'quit-application-granted',
-		observe : function(aSubject, aTopic, aData) {
-			ObserverService.removeObserver(this, this.type);
-			gKernel32.close();
-		},
-		init : function() {
-			ObserverService.addObserver(this, this.type, false);
-		}
-	};
-shutdownListener.init();

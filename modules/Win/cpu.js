@@ -3,8 +3,8 @@ var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage'];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 Components.utils.import('resource://gre/modules/ctypes.jsm');
+Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
 
 
 // see http://source.winehq.org/source/include/winternl.h
@@ -35,6 +35,7 @@ const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_P
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY = ctypes.ArrayType(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, MAX_COUNT);
 
 var gNtdll = ctypes.open('ntdll.dll');
+addShutdownListener(function() { gNtdll.close(); });
 
 var NtQuerySystemInformation_SystemBasicInformation = gNtdll.declare(
 		'NtQuerySystemInformation',
@@ -129,17 +130,3 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 		}
 	}
 }
-
-
-const ObserverService = Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
-var shutdownListener = {
-		type : 'quit-application-granted',
-		observe : function(aSubject, aTopic, aData) {
-			ObserverService.removeObserver(this, this.type);
-			gNtdll.close();
-		},
-		init : function() {
-			ObserverService.addObserver(this, this.type, false);
-		}
-	};
-shutdownListener.init();

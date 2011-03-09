@@ -164,7 +164,7 @@ clCPU.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	var utils = {};
-	Components.utils.import('resource://system-monitor-modules/CPUWin.js', utils);
+	Components.utils.import('resource://system-monitor-modules/win/cpu.js', utils);
 	return utils;
 });
 
@@ -232,7 +232,7 @@ clMemory.prototype = {
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	var utils = {};
-	Components.utils.import('resource://system-monitor-modules/MemoryWin.js', utils);
+	Components.utils.import('resource://system-monitor-modules/win/memory.js', utils);
 	return utils;
 });
 
