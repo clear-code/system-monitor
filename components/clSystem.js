@@ -192,7 +192,7 @@ XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	if (OS.indexOf('win') == 0)
 		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', utils);
 	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
+		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
 		Components.utils.import('resource://system-monitor-modules/Darwin/cpu.js', utils);
 	else
@@ -267,7 +267,7 @@ XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	if (OS.indexOf('win') == 0)
 		Components.utils.import('resource://system-monitor-modules/Win/memory.js', utils);
 	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/libgtop.js', utils);
+		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
 		Components.utils.import('resource://system-monitor-modules/Darwin/memory.js', utils);
 	else
