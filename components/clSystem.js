@@ -16,26 +16,6 @@ XPCOMUtils.defineLazyGetter(this, 'OS', function () {
 	return XULAppInfo.OS.toLowerCase();
 });
 
-function baseSecurityCheckedComponent() {
-}
-baseSecurityCheckedComponent.prototype = {
-	QueryInterface : XPCOMUtils.generateQI([
-		Ci.nsISecurityCheckedComponent
-	]),
-	canCallMethod : function(aIID, aMethodName) {
-		return 'allAccess';
-	},
-	canCreateWrapper : function(aIID) {
-		return 'allAccess';
-	},
-	canGetProperty : function(aIID, aPropertyName) {
-		return 'allAccess';
-	},
-	canSetProperty : function(aIID, aPropertyName) {
-		return 'allAccess';
-	}
-};
-
 function getDOMWindowUtils(aWindow) {
 	try {
 		var utils = aWindow
@@ -54,7 +34,6 @@ function clSystem() {
 	ObserverService.addObserver(this, this.type, false);
 }
 clSystem.prototype = {
-	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clSystem', 
 	contractID : '@clear-code.com/system;2',
 	classID : Components.ID('{12ae3fc0-4883-11e0-9207-0800200c9a66}'),
@@ -62,8 +41,6 @@ clSystem.prototype = {
 		Ci.clISystem,
 		Ci.clISystemInternal,
 		Ci.nsIObserver,
-		Ci.nsISecurityCheckedComponent,
-		Ci.nsIClassInfo,
 		Ci.nsIDOMGlobalPropertyInitializer
 	]),
 
@@ -121,20 +98,25 @@ clSystem.prototype = {
 	init : function(aWindow) {
 		this.ownerUtils = getDOMWindowUtils(aWindow);
 		this.ownerID = this.ownerUtils && this.ownerUtils.outerWindowID;
-		return this;
-	},
 
-	// nsIClassInfo 
-	flags : Ci.nsIClassInfo.DOM_OBJECT | Ci.nsIClassInfo.SINGLETON,
-	getInterfaces : function(aCount)
-	{
-		var interfaces = [Ci.clISystem];
-		aCount.value = interfaces.length;
-		return interfaces;
-	},
-	getHelperForLanguage : function(aLanguage)
-	{
-		return null;
+		return Components.utils.evalInSandbox(<![CDATA[
+				(function(aSystem) {
+					return {
+						addMonitor : function() {
+							return aSystem.addMonitor.apply(aSystem, arguments);
+						},
+						removeMonitor : function() {
+							return aSystem.removeMonitor.apply(aSystem, arguments);
+						},
+						get cpu() {
+							return aSystem.cpu;
+						},
+						toString : function() {
+							return aSystem.toString();
+						}
+					};
+				})
+			]]>.toString(), Components.utils.Sandbox(aWindow))(this);
 	}
 };
 XPCOMUtils.defineLazyGetter(clSystem.prototype, 'cpu', function () {
@@ -145,13 +127,11 @@ function clCPU() {
 	this.mPreviousTimes = this.utils.getCPUTimes();
 }
 clCPU.prototype = {
-	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clCPU', 
 	contractID : '@clear-code.com/system/cpu;2',
 	classID : Components.ID('{ae145a80-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clICPU,
-		Ci.nsISecurityCheckedComponent
+		Ci.clICPU
 	]),
 
 	toString : function() {
@@ -234,13 +214,11 @@ function clCPUTime(aCPUTime) {
 	this.mCPUTime = aCPUTime;
 }
 clCPUTime.prototype = {
-	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clCPUTime', 
 	contractID : '@clear-code.com/system/time;2',
 	classID : Components.ID('{eb5ea940-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clICPUTime,
-		Ci.nsISecurityCheckedComponent
+		Ci.clICPUTime
 	]),
 
 	toString : function() {
@@ -271,13 +249,11 @@ clCPUTime.prototype = {
 function clMemory() { 
 }
 clMemory.prototype = {
-	__proto__ : baseSecurityCheckedComponent.prototype,
 	classDescription : 'clMemory', 
 	contractID : '@clear-code.com/system/memory;2',
 	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clIMemory,
-		Ci.nsISecurityCheckedComponent
+		Ci.clIMemory
 	]),
 
 	toString : function() {
