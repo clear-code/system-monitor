@@ -102,17 +102,11 @@ clSystem.prototype = {
 		return Components.utils.evalInSandbox(<![CDATA[
 				(function(aSystem) {
 					return {
-						addMonitor : function() {
-							return aSystem.addMonitor.apply(aSystem, arguments);
-						},
-						removeMonitor : function() {
-							return aSystem.removeMonitor.apply(aSystem, arguments);
-						},
+						addMonitor : Function.bind.call(aSystem.addMonitor, aSystem),
+						removeMonitor : Function.bind.call(aSystem.removeMonitor, aSystem),
+						toString : Function.bind.call(aSystem.toString, aSystem),
 						get cpu() {
 							return aSystem.cpu;
-						},
-						toString : function() {
-							return aSystem.toString();
 						}
 					};
 				})
