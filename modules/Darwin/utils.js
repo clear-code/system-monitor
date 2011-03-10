@@ -31,11 +31,10 @@ const mach_port_t = natural_t;
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/processor_info.h
 const processor_flavor_t = ctypes.int;
 const PROCESSOR_CPU_LOAD_INFO = 2;
-const cpu_ticks_array = ctypes.ArrayType(ctypes.unsigned_int, CPU_STATE_MAX);
 const processor_cpu_load_info = new ctypes.StructType('processor_cpu_load_info', [
-		{ cpu_ticks : cpu_ticks_array }
+		{ cpu_ticks : ctypes.ArrayType(ctypes.unsigned_int, CPU_STATE_MAX) }
 	]);
-const processor_info_array_t = integer_t.ptr;
+const processor_info_array_t = ctypes.ArrayType(integer_t);
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/host_info.h
 const HOST_BASIC_INFO = 1;
@@ -92,7 +91,7 @@ const host_processor_info = CoreFoundation.declare(
 		mach_port_t,
 		processor_flavor_t,
 		natural_t.ptr,
-		processor_info_array_t.ptr,
+		processor_info_array_t.ptr.ptr,
 		mach_msg_type_number_t.ptr
 	);
 
@@ -121,7 +120,7 @@ function getCount() {
 	var infoCount = new mach_msg_type_number_t();
 	var info = new processor_cpu_load_info.ptr();
 	var infoArray = ctypes.cast(info.address(), processor_info_array_t.ptr);
-	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray, infoCount.address())) {
+	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray.address(), infoCount.address())) {
 		return 0;
 	}
 	return count.value;
@@ -134,19 +133,18 @@ function getCPUTimes() {
 	var infoCount = new mach_msg_type_number_t();
 	var info = new processor_cpu_load_info.ptr();
 	var infoArray = ctypes.cast(info.address(), processor_info_array_t.ptr);
-	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray, infoCount.address())) {
+	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray.address(), infoCount.address())) {
 		return times;
 	}
 
 	// We cannot access ".contents" of flexible array via js-ctypes,
 	// so, we have to define a fixed version of the array temporally.
-	const fixed_size_processor_info_array_t = ctypes.ArrayType(processor_cpu_load_info.ptr, count.value);
-	infoArray = ctypes.cast(infoArray.address(), fixed_size_processor_info_array_t.ptr);
+	const fixed_size_processor_info_array_t = ctypes.ArrayType(processor_cpu_load_info, count.value);
+	infoArray = ctypes.cast(infoArray, fixed_size_processor_info_array_t.ptr);
 	infoArray = infoArray.contents;
 
 	for (var i = 0, count = count.value; i < count; i++) {
-		let info = ctypes.cast(infoArray[i].address(), processor_cpu_load_info.ptr);
-		info = info.contents;
+		let info = infoArray[i];
 		times.push({
 			user   : parseInt(info.cpu_ticks[CPU_STATE_USER]),
 			system : parseInt(info.cpu_ticks[CPU_STATE_SYSTEM]),
