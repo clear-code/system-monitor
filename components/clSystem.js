@@ -67,6 +67,10 @@ clSystem.prototype = {
 		Ci.nsIDOMGlobalPropertyInitializer
 	]),
 
+	toString : function() {
+		return '[object System]';
+	},
+
 	addMonitor : function(aTopic, aMonitor, aInterval) {
 		var caller = arguments.callee.caller;
 		var owner = caller && Components.utils.getGlobalForObject(caller);
@@ -149,6 +153,10 @@ clCPU.prototype = {
 		Ci.clICPU,
 		Ci.nsISecurityCheckedComponent
 	]),
+
+	toString : function() {
+		return '[object CPU]';
+	},
 
 	sumCPUTimes : function(aCPUTimes) {
 		var total = {
@@ -235,6 +243,10 @@ clCPUTime.prototype = {
 		Ci.nsISecurityCheckedComponent
 	]),
 
+	toString : function() {
+		return '[object CPUTime]';
+	},
+
 	get user() {
 		return this.mCPUTime.user;
 	},
@@ -268,6 +280,10 @@ clMemory.prototype = {
 		Ci.nsISecurityCheckedComponent
 	]),
 
+	toString : function() {
+		return '[object Memory]';
+	},
+
 	get total() {
 		return this.utils.getMemory().total;
 	},
@@ -282,7 +298,7 @@ clMemory.prototype = {
 
 	get virtualUsed() {
 		return this.utils.getMemory().virtualUsed;
-	}	
+	}
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	var utils = {};
