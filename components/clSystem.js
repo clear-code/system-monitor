@@ -346,11 +346,21 @@ Monitor.prototype = {
 				break;
 		}
 		if (value !== undefined) {
-			if (this.monitor instanceof Ci.clISystemMonitor) {
-				this.monitor.monitor(value);
+			try {
+				if (this.monitor instanceof Ci.clISystemMonitor) {
+					this.monitor.monitor(value);
+				}
+				else if (typeof this.monitor == 'function') {
+					this.monitor.call(null, value);
+				}
 			}
-			else if (typeof this.monitor == 'function') {
-				this.monitor.call(null, value);
+			catch(e) {
+				// when the window was unloaded
+				// http://mxr.mozilla.org/mozilla-central/source/js/src/js.msg#351
+				if (e.message == 'attempt to run compile-and-go script on a cleared scope')
+					this.destroy();
+				else
+					throw e;
 			}
 			return;
 		}
