@@ -194,7 +194,7 @@ XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 	else if (OS.indexOf('linux') == 0)
 		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/cpu.js', utils);
+		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
 	else
 		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
 	return utils;
@@ -269,7 +269,7 @@ XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	else if (OS.indexOf('linux') == 0)
 		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/memory.js', utils);
+		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
 	else
 		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
 	return utils;
