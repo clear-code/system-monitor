@@ -344,28 +344,27 @@ Monitor.prototype = {
 			case 'memory-usage':
 				value = new clMemory();
 				break;
-		}
-		if (value !== undefined) {
-			try {
-				if (this.monitor instanceof Ci.clISystemMonitor) {
-					this.monitor.monitor(value);
-				}
-				else if (typeof this.monitor == 'function') {
-					this.monitor.call(null, value);
-				}
-			}
-			catch(e) {
-				// when the window was unloaded
-				// http://mxr.mozilla.org/mozilla-central/source/js/src/js.msg#351
-				if (e.message == 'attempt to run compile-and-go script on a cleared scope')
-					this.destroy();
-				else
-					throw e;
-			}
-			return;
+			default:
+				this.destroy();
+				throw Components.results.NS_ERROR_FAILURE;
 		}
 
-		throw Components.results.NS_ERROR_FAILURE;
+		try {
+			if (this.monitor instanceof Ci.clISystemMonitor) {
+				this.monitor.monitor(value);
+			}
+			else if (typeof this.monitor == 'function') {
+				this.monitor.call(null, value);
+			}
+		}
+		catch(e) {
+			// when the window was unloaded
+			// http://mxr.mozilla.org/mozilla-central/source/js/src/js.msg#351
+			if (e.message == 'attempt to run compile-and-go script on a cleared scope')
+				this.destroy();
+			else
+				throw e;
+		}
 	},
 	QueryInterface : XPCOMUtils.generateQI([ 
 		Ci.nsITimerCallback
