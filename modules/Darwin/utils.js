@@ -28,6 +28,10 @@ const cpu_threadtype_t = integer_t;
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/port.h
 const mach_port_t = natural_t;
 
+const vm_map_t = mach_port_t;
+const vm_offset_t = ctypes.uintptr_t;
+const vm_size_t = ctypes.uintptr_t;
+
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/processor_info.h
 const processor_flavor_t = ctypes.int;
 const PROCESSOR_CPU_LOAD_INFO = 2;
@@ -94,6 +98,19 @@ const host_processor_info = CoreFoundation.declare(
 		processor_info_array_t.ptr.ptr,
 		mach_msg_type_number_t.ptr
 	);
+const mach_task_self = CoreFoundation.declare(
+		'mach_task_self',
+		ctypes.default_abi,
+		mach_port_t
+	);
+const vm_deallocate = CoreFoundation.declare(
+		'vm_deallocate',
+		ctypes.default_abi,
+		kern_return_t,
+		vm_map_t,
+		vm_offset_t,
+		vm_size_t
+	);
 
 const host_info = CoreFoundation.declare(
 		'host_info',
@@ -141,10 +158,9 @@ function getCPUTimes() {
 	// so, we have to define a fixed version of the array temporally.
 	const fixed_size_processor_info_array_t = ctypes.ArrayType(processor_cpu_load_info, count.value);
 	infoArray = ctypes.cast(infoArray, fixed_size_processor_info_array_t.ptr);
-	infoArray = infoArray.contents;
 
 	for (var i = 0, count = count.value; i < count; i++) {
-		let info = infoArray[i];
+		let info = infoArray.contents[i];
 		times.push({
 			user   : parseInt(info.cpu_ticks[CPU_STATE_USER]),
 			system : parseInt(info.cpu_ticks[CPU_STATE_SYSTEM]),
@@ -153,6 +169,10 @@ function getCPUTimes() {
 			iowait : 0
 		});
 	}
+
+	var address = ctypes.cast(infoArray, ctypes.uintptr_t);
+	vm_deallocate(mach_task_self(), address, infoCount.value * processor_cpu_load_info.size);
+
 	return times;
 }
 
