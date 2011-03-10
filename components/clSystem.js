@@ -36,10 +36,22 @@ baseSecurityCheckedComponent.prototype = {
 	}
 };
 
+function getDOMWindowUtils(aWindow) {
+	try {
+		var utils = aWindow
+						.QueryInterface(Ci.nsIInterfaceRequestor)
+						.getInterface(Ci.nsIDOMWindowUtils);
+		return utils;
+	}
+	catch(e) {
+	}
+	return null;
+}
 
 
 function clSystem() { 
-	this.init();
+	this.monitors = [];
+	ObserverService.addObserver(this, this.type, false);
 }
 clSystem.prototype = {
 	__proto__ : baseSecurityCheckedComponent.prototype,
@@ -51,7 +63,8 @@ clSystem.prototype = {
 		Ci.clISystemInternal,
 		Ci.nsIObserver,
 		Ci.nsISecurityCheckedComponent,
-		Ci.nsIClassInfo
+		Ci.nsIClassInfo,
+		Ci.nsIDOMGlobalPropertyInitializer
 	]),
 
 	addMonitor : function(aTopic, aMonitor, aInterval) {
@@ -59,7 +72,7 @@ clSystem.prototype = {
 		var owner = caller && Components.utils.getGlobalForObject(caller);
 		if (owner && !(owner instanceof Ci.nsIDOMWindow))
 			owner = null;
-		return this.addMonitorWithOwner(aTopic, aMonitor, aInterval, owner);
+		return this.addMonitorWithOwner(aTopic, aMonitor, aInterval, owner || this.owner);
 	},
 
 	removeMonitor : function(aTopic, aMonitor) {
@@ -89,13 +102,22 @@ clSystem.prototype = {
 	},
 
 	type : 'quit-application-granted',
-	init : function() {
-		this.monitors = [];
-		ObserverService.addObserver(this, this.type, false);
-	},
 	observe : function(aSubject, aTopic, aData) {
 		ObserverService.removeObserver(this, this.type);
 		this.removeAllMonitors();
+		delete this.ownerUtils;
+		delete this.ownerID;
+	},
+
+	get owner() {
+		return this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID);
+	},
+
+	// nsIDOMGlobalPropertyInitializer
+	init : function(aWindow) {
+		this.ownerUtils = getDOMWindowUtils(aWindow);
+		this.ownerID = this.ownerUtils && this.ownerUtils.outerWindowID;
+		return this;
 	},
 
 	// nsIClassInfo 
@@ -279,12 +301,16 @@ function Monitor(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.topic = aTopic;
 	this.monitor = aMonitor;
 	this.interval = aInterval;
-	this.owner = aOwner;
 	this.system = aSystem;
-	this.init();
+	this.init(aOwner);
 }
 Monitor.prototype = {
-	init : function() {
+	get owner() {
+		return this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID);
+	},
+	init : function(aOwner) {
+		this.ownerUtils = getDOMWindowUtils(aOwner);
+		this.ownerID = this.ownerUtils && this.ownerUtils.outerWindowID;
 		this.timer = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
 		this.timer.initWithCallback(this, this.interval, Ci.nsITimer.TYPE_REPEATING_SLACK);
 	},
@@ -295,14 +321,22 @@ Monitor.prototype = {
 		delete this.topic;
 		delete this.monitor;
 		delete this.interval;
-		delete this.owner;
+		delete this.ownerID;
+		delete this.ownerUtils;
 		delete this.system;
 	},
 	equals : function(aTopic, aMonitor) {
 		return this.topic == aTopic || this.monitor == aMonitor;
 	},
+	isOwnerDestroyed : function() {
+		if (!this.ownerID)
+			return false;
+
+		var owner = this.owner;
+		return (!owner || owner.closed);
+	},
 	notify : function(aTimer) {
-		if (this.owner && this.owner.closed) {
+		if (this.isOwnerDestroyed()) {
 			this.destroy();
 			return;
 		}
