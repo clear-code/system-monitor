@@ -21,6 +21,11 @@ clCPU::GetCount(PRUint32 *aCount)
     }
 
     *aCount = (PRUint32)nProcessors;
+
+    vm_deallocate(mach_task_self(),
+                 (vm_address_t) processorInfos,
+                 (vm_size_t) (nProcessorInfos * sizeof (*processorInfos)));
+
     return NS_OK;
 }
 

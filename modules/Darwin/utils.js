@@ -140,6 +140,10 @@ function getCount() {
 	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray.address(), infoCount.address())) {
 		return 0;
 	}
+
+	var address = ctypes.cast(infoArray, ctypes.uintptr_t);
+	vm_deallocate(mach_task_self(), address, infoCount.value * processor_cpu_load_info.size);
+
 	return count.value;
 }
 
