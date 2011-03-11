@@ -81,10 +81,10 @@ function getCPUTimes() {
 	var times = [];
 	for (var i = 0; i < GLIBTOP_NCPU && cpu.xcpu_total[i] != 0; i++) {
 		times.push({
-			user   : cpu.xcpu_user[i],
-			system : cpu.xcpu_sys[i],
-			nice   : cpu.xcpu_nice[i],
-			idle   : cpu.xcpu_idle[i],
+			user   : parseInt(cpu.xcpu_user[i]),
+			system : parseInt(cpu.xcpu_sys[i]),
+			nice   : parseInt(cpu.xcpu_nice[i]),
+			idle   : parseInt(cpu.xcpu_idle[i]),
 			iowait : cpu.xcpu_iowait[i] + cpu.xcpu_irq[i] + cpu.xcpu_softirq[i]
 		});
 	}
