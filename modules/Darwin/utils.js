@@ -137,12 +137,17 @@ function getCount() {
 	var infoCount = new mach_msg_type_number_t();
 	var info = new processor_cpu_load_info.ptr();
 	var infoArray = ctypes.cast(info.address(), processor_info_array_t.ptr);
-	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray.address(), infoCount.address())) {
+	if (host_processor_info(mach_host_self(),
+	                        PROCESSOR_CPU_LOAD_INFO,
+	                        count.address(),
+	                        infoArray.address(),
+	                        infoCount.address())) {
 		return 0;
 	}
 
-	var address = ctypes.cast(infoArray, ctypes.uintptr_t);
-	vm_deallocate(mach_task_self(), address, infoCount.value * processor_cpu_load_info.size);
+	vm_deallocate(mach_task_self(),
+	              ctypes.cast(infoArray, ctypes.uintptr_t),
+	              infoCount.value * processor_cpu_load_info.size);
 
 	return count.value;
 }
@@ -154,7 +159,11 @@ function getCPUTimes() {
 	var infoCount = new mach_msg_type_number_t();
 	var info = new processor_cpu_load_info.ptr();
 	var infoArray = ctypes.cast(info.address(), processor_info_array_t.ptr);
-	if (host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, count.address(), infoArray.address(), infoCount.address())) {
+	if (host_processor_info(mach_host_self(),
+	                        PROCESSOR_CPU_LOAD_INFO,
+	                        count.address(),
+	                        infoArray.address(),
+	                        infoCount.address())) {
 		return times;
 	}
 
@@ -174,8 +183,9 @@ function getCPUTimes() {
 		});
 	}
 
-	var address = ctypes.cast(infoArray, ctypes.uintptr_t);
-	vm_deallocate(mach_task_self(), address, infoCount.value * processor_cpu_load_info.size);
+	vm_deallocate(mach_task_self(),
+	              ctypes.cast(infoArray, ctypes.uintptr_t),
+	              infoCount.value * processor_cpu_load_info.size);
 
 	return times;
 }
@@ -210,18 +220,28 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 function getMemory() {
 	var total_memory = new host_basic_info();
 	var total_count = new mach_msg_type_number_t(HOST_BASIC_INFO_COUNT);
-	host_info(mach_host_self(), HOST_BASIC_INFO, total_memory.address(), total_count.address());
+	host_info(mach_host_self(),
+	          HOST_BASIC_INFO,
+	          total_memory.address(),
+	          total_count.address());
 
 	var total = parseInt(total_memory.max_mem);
 
 	var memory = new vm_statistics();
 	var count = new mach_msg_type_number_t(HOST_VM_INFO_COUNT);
-	host_statistics(mach_host_self(), HOST_VM_INFO, memory.address(), count.address());
+	host_statistics(mach_host_self(),
+	                HOST_VM_INFO,
+	                memory.address(),
+	                count.address());
 
 	// We cannot get the value of the global variable "vm_page_size" via js-ctypes,
 	// so calculate it from count of all pages.
-	var vm_page_size = total /  (memory.free_count + memory.active_count + memory.inactive_count + memory.wire_count);
-	var free = memory.free_count * parseInt(vm_page_size);
+	var vm_total_pages_count = parseInt(memory.free_count) +
+	                           parseInt(memory.active_count) +
+	                           parseInt(memory.inactive_count) +
+	                           parseInt(memory.wire_count);
+	var vm_page_size = total / vm_total_pages_count;
+	var free = parseInt(memory.free_count) * parseInt(vm_page_size);
 
 	return {
 		total       : total,
