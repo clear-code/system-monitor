@@ -51,6 +51,11 @@ clCPU::GetCPUTimeInfoArray()
         );
         array->AppendElement(info);
     }
+
+    vm_deallocate(mach_task_self(),
+                 (vm_address_t) processorInfos,
+                 (vm_size_t) (nProcessorInfos * sizeof (*processorInfos)));
+
     return array;
 }
 
