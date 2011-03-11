@@ -32,13 +32,11 @@ deploy:
 	 cp $(BINARY_SOURCE_DIR)/clSystemMonitor$(SHARED_LIBRARY_SUFFIX) \
 	 platform/$(PLATFORM)_$(CPU)-$(COMPILER)/components/)
 
-jar:
+xpi:
 	(rm -rf chrome && \
 	 mkdir -p chrome && \
-	 zip -q -r -9 chrome/$(PACKAGE_NAME).jar $(JAR_TARGET_FILES) -x \*.git/\*)
-
-xpi: deploy jar
-	(rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi && \
+	 zip -q -r -9 chrome/$(PACKAGE_NAME).jar $(JAR_TARGET_FILES) -x \*.git/\* && \
+	 rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi && \
 	 rm -f components/*.xpt && \
 	 cp components/gecko1.9.2/*.xpt components/ && \
 	 rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
