@@ -1,17 +1,24 @@
-# How to build?
+# How to build binary components?
+
+This software includes some binary components for Firefox 3.6 and older
+versions. You need to build binaries for each platform.
+
+For Firefox 4.0 or later, you don't need to do it because System Monitor
+works with JavaScript components implemented based on js-ctypes. Binaries
+are required only by old Firefox (3.6 and older).
 
 ## Ubuntu 10.04LTS Lucid Lynx (Firefox 3.6)
 
- 1. Install required software.
+ 1. Install required softwares.
         $ sudo aptitude install automake libtool xulrunner-1.9.2-dev libgtop2-dev zip
- 2. Download and extract sources.
-		$ wget http://git.clear-code.com/xul/extensions/system-monitor/snapshot/system-monitor-X.X.X.tar.bz2
-		$ tar xvf system-monitor-X.X.X.tar.bz2
+ 2. Download and extract sources of System Monitor.
+        $ wget http://git.clear-code.com/xul/extensions/system-monitor/snapshot/system-monitor-X.X.X.tar.bz2
+        $ tar xvf system-monitor-X.X.X.tar.bz2
  3. Build it.
-		$ cd system-monitor-X.X.X
-		$ ./automake.sh
-		$ ./configure
-		$ make
+        $ cd system-monitor-X.X.X
+        $ ./automake.sh
+        $ ./configure
+        $ make
 
 ## Ubuntu 9.04 Jaunty Jackalope and Ubuntu 9.10 Karmic Koala (Firefox 3.5)
 
@@ -21,7 +28,7 @@ You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
 
 ## Windows
 
- 1. Install required software.
+ 1. Install required softwares.
     * Cygwin ( http://www.cygwin.com/ ) with following packages:
       * automake
       * gcc
@@ -32,7 +39,7 @@ You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
       * zip
     * Microsoft Visual C++ 2008 Express Edition
       http://www.microsoft.com/express/Downloads/#Visual_Studio_2008_Express_Downloads
- 2. Download and extract sources.
+ 2. Download and extract sources of System Monitor.
  3. Download and extract Gecko SDK.
     For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
     Otherwise, use 1.9.2.
@@ -61,3 +68,30 @@ You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
 If you want to put Gecko SDK in your favorite place, you have to update
 "SystemMonitor.vcproj". Replace all "c:\xulrunner" embedded pathes in the
 file to your favorite place.
+
+## Mac OS X (32bit, Intel processor)
+
+ 1. Install required softwares.
+    * Xcode ( http://developer.apple.com/technologies/tools/xcode.html )
+    * MacPorts ( http://www.macports.org/ ) with following packages:
+      * pkg-config
+ 2. Download and extract sources of System Monitor.
+ 3. Download and extract Gecko SDK.
+    For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
+    Otherwise, use 1.9.2.
+    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.1.13/sdk/xulrunner-1.9.1.13.en-US.mac-i386.sdk.tar.bz2
+    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.10/sdk/xulrunner-1.9.2.10.en-US.mac-i386.sdk.tar.bz2
+    Then, a folder "xulrunner-sdk" will appear, so move it to "/opt/xulrunner-sdk".
+ 4. Build it.
+    $ cd ~/system-monitor-X.X.X
+    $ ./autogen.sh
+    $ ./configure --with-libxul-sdk=/opt/xulrunner-sdk CXXFLAGS="-arch i386"
+    $ make
+
+If the "configure" fails with an error about PKG_CHECK_MODULES, then, you
+have to clean up old files and rebuild all files like:
+    $ ./autogen.sh && make distclean && ./autogen.sh && ./configure
+         --with-libxul-sdk=/opt/xulrunner-sdk/ CXXFLAGS="-arch i386" && make 
+
+If you want to build binaries for both Firefox 3.5 and 3.6, then specify
+each version of Gecko SDK by the configure option "--with-libxul-sdk".
