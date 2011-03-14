@@ -81,11 +81,13 @@ function getCPUTimes() {
 	var times = [];
 	for (var i = 0; i < GLIBTOP_NCPU && cpu.xcpu_total[i] != 0; i++) {
 		times.push({
-			user   : cpu.xcpu_user[i],
-			system : cpu.xcpu_sys[i],
-			nice   : cpu.xcpu_nice[i],
-			idle   : cpu.xcpu_idle[i],
-			iowait : cpu.xcpu_iowait[i] + cpu.xcpu_irq[i] + cpu.xcpu_softirq[i]
+			user   : parseInt(cpu.xcpu_user[i]),
+			system : parseInt(cpu.xcpu_sys[i]),
+			nice   : parseInt(cpu.xcpu_nice[i]),
+			idle   : parseInt(cpu.xcpu_idle[i]),
+			iowait : parseInt(cpu.xcpu_iowait[i]) +
+			         parseInt(cpu.xcpu_irq[i]) +
+			         parseInt(cpu.xcpu_softirq[i])
 		});
 	}
 	return times;
@@ -124,8 +126,11 @@ function getMemory() {
 	glibtop_get_mem(memory.address());
 	return {
 		total       : parseInt(memory.total),
-		free        : parseInt(memory.total - memory.used - memory.cached),
-		used        : parseInt(memory.used - memory.cached),
+		free        : parseInt(memory.total) -
+		              parseInt(memory.used) -
+		              parseInt(memory.cached),
+		used        : parseInt(memory.used) -
+		              parseInt(memory.cached),
 		virtualUsed : -1
 	};
 }

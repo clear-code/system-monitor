@@ -37,7 +37,9 @@ function getMemory() {
 	return {
 		total       : parseInt(info.ullTotalPhys),
 		free        : parseInt(info.ullAvailPhys),
-		used        : parseInt(info.ullTotalPhys - info.ullAvailPhys),
-		virtualUsed : parseInt(info.ullTotalVirtual - info.ullAvailVirtual)
+		used        : parseInt(info.ullTotalPhys) -
+		              parseInt(info.ullAvailPhys),
+		virtualUsed : parseInt(info.ullTotalVirtual) -
+		              parseInt(info.ullAvailVirtual)
 	};
 }
