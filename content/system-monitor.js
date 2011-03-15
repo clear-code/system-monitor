@@ -161,8 +161,10 @@ var SystemMonitorService = {
       if (aNode.previousSibling &&
           aNode.previousSibling.localName != "splitter")
         this.insertSplitterBetween(aNode.previousSibling, aNode);
-      if (!aNode.nextSibling ||
-          aNode.nextSibling.localName != "splitter")
+      if (
+          (!aNode.nextSibling && !aNode.parentNode.querySelector('toolbar > toolbarspring')) ||
+          (aNode.nextSibling && aNode.nextSibling.localName != "splitter")
+          )
         this.insertSplitterBetween(aNode, aNode.nextSibling);
     }, this);
   },
