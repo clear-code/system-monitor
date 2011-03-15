@@ -162,7 +162,7 @@ var SystemMonitorService = {
           aNode.previousSibling.localName != "splitter")
         this.insertSplitterBetween(aNode.previousSibling, aNode);
       if (
-          (!aNode.nextSibling && !aNode.parentNode.querySelector('toolbar > toolbarspring')) ||
+          (!aNode.nextSibling && !aNode.parentNode.querySelector('toolbar > toolbarspring, toolbar > *[flex]')) ||
           (aNode.nextSibling && aNode.nextSibling.localName != "splitter")
           )
         this.insertSplitterBetween(aNode, aNode.nextSibling);
