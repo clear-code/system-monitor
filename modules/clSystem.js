@@ -72,7 +72,7 @@ clSystem.prototype = {
 		if (this.monitors.every(function(aExistingMonitor) {
 				return !aExistingMonitor.equals(aTopic, aMonitor);
 			})) {
-			this.monitors.push(new Monitor(aTopic, aMonitor, aInterval, aOwner, this));
+			this.monitors.push(new clSystemMonitorTimer(aTopic, aMonitor, aInterval, aOwner, this));
 			return true;
 		}
 		return false;
@@ -258,14 +258,21 @@ XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
 	return utils;
 });
 
-function Monitor(aTopic, aMonitor, aInterval, aOwner, aSystem) {
+function clSystemMonitorTimer(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.topic = aTopic;
 	this.monitor = aMonitor;
 	this.interval = aInterval;
 	this.system = aSystem;
 	this.init(aOwner);
 }
-Monitor.prototype = {
+clSystemMonitorTimer.prototype = {
+	classDescription : 'clSystemMonitorTimer', 
+	contractID : '@clear-code.com/system/monitor-wrapper;2',
+	classID : Components.ID('{0b745b30-4f14-11e0-b8af-0800200c9a66}'),
+	QueryInterface : XPCOMUtils.generateQI([ 
+		Ci.nsITimerCallback
+	]),
+
 	get owner() {
 		return this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID);
 	},
@@ -296,33 +303,32 @@ Monitor.prototype = {
 		var owner = this.owner;
 		return (!owner || owner.closed);
 	},
+	getMonitoringObject : function() {
+		switch (this.topic) {
+			case 'cpu-usage':
+				return this.system.cpu.getUsage();
+			case 'cpu-usages':
+				return this.system.cpu.getUsages();
+			case 'cpu-time':
+				return this.system.cpu.getCurrentTime();
+			case 'cpu-times':
+				return this.system.cpu.getCurrentTimes();
+			case 'memory-usage':
+				return new clMemory();
+			default:
+				this.destroy();
+				throw Components.results.NS_ERROR_FAILURE;
+		}
+	},
+
+	// nsITimerCallback
 	notify : function(aTimer) {
 		if (this.isOwnerDestroyed()) {
 			this.destroy();
 			return;
 		}
 
-		var value;
-		switch (this.topic) {
-			case 'cpu-usage':
-				value = this.system.cpu.getUsage();
-				break;
-			case 'cpu-usages':
-				value = this.system.cpu.getUsages();
-				break;
-			case 'cpu-time':
-				value = this.system.cpu.getCurrentTime();
-				break;
-			case 'cpu-times':
-				value = this.system.cpu.getCurrentTimes();
-				break;
-			case 'memory-usage':
-				value = new clMemory();
-				break;
-			default:
-				this.destroy();
-				throw Components.results.NS_ERROR_FAILURE;
-		}
+		var value = this.getMonitoringObject();
 
 		try {
 			if (this.monitor instanceof Ci.clISystemMonitor ||
@@ -341,11 +347,8 @@ Monitor.prototype = {
 			else
 				throw e;
 		}
-	},
-	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.nsITimerCallback
-	])
+	}
 };
 
 if (XPCOMUtils.generateNSGetFactory)
-	var NSGetFactory = XPCOMUtils.generateNSGetFactory([clSystem, clCPU, clCPUTime, clMemory]);
+	var NSGetFactory = XPCOMUtils.generateNSGetFactory([clSystem, clCPU, clCPUTime, clMemory, clSystemMonitorTimer]);
