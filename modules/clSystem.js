@@ -118,16 +118,7 @@ clSystem.prototype = {
 };
 
 function clCPU() { 
-	this.utils = {};
-	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', this.utils);
-	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', this.utils);
-	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', this.utils);
-	else
-		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
-
+	clCPU.loadUtils();
 	this.mPreviousTimes = this.utils.getCPUTimes();
 }
 clCPU.prototype = {
@@ -201,6 +192,22 @@ clCPU.prototype = {
 		return this.utils.getCount();
 	}
 };
+clCPU.loadUtils = function() {
+	if (this.prototype.utils)
+		return;
+
+	var utils = {};
+	if (OS.indexOf('win') == 0)
+		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
+	else
+		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
+
+	this.prototype.utils = utils;
+};
 
 function clCPUTime(aCPUTime) { 
 	this.user    = aCPUTime.user;
@@ -223,16 +230,7 @@ clCPUTime.prototype = {
 };
 
 function clMemory() { 
-	this.utils = {};
-	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/Win/memory.js', this.utils);
-	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', this.utils);
-	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', this.utils);
-	else
-		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
-
+	clMemory.loadUtils();
 	var memory = this.utils.getMemory();
 	this.total       = memory.total;
 	this.used        = memory.used;
@@ -250,6 +248,22 @@ clMemory.prototype = {
 	toString : function() {
 		return '[object Memory]';
 	}
+};
+clMemory.loadUtils = function() {
+	if (this.prototype.utils)
+		return;
+
+	var utils = {};
+	if (OS.indexOf('win') == 0)
+		Components.utils.import('resource://system-monitor-modules/Win/memory.js', utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
+	else
+		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
+
+	this.prototype.utils = utils;
 };
 
 function MonitorData(aTopic, aMonitor, aInterval, aOwner, aSystem) {
