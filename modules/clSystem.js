@@ -33,6 +33,7 @@ function getDOMWindowUtils(aWindow) {
 
 function clSystem() { 
 	this.monitors = [];
+	this.cpu = new clCPU();
 	ObserverService.addObserver(this, this.type, false);
 }
 clSystem.prototype = {
@@ -72,7 +73,7 @@ clSystem.prototype = {
 		if (this.monitors.every(function(aExistingMonitor) {
 				return !aExistingMonitor.equals(aTopic, aMonitor);
 			})) {
-			this.monitors.push(new clSystemMonitorTimer(aTopic, aMonitor, aInterval, aOwner, this));
+			this.monitors.push(new MonitorData(aTopic, aMonitor, aInterval, aOwner, this));
 			return true;
 		}
 		return false;
@@ -115,11 +116,18 @@ clSystem.prototype = {
 			]]>.toString(), Components.utils.Sandbox(aWindow))(this);
 	}
 };
-XPCOMUtils.defineLazyGetter(clSystem.prototype, 'cpu', function () {
-	return new clCPU();
-});
 
 function clCPU() { 
+	this.utils = {};
+	if (OS.indexOf('win') == 0)
+		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', this.utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', this.utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', this.utils);
+	else
+		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
+
 	this.mPreviousTimes = this.utils.getCPUTimes();
 }
 clCPU.prototype = {
@@ -193,18 +201,6 @@ clCPU.prototype = {
 		return this.utils.getCount();
 	}
 };
-XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
-	var utils = {};
-	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', utils);
-	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
-	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
-	else
-		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
-	return utils;
-});
 
 function clCPUTime(aCPUTime) { 
 	this.user    = aCPUTime.user;
@@ -227,6 +223,16 @@ clCPUTime.prototype = {
 };
 
 function clMemory() { 
+	this.utils = {};
+	if (OS.indexOf('win') == 0)
+		Components.utils.import('resource://system-monitor-modules/Win/memory.js', this.utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', this.utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', this.utils);
+	else
+		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
+
 	var memory = this.utils.getMemory();
 	this.total       = memory.total;
 	this.used        = memory.used;
@@ -245,30 +251,15 @@ clMemory.prototype = {
 		return '[object Memory]';
 	}
 };
-XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
-	var utils = {};
-	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/Win/memory.js', utils);
-	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
-	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
-	else
-		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
-	return utils;
-});
 
-function clSystemMonitorTimer(aTopic, aMonitor, aInterval, aOwner, aSystem) {
+function MonitorData(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.topic = aTopic;
 	this.monitor = aMonitor;
 	this.interval = aInterval;
 	this.system = aSystem;
 	this.init(aOwner);
 }
-clSystemMonitorTimer.prototype = {
-	classDescription : 'clSystemMonitorTimer', 
-	contractID : '@clear-code.com/system/monitor-wrapper;2',
-	classID : Components.ID('{0b745b30-4f14-11e0-b8af-0800200c9a66}'),
+MonitorData.prototype = {
 	QueryInterface : XPCOMUtils.generateQI([ 
 		Ci.nsITimerCallback
 	]),
@@ -351,4 +342,4 @@ clSystemMonitorTimer.prototype = {
 };
 
 if (XPCOMUtils.generateNSGetFactory)
-	var NSGetFactory = XPCOMUtils.generateNSGetFactory([clSystem, clCPU, clCPUTime, clMemory, clSystemMonitorTimer]);
+	var NSGetFactory = XPCOMUtils.generateNSGetFactory([clSystem, clCPU, clCPUTime, clMemory]);
