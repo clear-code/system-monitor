@@ -207,7 +207,11 @@ XPCOMUtils.defineLazyGetter(clCPU.prototype, 'utils', function () {
 });
 
 function clCPUTime(aCPUTime) { 
-	this.mCPUTime = aCPUTime;
+	this.user    = aCPUTime.user;
+	this.nice    = aCPUTime.nice;
+	this.system  = aCPUTime.system;
+	this.idle    = aCPUTime.idle;
+	this.io_wait = aCPUTime.iowait;
 }
 clCPUTime.prototype = {
 	classDescription : 'clCPUTime', 
@@ -219,30 +223,15 @@ clCPUTime.prototype = {
 
 	toString : function() {
 		return '[object CPUTime]';
-	},
-
-	get user() {
-		return this.mCPUTime.user;
-	},
-
-	get nice() {
-		return this.mCPUTime.nice;
-	},
-
-	get system() {
-		return this.mCPUTime.system;
-	},
-
-	get idle() {
-		return this.mCPUTime.idle;
-	},
-
-	get io_wait() {
-		return this.mCPUTime.iowait;
 	}
 };
 
 function clMemory() { 
+	var memory = this.utils.getMemory();
+	this.total       = memory.total;
+	this.used        = memory.used;
+	this.free        = memory.free;
+	this.virtualUsed = memory.virtualUsed;
 }
 clMemory.prototype = {
 	classDescription : 'clMemory', 
@@ -254,22 +243,6 @@ clMemory.prototype = {
 
 	toString : function() {
 		return '[object Memory]';
-	},
-
-	get total() {
-		return this.utils.getMemory().total;
-	},
-
-	get used() {
-		return this.utils.getMemory().used;
-	},
-
-	get free() {
-		return this.utils.getMemory().free;
-	},
-
-	get virtualUsed() {
-		return this.utils.getMemory().virtualUsed;
 	}
 };
 XPCOMUtils.defineLazyGetter(clMemory.prototype, 'utils', function () {
