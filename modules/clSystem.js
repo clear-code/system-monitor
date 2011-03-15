@@ -117,9 +117,14 @@ clSystem.prototype = {
 	}
 };
 
+var gCPU;
 function clCPU() { 
+	if (gCPU)
+		return gCPU;
+
 	clCPU.loadUtils();
 	this.mPreviousTimes = this.utils.getCPUTimes();
+	return gCPU = this;
 }
 clCPU.prototype = {
 	classDescription : 'clCPU', 

@@ -438,7 +438,6 @@ SystemMonitorSimpleGraphItem.prototype = {
   STYLE_SEPARATED : 1024,
   drawGraph : function(aDrawAll) {
     var canvas = this.canvas;
-    var context = canvas.getContext("2d")
     var w = canvas.width;
     var h = canvas.height;
 
@@ -450,152 +449,145 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (this.style & this.STYLE_POLYGONAL) {
       last = values[values.length-1];
       if (last && typeof last == 'object') {
-        this.drawGraphMultiplexedPolygon(context, values, w, h);
+        this.drawGraphMultiplexedPolygon(values, w, h);
       } else {
-        this.drawGraphPolygon(context, values || 0, h);
+        this.drawGraphPolygon(values || 0, h);
       }
     } else { // bar graph (by default)
       let x = 0;
       values.forEach(function(aValue) {
         if (aValue) {
           if (typeof aValue == 'object') {
-            this.drawGraphMultiplexedBar(context, aValue, x, w, h);
+            this.drawGraphMultiplexedBar(aValue, x, w, h);
           } else {
-            this.drawGraphBar(context, this.foregroundGradient, x, h, 0, h * aValue);
+            this.drawGraphBar(this.foregroundGradientStyle, x, h, 0, h * aValue);
           }
         }
         x += this.unit;
       }, this);
     }
     if (this.style & this.STYLE_SEPARATED)
-      this.drawSeparators(context, w, h);
+      this.drawSeparators(w, h);
   },
 
   clearAll : function() { 
     var canvas = this.canvas;
-    var context = canvas.getContext("2d")
+    var context = canvas.getContext("2d");
     context.save();
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.globalCompositeOperation = "source-over";
-    let gradient = context.createLinearGradient(0, 0, 0, canvas.height);
-    gradient.addColorStop(0, this.backgroundGradient[0]);
-    gradient.addColorStop(1, this.backgroundGradient[1]);
-    context.fillStyle = gradient;
+    context.fillStyle = this.backgroundGradientStyle;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
   },
 
-  drawVerticalLine : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY, aWidth) {
+  drawVerticalLine : function(aStyle, aX, aMaxY, aBeginY, aEndY, aWidth) {
     // On Mac OS X, a zero-length line wrongly covers whole the canvas!
     if (aBeginY == aEndY) return;
 
-    aContext.save();
+    var context = this.canvas.getContext("2d");
+    context.save();
 
-    aContext.translate(Math.floor(aX)+(aWidth/2), aMaxY);
-    aContext.scale(1, -1);
+    context.translate(Math.floor(aX)+(aWidth/2), aMaxY - aEndY);
+    context.scale(1, (aEndY - aBeginY) / aMaxY);
 
-    if (typeof aColors == 'object') {
-      let gradient = aContext.createLinearGradient(0, aBeginY, 0, aEndY);
-      gradient.addColorStop(0, aColors[1]);
-      gradient.addColorStop(1, aColors[0]);
-      aContext.strokeStyle = gradient;
-    } else {
-      aContext.strokeStyle = aColors;
-    }
-    aContext.beginPath();
-    aContext.lineWidth = aWidth || 1.0;
-    aContext.lineCap = "square";
-    aContext.globalCompositeOperation = "source-over";
-    aContext.moveTo(0, aBeginY);
-    aContext.lineTo(0, aEndY);
-    aContext.closePath();
-    aContext.stroke();
+    context.strokeStyle = aStyle;
 
-    aContext.restore();
+    context.beginPath();
+    context.lineWidth = aWidth || 1.0;
+    context.lineCap = "square";
+    context.moveTo(0, 0);
+    context.lineTo(0, aMaxY);
+    context.closePath();
+    context.stroke();
+
+    context.restore();
   },
 
-  drawSeparators : function(aContext, aMaxX, aMaxY)
+  drawSeparators : function(aMaxX, aMaxY)
   {
-    aContext.save();
-    aContext.globalAlpha = 0.5;
+    var context = this.canvas.getContext("2d");
+    context.save();
+    context.globalAlpha = 0.5;
     var count = this.multiplexCount;
     var width = (aMaxX / count) - 1;
     for (let i = 1, maxi = count; i < maxi; i++)
     {
-      this.drawVerticalLine(aContext, this.foreground, width + 0.5, aMaxY, 0, aMaxY, 1);
+      this.drawVerticalLine(this.foreground, width + 0.5, aMaxY, 0, aMaxY, 1);
     }
-    aContext.restore();
+    context.restore();
   },
 
   // bar graph
-  drawGraphBar : function(aContext, aColors, aX, aMaxY, aBeginY, aEndY) {
-    this.drawVerticalLine(aContext, aColors, aX, aMaxY, aBeginY, aEndY, this.unit);
+  drawGraphBar : function(aStyle, aX, aMaxY, aBeginY, aEndY) {
+    this.drawVerticalLine(aStyle, aX, aMaxY, aBeginY, aEndY, this.unit);
   },
 
-  drawGraphMultiplexedBar : function(aContext, aValues, aX, aMaxX, aMaxY) {
-    aContext.save();
-    aContext.globalAlpha = 1;
+  drawGraphMultiplexedBar : function(aValues, aX, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
+    context.globalAlpha = 1;
     var count = this.multiplexCount;
     if (this.style & this.STYLE_STACKED) {
       let eachMaxY = aMaxY / count;
       let beginY = 0;
-      aContext.save();
+      context.save();
       aValues.forEach(function(aValue) {
         let endY = beginY + (eachMaxY * aValue);
-        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, beginY, endY);
+        this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY;
       }, this);
-      aContext.restore();
+      context.restore();
     } else if (this.style & this.STYLE_LAYERED) {
       let minAlpha = 0.2;
       let beginY = 0;
       aValues.slice().sort().forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
-        aContext.globalAlpha = minAlpha + ((1 - minAlpha) / (aIndex + 1));
-        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, beginY, endY);
+        context.globalAlpha = minAlpha + ((1 - minAlpha) / (aIndex + 1));
+        this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY + 1;
       }, this);
-      aContext.globalAlpha = 1;
+      context.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
       aValues.forEach(function(aValue, aIndex) {
         let endY = aMaxY * aValue;
-        aContext.save();
-        aContext.translate((width + 1) * aIndex, 0);
-        this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, 0, endY);
-        aContext.restore();
+        context.save();
+        context.translate((width + 1) * aIndex, 0);
+        this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
+        context.restore();
       }, this);
     } else { // unified (by default)
-      this.drawGraphBar(aContext, this.foregroundGradient, aX, aMaxY, 0, aMaxY * this.getSum(aValues));
+      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
-    aContext.restore();
+    context.restore();
   },
 
   // polygonal graph
-  drawGraphPolygon : function(aContext, aValues, aMaxY) {
-    aContext.save();
+  drawGraphPolygon : function(aValues, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
 
-    aContext.translate(0, aMaxY);
-    aContext.scale(1, -1);
+    context.translate(0, aMaxY);
+    context.scale(1, -1);
 
-    aContext.beginPath();
-    aContext.strokeStyle = this.foreground;
-    aContext.lineWidth = 0.5;
-    aContext.lineCap = "square";
-    aContext.globalCompositeOperation = "source-over";
-    aContext.moveTo(0, 0);
+    context.beginPath();
+    context.strokeStyle = this.foreground;
+    context.lineWidth = 0.5;
+    context.lineCap = "square";
+    context.moveTo(0, 0);
     aValues.forEach(function(aValue, aIndex) {
-      aContext.lineTo(aIndex * this.unit, aMaxY * (aValue || 0));
+      context.lineTo(aIndex * this.unit, aMaxY * (aValue || 0));
     }, this);
-    aContext.moveTo(aValues.length * this.unit, 0);
-    aContext.closePath();
-    aContext.stroke();
+    context.moveTo(aValues.length * this.unit, 0);
+    context.closePath();
+    context.stroke();
 
-    aContext.restore();
+    context.restore();
   },
 
-  drawGraphMultiplexedPolygon : function(aContext, aValues, aMaxX, aMaxY) {
-    let count = this.multiplexCount;
+  drawGraphMultiplexedPolygon : function(aValues, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    var count = this.multiplexCount;
     if (this.style & this.STYLE_STACKED) {
       let lastValues = [];
       for (let i = 0, maxi = count; i < maxi; i++)
@@ -606,7 +598,6 @@ SystemMonitorSimpleGraphItem.prototype = {
                    0 ;
         });
         this.drawGraphPolygon(
-          aContext,
           lastValues,
           aMaxY
         );
@@ -615,7 +606,6 @@ SystemMonitorSimpleGraphItem.prototype = {
       for (let i = 0, maxi = count; i < maxi; i++)
       {
         this.drawGraphPolygon(
-          aContext,
           aValues.map(function(aValue) {
             return aValue ? aValue[i] : 0 ;
           }),
@@ -626,20 +616,18 @@ SystemMonitorSimpleGraphItem.prototype = {
       let width = Math.round(aMaxX / count) - 1;
       for (let i = 0, maxi = count; i < maxi; i++)
       {
-        aContext.save();
-        aContext.translate((width + 1) * i, 0);
+        context.save();
+        context.translate((width + 1) * i, 0);
         this.drawGraphPolygon(
-          aContext,
           aValues.map(function(aValue) {
             return aValue ? aValue[i] : 0 ;
           }),
           aMaxY
         );
-        aContext.restore();
+        context.restore();
       }
     } else { // unified (by default)
       this.drawGraphPolygon(
-        aContext,
         aValues.map(this.getSum),
         aMaxY
       );
@@ -650,7 +638,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.clearAll();
 
     var canvas = this.canvas;
-    var context = canvas.getContext("2d")
+    var context = canvas.getContext("2d");
     var w = canvas.width;
     var h = canvas.height;
 
@@ -660,7 +648,6 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.strokeStyle = this.foreground;
     context.lineWidth = 1.0;
     context.lineCap = "square";
-    context.globalCompositeOperation = "copy";
     context.moveTo(0, 0);
     context.lineTo(w, h);
     context.moveTo(0, h);
@@ -715,8 +702,8 @@ SystemMonitorSimpleGraphItem.prototype = {
   updateColors : function(aTarget) {
     var key = this.domain+this.id+".color."+aTarget;
     var base = this.getPref(key);
-    var endAlpha   = Number(this.getPref(key+"EndAlpha"));
-    var startAlpha = Math.max(endAlpha, Number(this.getPref(key+"StartAlpha")));
+    var startAlpha = Number(this.getPref(key+"StartAlpha"));
+    var endAlpha   = Math.max(startAlpha, Number(this.getPref(key+"EndAlpha")));
 
     var startColor = base,
         endColor = base;
@@ -728,6 +715,13 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     this[aTarget] = base;
     this[aTarget+"Gradient"] = [startColor, endColor];
+
+    var canvas = this.canvas;
+    var context = canvas.getContext("2d");
+    var gradient = context.createLinearGradient(0, canvas.height, 0, 0);
+    gradient.addColorStop(0, startColor);
+    gradient.addColorStop(1, endColor);
+    this[aTarget+"GradientStyle"] = gradient;
   },
   RGBToRGBA : function(aBase, aAlpha) {
     var rgb;
