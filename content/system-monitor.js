@@ -16,11 +16,20 @@ var SystemMonitorService = {
   },
 
   get system() {
-    if (!this._system)
-      this._system = (
-        Components.classes["@clear-code.com/system;2"] ||
-        Components.classes["@clear-code.com/system;1"]
-      ).getService(Components.interfaces.clISystem);
+    if (!this._system) {
+      try {
+        let ns = {};
+        Components.utils.import('resource://system-monitor-modules/clSystem.js', ns);
+        this._system = new ns.clSystem();
+        this._system.init(window);
+      }
+      catch(e) {
+        this._system = (
+          Components.classes["@clear-code.com/system;2"] ||
+          Components.classes["@clear-code.com/system;1"]
+        ).getService(Components.interfaces.clISystem);
+      }
+    }
     return this._system;
   },
 
