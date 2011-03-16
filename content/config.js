@@ -1,13 +1,13 @@
 function initCPUUsagePane() {
   updateStyleUIFromPref('cpu-usage');
-  updateAlphaUIFromPref('cpu-usage.color.backgroundEndAlpha');
-  updateAlphaUIFromPref('cpu-usage.color.foregroundEndAlpha');
+  updateAlphaUIFromPref('cpu-usage.color.backgroundStartAlpha');
+  updateAlphaUIFromPref('cpu-usage.color.foregroundStartAlpha');
 }
 
 function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
-  updateAlphaUIFromPref('memory-usage.color.backgroundEndAlpha');
-  updateAlphaUIFromPref('memory-usage.color.foregroundEndAlpha');
+  updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');
+  updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');
 }
 
 function updateStyleUIFromPref(aKey) {
