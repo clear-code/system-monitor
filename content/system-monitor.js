@@ -876,10 +876,11 @@ SystemMonitorMemoryItem.prototype = {
   },
   // clISystemMonitor
   monitor : function(aValue) {
+    var hasSelfValue = 'self' in aValue && aValue.self > -1;
     this.valueArray.shift();
     var value = [aValue.used / aValue.total,
                  0];
-    if (aValue.self > -1)
+    if (hasSelfValue)
       value[1] = aValue.self / aValue.total;
     this.valueArray.push(value);
 
@@ -888,13 +889,13 @@ SystemMonitorMemoryItem.prototype = {
     var params = [parseInt(aValue.total / 1024 / 1024),
                   parseInt(aValue.used / 1024 / 1024),
                   parseInt(aValue.used / aValue.total * 100)];
-    this.tooltip.textContent = aValue.self < 0 ?
-      this.bundle.getFormattedString('memory_usage_tooltip', params) :
+    this.tooltip.textContent = hasSelfValue ?
       this.bundle.getFormattedString('memory_usage_self_tooltip',
         params.concat([
           parseInt(aValue.self / 1024 / 1024),
           parseInt(aValue.self / aValue.total * 100)
-        ]));
+        ])) :
+      this.bundle.getFormattedString('memory_usage_tooltip', params) ;
   }
 };
 
