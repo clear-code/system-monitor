@@ -30,5 +30,8 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground", "
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundMinAlpha", "0.4");
-pref("extensions.system-monitor@clear-code.com.memory-usage.style", 513);
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.self", "#FFCC00");
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfStartAlpha", "0.6");
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfEndAlpha", "1");
+pref("extensions.system-monitor@clear-code.com.memory-usage.style", 129);
 

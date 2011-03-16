@@ -472,9 +472,9 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (this.style & this.STYLE_POLYGONAL) {
       last = values[values.length-1];
       if (last && typeof last == 'object') {
-        this.drawGraphMultiplexedPolygon(values, w, h);
+        this.drawGraphMultiplexedPolygon(values, w, h, this.foreground);
       } else {
-        this.drawGraphPolygon(values || 0, h);
+        this.drawGraphPolygon(values || 0, h, this.foreground);
       }
     } else { // bar graph (by default)
       let x = 0;
@@ -563,34 +563,38 @@ SystemMonitorSimpleGraphItem.prototype = {
     } else if (this.style & this.STYLE_LAYERED) {
       let minAlpha = this.foregroundMinAlpha;
       let beginY = 0;
-      aValues = aValues.slice(0);
+      aValues = aValues.slice(0, count);
       aValues.sort();
-      for (let i in aValues) {
+      for (let i = 0; i < count; i++) {
         let value = aValues[i];
         let endY = aMaxY * value;
-        context.globalAlpha = minAlpha + ((1 - minAlpha) / (parseInt(i) + 1));
+        context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY + 0.5;
       }
       context.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
-      for (let i in aValues) {
+      for (let i = 0; i < count; i++) {
         let value = aValues[i];
         let endY = aMaxY * aValue;
         context.save();
-        context.translate((width + 1) * parseInt(i), 0);
+        context.translate((width + 1) * i, 0);
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
         context.restore();
       }
     } else { // unified (by default)
-      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * this.getSum(aValues));
+      let value = 0;
+      for (let i = 0; i < count; i++) {
+        value += aValues[i];
+      }
+      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * value);
     }
     context.restore();
   },
 
   // polygonal graph
-  drawGraphPolygon : function(aValues, aMaxY) {
+  drawGraphPolygon : function(aValues, aMaxY, aStyle) {
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -598,12 +602,12 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.scale(1, -1);
 
     context.beginPath();
-    context.strokeStyle = this.foreground;
+    context.strokeStyle = aStyle || this.foreground;
     context.lineWidth = 0.5;
     context.lineCap = "square";
     context.moveTo(0, 0);
     for (let i in aValues) {
-      context.lineTo(parseInt(i) * this.unit, aMaxY * (aValues[i] || 0));
+      context.lineTo(i * this.unit, aMaxY * (aValues[i] || 0));
     }
     context.moveTo(aValues.length * this.unit, 0);
     context.closePath();
@@ -612,7 +616,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.restore();
   },
 
-  drawGraphMultiplexedPolygon : function(aValues, aMaxX, aMaxY) {
+  drawGraphMultiplexedPolygon : function(aValues, aMaxX, aMaxY, aStyle) {
     var context = this.canvas.getContext("2d");
     var count = this.multiplexCount;
     if (this.style & this.STYLE_STACKED) {
@@ -626,7 +630,7 @@ SystemMonitorSimpleGraphItem.prototype = {
                    (((j in lastValues ? lastValues[j] : 0 ) + value[i]) / count) :
                    0 ;
         }
-        this.drawGraphPolygon(lastValues, aMaxY);
+        this.drawGraphPolygon(lastValues, aMaxY, aStyle);
       }
     } else if (this.style & this.STYLE_LAYERED) {
       for (let i = 0, maxi = count; i < maxi; i++)
@@ -636,7 +640,7 @@ SystemMonitorSimpleGraphItem.prototype = {
           let value = aValues[j];
           values[j] = value && value[i] || 0 ;
         }
-        this.drawGraphPolygon(values, aMaxY);
+        this.drawGraphPolygon(values, aMaxY, aStyle);
       }
     } else if (this.style & this.STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
@@ -649,11 +653,11 @@ SystemMonitorSimpleGraphItem.prototype = {
           let value = aValues[j];
           values[j] = value && value[i] || 0 ;
         }
-        this.drawGraphPolygon(values, aMaxY);
+        this.drawGraphPolygon(values, aMaxY, aStyle);
         context.restore();
       }
     } else { // unified (by default)
-      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY);
+      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY, aStyle);
     }
   },
 
@@ -690,28 +694,13 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   // preferences listener
   onChangePref : function(aData) {
-    switch (aData.replace(this.domain+this.id+'.', '')) {
+    var part = aData.replace(this.domain+this.id+'.', '');
+    switch (part) {
       case "interval":
         this.unit = Math.ceil(this.getPref(aData) / 500);
       case "size":
         if (this.listening)
           this.update();
-        break;
-
-      case "color.background":
-      case "color.backgroundStartAlpha":
-      case "color.backgroundEndAlpha":
-        this.updateColors('background');
-        if (this.listening)
-          this.drawGraph(true);
-        break;
-
-      case "color.foreground":
-      case "color.foregroundStartAlpha":
-      case "color.foregroundEndAlpha":
-        this.updateColors('foreground');
-        if (this.listening)
-          this.drawGraph(true);
         break;
 
       case "color.foregroundMinAlpha":
@@ -722,6 +711,14 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.style = this.getPref(this.domain+this.id+".style");
         if (this.listening)
           this.drawGraph(true);
+        break;
+
+      default:
+        if (part.indexOf("color.") == 0) {
+          this.updateColors(part.match(/^color\.([^A-Z]+)/)[1]);
+          if (this.listening)
+            this.drawGraph(true);
+        }
         break;
     }
   },
@@ -848,7 +845,35 @@ SystemMonitorMemoryItem.prototype = {
   get tooltip() {
     return document.getElementById('system-monitor-memory-usage-tooltip-label');
   },
-  multiplexCount : 2,
+  self              : "#FFEE00",
+  selfGradient      : ["#FFEE00", "#FFEE00"],
+  selfGradientStyle : null,
+  start : function() {
+    this.__proto__.__proto__.start.apply(this, arguments);
+    this.onChangePref(this.domain+this.id+".color.self");
+  },
+  drawGraph : function() {
+    this.__proto__.__proto__.drawGraph.apply(this, arguments);
+
+    var canvas = this.canvas;
+    var h = canvas.height;
+    var values = this.valueArray;
+    if (this.style & this.STYLE_POLYGONAL) {
+      let graphValues = [];
+      for (let i in values) {
+        graphValues[i] = values[i] && values[i][1] || 0;
+      }
+      this.drawGraphPolygon(graphValues || 0, h, this.self);
+    } else { // bar graph
+      let x = 0;
+      for each (let value in values) {
+        if (value) {
+          this.drawGraphBar(this.selfGradientStyle, x, h, 0, h * value[1]);
+        }
+        x += this.unit;
+      }
+    }
+  },
   // clISystemMonitor
   monitor : function(aValue) {
     this.valueArray.shift();

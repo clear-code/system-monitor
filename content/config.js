@@ -8,6 +8,7 @@ function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
   updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');
   updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');
+  updateAlphaUIFromPref('memory-usage.color.selfStartAlpha');
 }
 
 function updateStyleUIFromPref(aKey) {
