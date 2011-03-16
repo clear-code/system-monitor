@@ -266,7 +266,7 @@ clMemory.prototype = {
 			var reporters = manager.enumerateReporters();
 			while (reporters.hasMoreElements()) {
 			  let reporter = reporters.getNext().QueryInterface(Ci.nsIMemoryReporter);
-			  if (reporter.path == 'malloc/mapped') {
+			  if (reporter.path == 'malloc/allocated') {
 				this.self = reporter.memoryUsed;
 				break;
 			  }
