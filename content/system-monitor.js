@@ -552,8 +552,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       let eachMaxY = aMaxY / count;
       let beginY = 0;
       context.save();
-      for (let i in aValues) {
-        let value = aValues[i];
+      for each (let value in aValues) {
         let endY = beginY + (eachMaxY * value);
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY;
@@ -567,7 +566,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       for (let i in aValues) {
         let value = aValues[i];
         let endY = aMaxY * value;
-        context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
+        context.globalAlpha = minAlpha + ((1 - minAlpha) / (parseInt(i) + 1));
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY + 1;
       }
@@ -578,7 +577,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         let value = aValues[i];
         let endY = aMaxY * aValue;
         context.save();
-        context.translate((width + 1) * i, 0);
+        context.translate((width + 1) * parseInt(i), 0);
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
         context.restore();
       }
@@ -602,7 +601,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.lineCap = "square";
     context.moveTo(0, 0);
     for (let i in aValues) {
-      context.lineTo(i * this.unit, aMaxY * (aValues[i] || 0));
+      context.lineTo(parseInt(i) * this.unit, aMaxY * (aValues[i] || 0));
     }
     context.moveTo(aValues.length * this.unit, 0);
     context.closePath();
