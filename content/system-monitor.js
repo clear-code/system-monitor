@@ -195,11 +195,12 @@ var SystemMonitorService = {
   },
 
   insertSplitterBetween : function(aBefore, aAfter) {
+    var toolbar = (aAfter || aBefore).parentNode;
     var splitter = document.createElement("splitter");
     splitter.setAttribute("class", this.SPLITTER_CLASS);
     splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
     splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
-    (aAfter || aBefore).parentNode.insertBefore(splitter, aAfter);
+    toolbar.insertBefore(splitter, aAfter);
     if (!aAfter) {
       var spacer = document.createElement('spacer');
       spacer.setAttribute('flex', 1);
