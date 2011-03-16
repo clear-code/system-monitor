@@ -20,6 +20,14 @@ are required only by old Firefox (3.6 and older).
         $ ./configure
         $ make
 
+You have to use newer xulrunner-2.0 if you want to rebuild interface definitions
+for Gecko 2.0. 
+
+        $ make clean
+        $ ./configure --with-libxul-sdk=/opt/xulrunner-2.0-sdk
+        $ make
+        $ mv -f components/*.xpt components/gecko2/
+
 ## Ubuntu 9.04 Jaunty Jackalope and Ubuntu 9.10 Karmic Koala (Firefox 3.5)
 
 You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.

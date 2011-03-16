@@ -322,6 +322,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   foreground              : "#33FF33",
   foregroundGradient      : ["#33FF33", "#33FF33"],
   foregroundGradientStyle : null,
+  foregroundMinAlpha      : 0.2,
   background              : "#000000",
   backgroundGradient      : ["#000000", "#000000"],
   backgroundGradientStyle : null,
@@ -360,6 +361,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     this.onChangePref(this.domain+this.id+".color.background");
     this.onChangePref(this.domain+this.id+".color.foreground");
+    this.onChangePref(this.domain+this.id+".color.foregroundMinAlpha");
     this.onChangePref(this.domain+this.id+".style");
 
     var canvas = this.canvas;
@@ -559,7 +561,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
       context.restore();
     } else if (this.style & this.STYLE_LAYERED) {
-      let minAlpha = 0.2;
+      let minAlpha = this.foregroundMinAlpha;
       let beginY = 0;
       aValues = aValues.slice(0);
       aValues.sort();
@@ -568,7 +570,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         let endY = aMaxY * value;
         context.globalAlpha = minAlpha + ((1 - minAlpha) / (parseInt(i) + 1));
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
-        beginY = endY + 1;
+        beginY = endY + 0.5;
       }
       context.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
@@ -712,6 +714,10 @@ SystemMonitorSimpleGraphItem.prototype = {
           this.drawGraph(true);
         break;
 
+      case "color.foregroundMinAlpha":
+        this.foregroundMinAlpha = Number(this.getPref(aData));
+        break;
+
       case "style":
         this.style = this.getPref(this.domain+this.id+".style");
         if (this.listening)
@@ -842,17 +848,28 @@ SystemMonitorMemoryItem.prototype = {
   get tooltip() {
     return document.getElementById('system-monitor-memory-usage-tooltip-label');
   },
+  multiplexCount : 2,
   // clISystemMonitor
   monitor : function(aValue) {
     this.valueArray.shift();
-    this.valueArray.push(aValue.used / aValue.total);
+    var value = [aValue.used / aValue.total,
+                 0];
+    if (aValue.self > -1)
+      value[1] = aValue.self / aValue.total;
+    this.valueArray.push(value);
+
     this.drawGraph();
-    this.tooltip.textContent = this.bundle.getFormattedString(
-                                 'memory_usage_tooltip',
-                                 [parseInt(aValue.total / 1024 / 1024),
-                                  parseInt(aValue.used / 1024 / 1024),
-                                  parseInt(aValue.used / aValue.total * 100)]
-                               );
+
+    var params = [parseInt(aValue.total / 1024 / 1024),
+                  parseInt(aValue.used / 1024 / 1024),
+                  parseInt(aValue.used / aValue.total * 100)];
+    this.tooltip.textContent = aValue.self < 0 ?
+      this.bundle.getFormattedString('memory_usage_tooltip', params) :
+      this.bundle.getFormattedString('memory_usage_self_tooltip',
+        params.concat([
+          parseInt(aValue.self / 1024 / 1024),
+          parseInt(aValue.self / aValue.total * 100)
+        ]));
   }
 };
 

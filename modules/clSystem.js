@@ -244,17 +244,36 @@ function clMemory() {
 	this.used        = memory.used;
 	this.free        = memory.free;
 	this.virtualUsed = memory.virtualUsed;
+	this.initSelfUsed();
 }
 clMemory.prototype = {
 	classDescription : 'clMemory', 
 	contractID : '@clear-code.com/system/memory;2',
 	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clIMemory
+		Ci.clIMemory,
+		Ci.clISelfMemory
 	]),
 
 	toString : function() {
 		return '[object Memory]';
+	},
+
+	initSelfUsed : function() {
+		this.self = -1;
+		try {
+			var manager = Cc['@mozilla.org/memory-reporter-manager;1'].getService(Ci.nsIMemoryReporterManager);
+			var reporters = manager.enumerateReporters();
+			while (reporters.hasMoreElements()) {
+			  let reporter = reporters.getNext().QueryInterface(Ci.nsIMemoryReporter);
+			  if (reporter.path == 'malloc/mapped') {
+				this.self = reporter.memoryUsed;
+				break;
+			  }
+			}
+		}
+		catch(e) {
+		}
 	}
 };
 clMemory.loadUtils = function() {
