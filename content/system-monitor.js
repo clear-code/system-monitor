@@ -122,47 +122,61 @@ var SystemMonitorService = {
         if (bar && bar.boxObject.height && bar.boxObject.width)
           return true;
       });
-    if (bar && bar.currentSet) {
-      var PromptService = Cc["@mozilla.org/embedcomp/prompt-service;1"]
-                           .getService(Ci.nsIPromptService);
+    if (!bar || !bar.currentSet)
+      return;
 
-      var currentset = bar.currentSet;
-      var buttons = currentset.replace(/__empty/, "").split(',');
+    var currentset = bar.currentSet;
+    var buttons = currentset.replace(/__empty/, "").split(',');
 
-      for each (let item in this.items) {
-        if (this.getPref(this.domain+item.id+".initialShow"))
-          return;
+    for each (let item in this.items) {
+      if (this.getPref(this.domain+item.id+".initialShow"))
+        return;
 
-        if (currentset.indexOf(item.itemId) < 0) {
-          if (currentset.indexOf("spring") < 0 &&
-              currentset.indexOf("urlbar-container") < 0 &&
-              currentset.indexOf("search-container") < 0 &&
-              buttons.indexOf("spring") < 0)
-            buttons.push("spring");
-          buttons.push(item.itemId);
-        }
-        this.setPref(this.domain+item.id+".initialShow", true);
+      if (currentset.indexOf(item.itemId) < 0) {
+        if (currentset.indexOf("spring") < 0 &&
+            currentset.indexOf("urlbar-container") < 0 &&
+            currentset.indexOf("search-container") < 0 &&
+            buttons.indexOf("spring") < 0)
+          buttons.push("spring");
+        buttons.push(item.itemId);
       }
-      currentset = bar.currentSet.replace(/__empty/, "");
-      var newset = buttons.join(",");
-      if (currentset != newset &&
-        PromptService.confirmEx(
-          null,
-          this.bundle.getString("initialshow_confirm_title"),
-          this.bundle.getString("initialshow_confirm_text"),
-          (PromptService.BUTTON_TITLE_YES * PromptService.BUTTON_POS_0) +
-          (PromptService.BUTTON_TITLE_NO  * PromptService.BUTTON_POS_1),
-          null, null, null, null, {}
-        ) == 0) {
-        bar.currentSet = newset;
-        bar.setAttribute("currentset", newset);
-          document.persist(bar.id, 'currentset');
-      }
-      if ("BrowserToolboxCustomizeDone" in window)
-        window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
-      else if ("MailToolboxCustomizeDone" in window)
-        window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
+      this.setPref(this.domain+item.id+".initialShow", true);
     }
+
+    currentset = bar.currentSet.replace(/__empty/, "");
+    var newset = buttons.join(",");
+    if (currentset == newset)
+      return;
+
+    this.confirmInsertToolbarItems()
+        .next(function(aInsert) {
+            if (!aInsert)
+            	return;
+            bar.currentSet = newset;
+            bar.setAttribute("currentset", newset);
+            document.persist(bar.id, 'currentset');
+            if ("BrowserToolboxCustomizeDone" in window)
+              window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
+            else if ("MailToolboxCustomizeDone" in window)
+              window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
+        });
+  },
+  confirmInsertToolbarItems : function() {
+    var ns = {};
+    Components.utils.import('resource://system-monitor-modules/lib/confirmWithTab.js', ns);
+	return ns.confirmWithTab({
+			tab      : gBrowser.selectedTab,
+			label    : this.bundle.getString('initialshow_confirm_text'),
+			value    : 'system-monitor-insert-toolbar-items',
+			buttons  : [
+				this.bundle.getString('initialshow_confirm_yes'),
+				this.bundle.getString('initialshow_confirm_no')
+			],
+			cancelEvents : ['TabClose', 'SSTabRestoring']
+		})
+		.next(function(aButtonIndex) {
+			return aButtonIndex == 0;
+		});
   },
 
   insertSplitters : function() {
