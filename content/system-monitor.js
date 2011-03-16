@@ -100,16 +100,16 @@ var SystemMonitorService = {
   },
 
   initToolbarItems : function() {
-    this.items.forEach(function(aItem) {
-      aItem.init();
-    });
+    for each (let item in this.items) {
+      item.init();
+    }
     this.insertSplitters();
   },
 
   destroyToolbarItems : function() {
-    this.items.forEach(function(aItem) {
-      aItem.destroy();
-    });
+    for each (let item in this.items) {
+      item.destroy();
+    }
     this.removeSplitters();
   },
 
@@ -129,20 +129,20 @@ var SystemMonitorService = {
       var currentset = bar.currentSet;
       var buttons = currentset.replace(/__empty/, "").split(',');
 
-      this.items.forEach(function(aItem) {
-        if (this.getPref(this.domain+aItem.id+".initialShow"))
+      for each (let item in this.items) {
+        if (this.getPref(this.domain+item.id+".initialShow"))
           return;
 
-        if (currentset.indexOf(aItem.itemId) < 0) {
+        if (currentset.indexOf(item.itemId) < 0) {
           if (currentset.indexOf("spring") < 0 &&
               currentset.indexOf("urlbar-container") < 0 &&
               currentset.indexOf("search-container") < 0 &&
               buttons.indexOf("spring") < 0)
             buttons.push("spring");
-          buttons.push(aItem.itemId);
+          buttons.push(item.itemId);
         }
-        this.setPref(this.domain+aItem.id+".initialShow", true);
-      }, this);
+        this.setPref(this.domain+item.id+".initialShow", true);
+      }
       currentset = bar.currentSet.replace(/__empty/, "");
       var newset = buttons.join(",");
       if (currentset != newset &&
@@ -166,16 +166,18 @@ var SystemMonitorService = {
   },
 
   insertSplitters : function() {
-    Array.forEach(document.querySelectorAll("."+this.RESIZABLE_CLASS), function(aNode) {
-      if (aNode.previousSibling &&
-          aNode.previousSibling.localName != "splitter")
-        this.insertSplitterBetween(aNode.previousSibling, aNode);
+    let nodes = document.querySelectorAll("."+this.RESIZABLE_CLASS);
+    for (let i = 0, maxi = nodes.length; i < maxi; i++) {
+      let node = nodes[i];
+      if (node.previousSibling &&
+          node.previousSibling.localName != "splitter")
+        this.insertSplitterBetween(node.previousSibling, node);
       if (
-          (!aNode.nextSibling && !aNode.parentNode.querySelector('toolbar > toolbarspring, toolbar > *[flex]')) ||
-          (aNode.nextSibling && aNode.nextSibling.localName != "splitter")
+          (!node.nextSibling && !node.parentNode.querySelector('toolbar > toolbarspring, toolbar > *[flex]')) ||
+          (node.nextSibling && node.nextSibling.localName != "splitter")
           )
-        this.insertSplitterBetween(aNode, aNode.nextSibling);
-    }, this);
+        this.insertSplitterBetween(node, node.nextSibling);
+    }
   },
 
   insertSplitterBetween : function(aBefore, aAfter) {
@@ -193,9 +195,11 @@ var SystemMonitorService = {
   },
 
   removeSplitters : function() {
-    Array.forEach(document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+'-spacer'), function(aNode) {
-      aNode.parentNode.removeChild(aNode);
-    });
+    let nodes = document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+'-spacer');
+    for (let i = 0, maxi = nodes.length; i < maxi; i++) {
+      let node = nodes[i];
+      node.parentNode.removeChild(node);
+    }
   },
 
   onSplitterMouseDown : function(aSplitter, aEvent) {
@@ -426,9 +430,9 @@ SystemMonitorSimpleGraphItem.prototype = {
       return aValues;
 
     let total = 0;
-    aValues.forEach(function(aValue) {
-      total += aValue;
-    });
+    for each (let value in aValues) {
+      total += value;
+    }
     return total / aValues.length;
   },
 
@@ -457,16 +461,16 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
     } else { // bar graph (by default)
       let x = 0;
-      values.forEach(function(aValue) {
-        if (aValue) {
-          if (typeof aValue == 'object') {
-            this.drawGraphMultiplexedBar(aValue, x, w, h);
+      for each (let value in values) {
+        if (value) {
+          if (typeof value == 'object') {
+            this.drawGraphMultiplexedBar(value, x, w, h);
           } else {
-            this.drawGraphBar(this.foregroundGradientStyle, x, h, 0, h * aValue);
+            this.drawGraphBar(this.foregroundGradientStyle, x, h, 0, h * value);
           }
         }
         x += this.unit;
-      }, this);
+      }
     }
     if (this.style & this.STYLE_SEPARATED)
       this.drawSeparators(w, h);
@@ -533,31 +537,36 @@ SystemMonitorSimpleGraphItem.prototype = {
       let eachMaxY = aMaxY / count;
       let beginY = 0;
       context.save();
-      aValues.forEach(function(aValue) {
-        let endY = beginY + (eachMaxY * aValue);
+      for (let i in aValues) {
+        let value = aValues[i];
+        let endY = beginY + (eachMaxY * value);
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY;
-      }, this);
+      }
       context.restore();
     } else if (this.style & this.STYLE_LAYERED) {
       let minAlpha = 0.2;
       let beginY = 0;
-      aValues.slice().sort().forEach(function(aValue, aIndex) {
-        let endY = aMaxY * aValue;
-        context.globalAlpha = minAlpha + ((1 - minAlpha) / (aIndex + 1));
+      aValues = aValues.slice(0);
+      aValues.sort();
+      for (let i in aValues) {
+        let value = aValues[i];
+        let endY = aMaxY * value;
+        context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
         beginY = endY + 1;
-      }, this);
+      }
       context.globalAlpha = 1;
     } else if (this.style & this.STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
-      aValues.forEach(function(aValue, aIndex) {
+      for (let i in aValues) {
+        let value = aValues[i];
         let endY = aMaxY * aValue;
         context.save();
-        context.translate((width + 1) * aIndex, 0);
+        context.translate((width + 1) * i, 0);
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
         context.restore();
-      }, this);
+      }
     } else { // unified (by default)
       this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * this.getSum(aValues));
     }
@@ -577,9 +586,9 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.lineWidth = 0.5;
     context.lineCap = "square";
     context.moveTo(0, 0);
-    aValues.forEach(function(aValue, aIndex) {
-      context.lineTo(aIndex * this.unit, aMaxY * (aValue || 0));
-    }, this);
+    for (let i in aValues) {
+      context.lineTo(i * this.unit, aMaxY * (aValues[i] || 0));
+    }
     context.moveTo(aValues.length * this.unit, 0);
     context.closePath();
     context.stroke();
@@ -594,25 +603,24 @@ SystemMonitorSimpleGraphItem.prototype = {
       let lastValues = [];
       for (let i = 0, maxi = count; i < maxi; i++)
       {
-        lastValues = aValues.map(function(aValue, aIndex) {
-          return aValue ?
-                   (((aIndex in lastValues ? lastValues[aIndex] : 0 ) + aValue[i]) / count) :
+        lastValues = [];
+        for (let j in aValues) {
+          let value = aValues[j];
+          lastValues[j] = value ?
+                   (((j in lastValues ? lastValues[j] : 0 ) + value[i]) / count) :
                    0 ;
-        });
-        this.drawGraphPolygon(
-          lastValues,
-          aMaxY
-        );
+        }
+        this.drawGraphPolygon(lastValues, aMaxY);
       }
     } else if (this.style & this.STYLE_LAYERED) {
       for (let i = 0, maxi = count; i < maxi; i++)
       {
-        this.drawGraphPolygon(
-          aValues.map(function(aValue) {
-            return aValue ? aValue[i] : 0 ;
-          }),
-          aMaxY
-        );
+        let values = [];
+        for (let j in aValues) {
+          let value = aValues[j];
+          values[j] = value && value[i] || 0 ;
+        }
+        this.drawGraphPolygon(values, aMaxY);
       }
     } else if (this.style & this.STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
@@ -620,19 +628,16 @@ SystemMonitorSimpleGraphItem.prototype = {
       {
         context.save();
         context.translate((width + 1) * i, 0);
-        this.drawGraphPolygon(
-          aValues.map(function(aValue) {
-            return aValue ? aValue[i] : 0 ;
-          }),
-          aMaxY
-        );
+        let values = [];
+        for (let j in aValues) {
+          let value = aValues[j];
+          values[j] = value && value[i] || 0 ;
+        }
+        this.drawGraphPolygon(values, aMaxY);
         context.restore();
       }
     } else { // unified (by default)
-      this.drawGraphPolygon(
-        aValues.map(this.getSum),
-        aMaxY
-      );
+      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY);
     }
   },
 
@@ -733,13 +738,10 @@ SystemMonitorSimpleGraphItem.prototype = {
       case 6: rgb = Array.slice(aBase.match(/(..)/g)); break;
       case 8: rgb = Array.slice(aBase.match(/(..)/g), 1); break;
     }
-    return "rgba("+
-             rgb.map(function(aValue) {
-               return parseInt(aValue, 16);
-             }).join(", ")+
-             ", "+
-             aAlpha+
-           ")";
+    for (let i in rgb) {
+      rgb[i] = parseInt(rgb[i], 16);
+    }
+    return "rgba("+rgb.join(", ")+", "+aAlpha+")";
   },
 
   // nsIObserver
@@ -786,7 +788,7 @@ SystemMonitorCPUItem.prototype = {
   itemId   : 'system-monitor-cpu-usage',
   multiplexed : true,
   get multiplexCount() {
-    return this.system.cpu.count;
+    return this._multiplexCount || (this._multiplexCount = this.system.cpu.count);
   },
   get tooltip() {
     return document.getElementById('system-monitor-cpu-usage-tooltip-label');
@@ -800,12 +802,13 @@ SystemMonitorCPUItem.prototype = {
     if (aValues.length > 1 && this.style & this.STYLE_UNIFIED)
       aValues = [this.getSum(aValues)];
 
-    var parts = aValues.map(function(aValue) {
-          return this.bundle.getFormattedString(
+    var parts = [];
+    for (let i in aValues) {
+      parts[i] = this.bundle.getFormattedString(
                    'cpu_usage_tooltip_part',
-                   [parseInt(aValue * 100)]
+                   [parseInt(aValues[i] * 100)]
                  );
-        }, this);
+    }
     parts = parts.join(this.bundle.getString('cpu_usage_tooltip_delimiter'));
     this.tooltip.textContent = this.bundle.getFormattedString(
                                  'cpu_usage_tooltip',

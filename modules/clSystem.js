@@ -167,15 +167,18 @@ clCPU.prototype = {
 	},
 
 	getCurrentTimes : function() {
-		return this.getCurrentTimesInternal().map(function(aUsage) {
-				return new clCPUTime(aUsage);
-			}, this);
+		let times = this.getCurrentTimesInternal();
+		for (let i in times) {
+		  times[i] = new clCPUTime(times[i]);
+		}
+		return times;
 	},
 	getCurrentTimesInternal : function() {
 		var current = this.utils.getCPUTimes();
-		var times = current.map(function(aTime, aIndex) {
-				return this.utils.calculateCPUUsage(this.mPreviousTimes[aIndex], aTime);
-			}, this);
+		var times = [];
+		for (let i in current) {
+		  times[i] = this.utils.calculateCPUUsage(this.mPreviousTimes[i], current[i]);
+		}
 		this.mPreviousTimes = current;
 		return times;
 	},
@@ -187,9 +190,9 @@ clCPU.prototype = {
 
 	getUsages : function() {
 		var times = this.getCurrentTimesInternal();
-		times = times.map(function(aTime) {
-			return aTime.user + aTime.system;
-		});
+		for (let i in times) {
+		  times[i] = times[i].user + times[i].system;
+		}
 		return times;
 	},
 
