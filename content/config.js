@@ -9,6 +9,10 @@ function initMemoryUsagePane() {
   updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');
   updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');
   updateAlphaUIFromPref('memory-usage.color.selfStartAlpha');
+
+  var self = document.getElementById('memory-usage-self-box');
+  if (!('@clear-code.com/system;2' in Components.classes))
+    self.setAttribute('hidden', true);
 }
 
 function updateStyleUIFromPref(aKey) {

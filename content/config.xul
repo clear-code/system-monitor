@@ -219,7 +219,7 @@
                 resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha');
               "/>
     </hbox>
-    <hbox align="center">
+    <hbox align="center" id="memory-usage-self-box">
       <label value="&config.memory-usage.color.self;"
              control="memory-usage.color.self-colorpicker"/>
       <colorpicker id="memory-usage.color.self-colorpicker"
