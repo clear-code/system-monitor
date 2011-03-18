@@ -1,4 +1,4 @@
-# How to build binary components?
+# How to build binary components (and XPI package) ?
 
 This software includes some binary components for Firefox 3.6 and older
 versions. You need to build binaries for each platform.
@@ -27,6 +27,13 @@ for Gecko 2.0.
         $ ./configure --with-libxul-sdk=/opt/xulrunner-2.0-sdk
         $ make
         $ mv -f components/*.xpt components/gecko2/
+
+If there is no need to rebuild binaries, you can make an XPI package from
+default pre-built binaries.
+
+        $ ./automake.sh
+        $ ./configure
+        $ make xpi
 
 ## Ubuntu 9.04 Jaunty Jackalope and Ubuntu 9.10 Karmic Koala (Firefox 3.5)
 
@@ -77,6 +84,13 @@ If you want to put Gecko SDK in your favorite place, you have to update
 "SystemMonitor.vcproj". Replace all "c:\xulrunner" embedded pathes in the
 file to your favorite place.
 
+If there is no need to rebuild binaries, you can make an XPI package from
+default pre-built binaries.
+
+        $ ./automake.sh
+        $ ./configure --with-libxul-sdk=/cygdrive/c/xulrunner
+        $ make xpi
+
 ## Mac OS X (32bit, Intel processor)
 
  1. Install required softwares.
@@ -91,10 +105,10 @@ file to your favorite place.
     * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.10/sdk/xulrunner-1.9.2.10.en-US.mac-i386.sdk.tar.bz2
     Then, a folder "xulrunner-sdk" will appear, so move it to "/opt/xulrunner-sdk".
  4. Build it.
-    $ cd ~/system-monitor-X.X.X
-    $ ./autogen.sh
-    $ ./configure --with-libxul-sdk=/opt/xulrunner-sdk CXXFLAGS="-arch i386"
-    $ make
+        $ cd ~/system-monitor-X.X.X
+        $ ./autogen.sh
+        $ ./configure --with-libxul-sdk=/opt/xulrunner-sdk CXXFLAGS="-arch i386"
+        $ make
 
 If the "configure" fails with an error about PKG_CHECK_MODULES, then, you
 have to clean up old files and rebuild all files like:
@@ -103,3 +117,10 @@ have to clean up old files and rebuild all files like:
 
 If you want to build binaries for both Firefox 3.5 and 3.6, then specify
 each version of Gecko SDK by the configure option "--with-libxul-sdk".
+
+If there is no need to rebuild binaries, you can make an XPI package from
+default pre-built binaries.
+
+        $ ./automake.sh
+        $ ./configure --with-libxul-sdk=/opt/xulrunner-sdk CXXFLAGS="-arch i386"
+        $ make xpi
