@@ -335,9 +335,21 @@ SystemMonitorSimpleGraphItem.prototype = {
     return document.getElementById(this.itemId);
   },
   get image() {
+      if (!this.item) {
+        let stack = Components.stack;
+        let backtrace = [];
+        while (stack) { backtrace.push(stack); stack = stack.caller; }
+        throw new Error('unexpected access for the property "image"!\n'+backtrace.join('\n'));
+      }
       return this.item.getElementsByTagName('image')[0];
   },
   get canvas() {
+      if (!this.item) {
+        let stack = Components.stack;
+        let backtrace = [];
+        while (stack) { backtrace.push(stack); stack = stack.caller; }
+        throw new Error('unexpected access for the property "canvas"!\n'+backtrace.join('\n'));
+      }
       return this.item.getElementsByTagName('canvas')[0];
   },
 
@@ -850,7 +862,8 @@ SystemMonitorMemoryItem.prototype = {
   selfGradientStyle : null,
   start : function() {
     this.__proto__.__proto__.start.apply(this, arguments);
-    this.onChangePref(this.domain+this.id+".color.self");
+    if (this.item)
+      this.onChangePref(this.domain+this.id+".color.self");
   },
   drawGraph : function() {
     this.__proto__.__proto__.drawGraph.apply(this, arguments);
