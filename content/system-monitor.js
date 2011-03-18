@@ -46,8 +46,10 @@ var SystemMonitorService = {
 
     this.initialized = true;
 
-    this.initToolbarItems();
-    this.initialShow();
+    window.setTimeout(function(aSelf) {
+      aSelf.initToolbarItems();
+      aSelf.initialShow();
+    }, 100, this);
   },
 
   destroy : function() {
@@ -128,6 +130,7 @@ var SystemMonitorService = {
     var currentset = bar.currentSet;
     var buttons = currentset.replace(/__empty/, "").split(',');
 
+    var autoInsertedItems = [];
     for each (let item in this.items) {
       if (this.getPref(this.domain+item.id+".initialShow"))
         return;
@@ -139,8 +142,8 @@ var SystemMonitorService = {
             buttons.indexOf("spring") < 0)
           buttons.push("spring");
         buttons.push(item.itemId);
+        autoInsertedItems.push(item.id);
       }
-      this.setPref(this.domain+item.id+".initialShow", true);
     }
 
     currentset = bar.currentSet.replace(/__empty/, "");
@@ -148,8 +151,12 @@ var SystemMonitorService = {
     if (currentset == newset)
       return;
 
+    var self = this;
     this.confirmInsertToolbarItems()
         .next(function(aInsert) {
+          for each (let item in autoInsertedItems) {
+            self.setPref(self.domain+item+".initialShow", true);
+          }
           if (!aInsert)
             return;
           bar.currentSet = newset;
@@ -165,18 +172,21 @@ var SystemMonitorService = {
     var ns = {};
     Components.utils.import('resource://system-monitor-modules/lib/confirmWithTab.js', ns);
     return ns.confirmWithTab({
-            tab      : gBrowser.selectedTab,
-            label    : this.bundle.getString('initialshow_confirm_text'),
-            value    : 'system-monitor-insert-toolbar-items',
-            buttons  : [
-                this.bundle.getString('initialshow_confirm_yes'),
-                this.bundle.getString('initialshow_confirm_no')
-            ],
-            cancelEvents : ['TabClose', 'SSTabRestoring']
-        })
-        .next(function(aButtonIndex) {
-            return aButtonIndex == 0;
-        });
+             tab     : gBrowser.selectedTab,
+             label   : this.bundle.getString('initialshow_confirm_text'),
+             value   : 'system-monitor-insert-toolbar-items',
+             buttons : [
+               this.bundle.getString('initialshow_confirm_yes'),
+               this.bundle.getString('initialshow_confirm_no')
+             ]
+           })
+           .next(function(aButtonIndex) {
+             return aButtonIndex == 0;
+           })
+           .error(function(e){
+             alert(e);
+             throw e;
+           });
   },
 
   insertSplitters : function() {
