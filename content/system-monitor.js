@@ -868,7 +868,7 @@ SystemMonitorMemoryItem.prototype = {
       let x = 0;
       for each (let value in values) {
         if (value) {
-          this.drawGraphBar(this.selfGradientStyle, x, h, 0, h * value[1]);
+          this.drawGraphBar(this.selfGradientStyle, x, h, h * (value[0] - value[1]), h * value[0]);
         }
         x += this.unit;
       }
