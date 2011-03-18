@@ -150,33 +150,33 @@ var SystemMonitorService = {
 
     this.confirmInsertToolbarItems()
         .next(function(aInsert) {
-            if (!aInsert)
-            	return;
-            bar.currentSet = newset;
-            bar.setAttribute("currentset", newset);
-            document.persist(bar.id, 'currentset');
-            if ("BrowserToolboxCustomizeDone" in window)
-              window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
-            else if ("MailToolboxCustomizeDone" in window)
-              window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
+          if (!aInsert)
+            return;
+          bar.currentSet = newset;
+          bar.setAttribute("currentset", newset);
+          document.persist(bar.id, 'currentset');
+          if ("BrowserToolboxCustomizeDone" in window)
+            window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
+          else if ("MailToolboxCustomizeDone" in window)
+            window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
         });
   },
   confirmInsertToolbarItems : function() {
     var ns = {};
     Components.utils.import('resource://system-monitor-modules/lib/confirmWithTab.js', ns);
-	return ns.confirmWithTab({
-			tab      : gBrowser.selectedTab,
-			label    : this.bundle.getString('initialshow_confirm_text'),
-			value    : 'system-monitor-insert-toolbar-items',
-			buttons  : [
-				this.bundle.getString('initialshow_confirm_yes'),
-				this.bundle.getString('initialshow_confirm_no')
-			],
-			cancelEvents : ['TabClose', 'SSTabRestoring']
-		})
-		.next(function(aButtonIndex) {
-			return aButtonIndex == 0;
-		});
+    return ns.confirmWithTab({
+            tab      : gBrowser.selectedTab,
+            label    : this.bundle.getString('initialshow_confirm_text'),
+            value    : 'system-monitor-insert-toolbar-items',
+            buttons  : [
+                this.bundle.getString('initialshow_confirm_yes'),
+                this.bundle.getString('initialshow_confirm_no')
+            ],
+            cancelEvents : ['TabClose', 'SSTabRestoring']
+        })
+        .next(function(aButtonIndex) {
+            return aButtonIndex == 0;
+        });
   },
 
   insertSplitters : function() {
