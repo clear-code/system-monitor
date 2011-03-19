@@ -2,8 +2,9 @@
 
 #include <mach/mach_init.h>
 #include <mach/host_info.h>
-#include <mach/task_info.h>
 #include <mach/mach_host.h>
+#include <mach/task.h>
+#include <mach/task_info.h>
 
 CL_Memory
 CL_GetMemory()
@@ -28,7 +29,7 @@ CL_GetMemory()
     task_info(mach_task_self(),
               TASK_BASIC_INFO,
               (task_info_t) &self,
-              &self_count));
+              &self_count);
 
     CL_Memory info = {
         total,             // total
