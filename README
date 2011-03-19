@@ -59,7 +59,7 @@ You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
     For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
     Otherwise, use 1.9.2.
     * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.1.13/sdk/xulrunner-1.9.1.13.en-US.win32.sdk.zip
-    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.10/sdk/xulrunner-1.9.2.10.en-US.win32.sdk.zip
+    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.15/sdk/xulrunner-1.9.2.15.en-US.win32.sdk.zip
     Then, a folder "xulrunner-sdk" will appear, so move it to "c:\xulrunner".
     (Note: Don't put as "c:\xulrunner\xulrunner-sdk"!)
  4. Start "Cygwin Bash Shell", and run start building process.
@@ -96,13 +96,15 @@ default pre-built binaries.
  1. Install required softwares.
     * Xcode 3 ( http://developer.apple.com/technologies/tools/xcode.html )
     * MacPorts ( http://www.macports.org/ ) with following packages:
-      * pkg-config
+      * pkg-config (pkgconfig)
+        $ sudo port selfupdate
+        $ sudo port install pkgconfig
  2. Download and extract sources of System Monitor.
  3. Download and extract Gecko SDK.
     For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
     Otherwise, use 1.9.2.
     * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.1.13/sdk/xulrunner-1.9.1.13.en-US.mac-i386.sdk.tar.bz2
-    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.10/sdk/xulrunner-1.9.2.10.en-US.mac-i386.sdk.tar.bz2
+    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.15/sdk/xulrunner-1.9.2.15.en-US.mac-i386.sdk.tar.bz2
     Then, a folder "xulrunner-sdk" will appear, so move it to "/opt/xulrunner-sdk".
  4. Build it.
         $ cd ~/system-monitor-X.X.X
@@ -112,8 +114,8 @@ default pre-built binaries.
 
 If the "configure" fails with an error about PKG_CHECK_MODULES, then, you
 have to clean up old files and rebuild all files like:
-    $ ./autogen.sh && make distclean && ./autogen.sh && ./configure
-         --with-libxul-sdk=/opt/xulrunner-sdk/ CXXFLAGS="-arch i386" && make 
+        $ ./autogen.sh && make distclean && ./autogen.sh && ./configure
+             --with-libxul-sdk=/opt/xulrunner-sdk/ CXXFLAGS="-arch i386" && make 
 
 If you want to build binaries for both Firefox 3.5 and 3.6, then specify
 each version of Gecko SDK by the configure option "--with-libxul-sdk".
