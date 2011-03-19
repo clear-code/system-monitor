@@ -252,8 +252,7 @@ clMemory.prototype = {
 	contractID : '@clear-code.com/system/memory;2',
 	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([ 
-		Ci.clIMemory,
-		Ci.clISelfMemory
+		Ci.clIMemory
 	]),
 
 	toString : function() {

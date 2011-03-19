@@ -44,6 +44,13 @@ NS_IMETHODIMP clMemory::GetVirtualUsed(PRUint64 *aVirtualUsed)
     return aVirtualUsed < 0 ? NS_ERROR_NOT_IMPLEMENTED : NS_OK;
 }
 
+/* readonly attribute PRUint64 self; */
+NS_IMETHODIMP clMemory::GetSelf(PRUint64 *aSelf)
+{
+    *aSelf = mMemory.self;
+    return aSelf < 0 ? NS_ERROR_NOT_IMPLEMENTED : NS_OK;
+}
+
 static char *
 cloneAllAccessString (void)
 {

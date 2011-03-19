@@ -6,12 +6,7 @@ interface clIMemory : nsISupports
   readonly attribute PRUInt64 total;
   readonly attribute PRUInt64 used;
   readonly attribute PRUInt64 free;
+  readonly attribute PRUInt64 self;
 
   readonly attribute PRUInt64 virtualUsed;
-};
-
-[scriptable, uuid(6518e81f-9fc8-4887-a84e-c7ae8e2e2d43)]
-interface clISelfMemory : clIMemory
-{
-  readonly attribute PRUInt64 self;
 };

@@ -23,7 +23,8 @@ CL_GetMemory()
         total,        // total
         free,         // free
         total - free, // used,
-        -1            // virtualUsed
+        -1,           // virtualUsed
+        -1            // self
     };
     return info;
 }
