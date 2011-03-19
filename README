@@ -94,7 +94,7 @@ default pre-built binaries.
 ## Mac OS X (32bit, Intel processor)
 
  1. Install required softwares.
-    * Xcode ( http://developer.apple.com/technologies/tools/xcode.html )
+    * Xcode 3 ( http://developer.apple.com/technologies/tools/xcode.html )
     * MacPorts ( http://www.macports.org/ ) with following packages:
       * pkg-config
  2. Download and extract sources of System Monitor.
