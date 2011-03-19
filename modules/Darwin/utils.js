@@ -35,11 +35,12 @@ const cpu_subtype_t = integer_t;
 const cpu_threadtype_t = integer_t;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/port.h
-const mach_port_t = natural_t;
+const mach_port_name_t = natural_t;
+const mach_port_t = mach_port_name_t;
 
 const vm_map_t = mach_port_t;
-const vm_offset_t = ctypes.uintptr_t;
-const vm_size_t = ctypes.uintptr_t;
+const vm_offset_t = is64bit ? ctypes.uintptr_t : natural_t;
+const vm_size_t = is64bit ? ctypes.uintptr_t : natural_t;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/processor_info.h
 const processor_flavor_t = ctypes.int;
@@ -68,6 +69,7 @@ const host_basic_info = new ctypes.StructType('host_basic_info', [
 const HOST_BASIC_INFO_COUNT = host_basic_info.size / integer_t.size;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/vm_statistics.h
+const host_flavor_t = integer_t;
 const vm_statistics = new ctypes.StructType('vm_statistics', [
 		{ free_count        : natural_t },
 		{ active_count      : natural_t },
@@ -178,7 +180,7 @@ function declareFunctions() {
 			ctypes.default_abi,
 			kern_return_t,
 			mach_port_t,
-			integer_t,
+			host_flavor_t,
 			host_basic_info.ptr,
 			mach_msg_type_number_t.ptr
 		);
@@ -187,7 +189,7 @@ function declareFunctions() {
 			ctypes.default_abi,
 			kern_return_t,
 			mach_port_t,
-			integer_t,
+			host_flavor_t,
 			vm_statistics.ptr,
 			mach_msg_type_number_t.ptr
 		);
