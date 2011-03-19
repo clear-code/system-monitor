@@ -26,7 +26,7 @@ const MEMORYSTATUSEX = new ctypes.StructType('MEMORYSTATUSEX', [
 	]);
 
 // http://msdn.microsoft.com/en-us/library/ms684877%28v=vs.85%29.aspx
-const PROCESS_MEMORY_COUNTERS = new ctypes.StructType('PROCESS_MEMORY_COUNTERS', [
+const PROCESS_MEMORY_COUNTERS_FIELDS = [
 		{ cb                         : DWORD },
 		{ PageFaultCount             : DWORD },
 		{ PeakWorkingSetSize         : ctypes.size_t },
@@ -37,19 +37,20 @@ const PROCESS_MEMORY_COUNTERS = new ctypes.StructType('PROCESS_MEMORY_COUNTERS',
 		{ QuotaNonPagedPoolUsage     : ctypes.size_t },
 		{ PagefileUsage              : ctypes.size_t },
 		{ PeakPagefileUsage          : ctypes.size_t }
-	]);
+	];
+const PROCESS_MEMORY_COUNTERS = new ctypes.StructType('PROCESS_MEMORY_COUNTERS',
+	PROCESS_MEMORY_COUNTERS_FIELDS);
+const PROCESS_MEMORY_COUNTERS_EX = new ctypes.StructType('PROCESS_MEMORY_COUNTERS_EX',
+	PROCESS_MEMORY_COUNTERS_FIELDS.concat([
+		{ PrivateUsage               : ctypes.size_t }
+	]));
 
 
 const gKernel32 = ctypes.open('kernel32.dll');
 addShutdownListener(function() { gKernel32.close(); });
 
-var gPsapi;
-try {
-	gPsapi = ctypes.open('psapi.dll');
-	addShutdownListener(function() { gKernel32.close(); });
-}
-catch(e) {
-}
+var gPsapi = ctypes.open('psapi.dll');
+addShutdownListener(function() { gKernel32.close(); });
 
 
 const GlobalMemoryStatusEx = gKernel32.declare(
@@ -67,22 +68,31 @@ const GetCurrentProcess = gKernel32.declare(
 	);
 // http://msdn.microsoft.com/en-us/library/ms683219%28v=vs.85%29.aspx
 var GetProcessMemoryInfo;
-var GetProcessMemoryInfoArgs = [
+var processMemoryCounterType;
+function declareGetProcessMemoryInfo(aLibrary, aCounterType) {
+	GetProcessMemoryInfo = aLibrary.declare.apply(gPsapi, [
 		'GetProcessMemoryInfo',
 		ctypes.default_abi,
 		BOOL,
 		HANDLE,
-		PROCESS_MEMORY_COUNTERS.ptr,
+		aCounterType.ptr,
 		DWORD
-	];
+	]);
+	processMemoryCounterType = aCounterType;
+}
 try {
 	// PSAPI_VERSION=1 on Windows 7 and Windows Server 2008 R2
-	// on Windows Server 2008, Windows Vista, Windows Server 2003, and Windows XP/2000
-	GetProcessMemoryInfo = gPsapi.declare.apply(gPsapi, GetProcessMemoryInfoArgs);
+	// on Windows Server 2008, Windows Vista, Windows Server 2003, and Windows XP SP2
+	try {
+		declareGetProcessMemoryInfo(gPsapi, PROCESS_MEMORY_COUNTERS_EX);
+	}
+	catch(e) { // on Windows XP/2000
+		declareGetProcessMemoryInfo(gPsapi, PROCESS_MEMORY_COUNTERS);
+	}
 }
 catch(e) {
 	// on Windows 7 and Windows Server 2008 R2
-	GetProcessMemoryInfo = gKernel32.declare.apply(gKernel32, GetProcessMemoryInfoArgs);
+	declareGetProcessMemoryInfo(gKernel32, PROCESS_MEMORY_COUNTERS_EX);
 }
 
 function getMemory() {
@@ -90,8 +100,8 @@ function getMemory() {
 	GlobalMemoryStatusEx(info.address());
 
 	var process = GetCurrentProcess();
-	var counters = new PROCESS_MEMORY_COUNTERS(PROCESS_MEMORY_COUNTERS.size, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	GetProcessMemoryInfo(process, counters.address(), PROCESS_MEMORY_COUNTERS.size);
+	var self = new processMemoryCounterType();
+	GetProcessMemoryInfo(process, self.address(), processMemoryCounterType.size);
 
 	return {
 		total       : parseInt(info.ullTotalPhys),
@@ -100,6 +110,6 @@ function getMemory() {
 		              parseInt(info.ullAvailPhys),
 		virtualUsed : parseInt(info.ullTotalVirtual) -
 		              parseInt(info.ullAvailVirtual),
-		self        : parseInt(counters.WorkingSetSize)
+		self        : parseInt(self.PrivateUsage || self.WorkingSetSize)
 	};
 }
