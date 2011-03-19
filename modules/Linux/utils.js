@@ -38,7 +38,7 @@ const glibtop_mem = new ctypes.StructType('glibtop_mem', [
 		{ buffer : ctypes.uint64_t },
 		{ cached : ctypes.uint64_t },
 		{ user   : ctypes.uint64_t },
-		{ licked : ctypes.uint64_t }
+		{ locked : ctypes.uint64_t }
 	]);
 
 const gLibgtop2 = ctypes.open('libgtop-2.0.so');
