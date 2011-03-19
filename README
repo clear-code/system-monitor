@@ -97,8 +97,9 @@ default pre-built binaries.
     * Xcode 3 ( http://developer.apple.com/technologies/tools/xcode.html )
     * MacPorts ( http://www.macports.org/ ) with following packages:
       * pkg-config (pkgconfig)
+      * libidl
         $ sudo port selfupdate
-        $ sudo port install pkgconfig
+        $ sudo port install pkgconfig +libidl
  2. Download and extract sources of System Monitor.
  3. Download and extract Gecko SDK.
     For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
