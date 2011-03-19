@@ -275,6 +275,7 @@ function getMemory() {
 		total       : total,
 		free        : free,
 		used        : total - free,
-		virtualUsed : -1
+		virtualUsed : -1,
+		self        : -1
 	};
 }

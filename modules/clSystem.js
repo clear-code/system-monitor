@@ -244,6 +244,7 @@ function clMemory() {
 	this.used        = memory.used;
 	this.free        = memory.free;
 	this.virtualUsed = memory.virtualUsed;
+	this.self        = memory.self;
 	this.initSelfUsed();
 }
 clMemory.prototype = {
@@ -260,7 +261,7 @@ clMemory.prototype = {
 	},
 
 	initSelfUsed : function() {
-		this.self = -1;
+		if (this.self > -1) return;
 		try {
 			var manager = Cc['@mozilla.org/memory-reporter-manager;1'].getService(Ci.nsIMemoryReporterManager);
 			var reporters = manager.enumerateReporters();

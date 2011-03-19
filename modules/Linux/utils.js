@@ -131,7 +131,8 @@ function getMemory() {
 		              parseInt(memory.cached),
 		used        : parseInt(memory.used) -
 		              parseInt(memory.cached),
-		virtualUsed : -1
+		virtualUsed : -1,
+		self        : -1
 	};
 }
 
