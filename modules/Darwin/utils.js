@@ -3,6 +3,10 @@ var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage', 'getMemo
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
+Components.utils.import('resource://gre/modules/ctypes.jsm');
+Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+
 XPCOMUtils.defineLazyGetter(this, 'XULAppInfo', function () {
 	return Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
 });
@@ -10,9 +14,6 @@ XPCOMUtils.defineLazyGetter(this, 'XULAppInfo', function () {
 XPCOMUtils.defineLazyGetter(this, 'is64bit', function () {
 	return XULAppInfo.XPCOMABI.indexOf('_64') > -1;
 });
-
-Components.utils.import('resource://gre/modules/ctypes.jsm');
-Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/vm_types.h
 const integer_t = ctypes.int;
