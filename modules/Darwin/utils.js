@@ -90,6 +90,7 @@ const HOST_VM_INFO_COUNT = vm_statistics.size / integer_t.size;
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/task_info.h
 const task_t = natural_t;
 const task_flavor_t = natural_t;
+const policy_t = ctypes.int;
 const mach_vm_size_t = ctypes.uint64_t;
 const TASK_BASIC_INFO_32 = 4;
 const TASK_BASIC_INFO_64 = 5;
