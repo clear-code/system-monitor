@@ -79,57 +79,85 @@ const vm_statistics = new ctypes.StructType('vm_statistics', [
 const HOST_VM_INFO_COUNT = vm_statistics.size / integer_t.size;
 
 
-const CoreFoundation = ctypes.open('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
-addShutdownListener(function() { CoreFoundation.close(); });
+var gLibrary,
+	mach_host_self,
+	host_processor_info,
+	mach_task_self,
+	vm_deallocate,
+	host_info,
+	host_statistics;
 
-const mach_host_self = CoreFoundation.declare(
-		'mach_host_self',
-		ctypes.default_abi,
-		mach_port_t
-	);
+function openLibrary(aPath) {
+	try {
+		gLibrary = ctypes.open(aPath);
+		declareFunctions();
+		addShutdownListener(function() { gLibrary.close(); });
+	}
+	catch(e) {
+		if (gLibrary) {
+			gLibrary.close();
+			gLibrary = null;
+		}
+	}
+}
 
-const host_processor_info = CoreFoundation.declare(
-		'host_processor_info',
-		ctypes.default_abi,
-		kern_return_t,
-		mach_port_t,
-		processor_flavor_t,
-		natural_t.ptr,
-		processor_info_array_t.ptr.ptr,
-		mach_msg_type_number_t.ptr
-	);
-const mach_task_self = CoreFoundation.declare(
-		'mach_task_self',
-		ctypes.default_abi,
-		mach_port_t
-	);
-const vm_deallocate = CoreFoundation.declare(
-		'vm_deallocate',
-		ctypes.default_abi,
-		kern_return_t,
-		vm_map_t,
-		vm_offset_t,
-		vm_size_t
-	);
+function declareFunctions() {
+	mach_host_self = gLibrary.declare(
+			'mach_host_self',
+			ctypes.default_abi,
+			mach_port_t
+		);
 
-const host_info = CoreFoundation.declare(
-		'host_info',
-		ctypes.default_abi,
-		kern_return_t,
-		mach_port_t,
-		integer_t,
-		host_basic_info.ptr,
-		mach_msg_type_number_t.ptr
-	);
-const host_statistics = CoreFoundation.declare(
-		'host_statistics',
-		ctypes.default_abi,
-		kern_return_t,
-		mach_port_t,
-		integer_t,
-		vm_statistics.ptr,
-		mach_msg_type_number_t.ptr
-	);
+	host_processor_info = gLibrary.declare(
+			'host_processor_info',
+			ctypes.default_abi,
+			kern_return_t,
+			mach_port_t,
+			processor_flavor_t,
+			natural_t.ptr,
+			processor_info_array_t.ptr.ptr,
+			mach_msg_type_number_t.ptr
+		);
+	mach_task_self = gLibrary.declare(
+			'mach_task_self',
+			ctypes.default_abi,
+			mach_port_t
+		);
+	vm_deallocate = gLibrary.declare(
+			'vm_deallocate',
+			ctypes.default_abi,
+			kern_return_t,
+			vm_map_t,
+			vm_offset_t,
+			vm_size_t
+		);
+
+	host_info = gLibrary.declare(
+			'host_info',
+			ctypes.default_abi,
+			kern_return_t,
+			mach_port_t,
+			integer_t,
+			host_basic_info.ptr,
+			mach_msg_type_number_t.ptr
+		);
+	host_statistics = gLibrary.declare(
+			'host_statistics',
+			ctypes.default_abi,
+			kern_return_t,
+			mach_port_t,
+			integer_t,
+			vm_statistics.ptr,
+			mach_msg_type_number_t.ptr
+		);
+}
+
+try {
+	openLibrary('/System/Library/Frameworks/System.framework/System');
+}
+catch(e) {
+	openLibrary('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
+}
 
 
 function getCount() {
