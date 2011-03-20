@@ -5,6 +5,15 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+
+XPCOMUtils.defineLazyGetter(this, 'Comparator', function () {
+	return Cc['@mozilla.org/xpcom/version-comparator;1'].getService(Ci.nsIVersionComparator);
+});
+
+XPCOMUtils.defineLazyGetter(this, 'OSVERSION', function () {
+	return Cc['@mozilla.org/system-info;1'].getService(Ci.nsIPropertyBag).getProperty('version');
+});
 
 // http://msdn.microsoft.com/en-us/library/aa383751%28v=vs.85%29.aspx
 const NTSTATUS  = ctypes.uint32_t;
@@ -83,12 +92,10 @@ function declareGetProcessMemoryInfo(aLibrary, aCounterType) {
 try {
 	// PSAPI_VERSION=1 on Windows 7 and Windows Server 2008 R2
 	// on Windows Server 2008, Windows Vista, Windows Server 2003, and Windows XP SP2
-	try {
+	if (Comparator.compare(OSVERSION, '5.1') >= 0)
 		declareGetProcessMemoryInfo(gPsapi, PROCESS_MEMORY_COUNTERS_EX);
-	}
-	catch(e) { // on Windows XP/2000
+	else // on Windows XP SP1/2000
 		declareGetProcessMemoryInfo(gPsapi, PROCESS_MEMORY_COUNTERS);
-	}
 }
 catch(e) {
 	// on Windows 7 and Windows Server 2008 R2

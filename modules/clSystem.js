@@ -18,6 +18,10 @@ XPCOMUtils.defineLazyGetter(this, 'OS', function () {
 	return XULAppInfo.OS.toLowerCase();
 });
 
+XPCOMUtils.defineLazyGetter(this, 'Comparator', function () {
+	return Cc['@mozilla.org/xpcom/version-comparator;1'].getService(Ci.nsIVersionComparator);
+});
+
 function getDOMWindowUtils(aWindow) {
 	try {
 		var utils = aWindow
@@ -32,6 +36,9 @@ function getDOMWindowUtils(aWindow) {
 
 
 function clSystem() { 
+	if (Comperator.compare(XULAppInfo.platformVersion, '1.9.99') <= 0)
+		throw new Error('initialization error: JavaScript implementations are available on Gecko 2.0 o later.');
+
 	this.monitors = [];
 	this.cpu = new clCPU();
 	ObserverService.addObserver(this, this.type, false);
