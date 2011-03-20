@@ -165,7 +165,7 @@ var SystemMonitorService = {
           if ("BrowserToolboxCustomizeDone" in window)
             window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
           else if ("MailToolboxCustomizeDone" in window)
-            window.setTimeout("MailToolboxCustomizeDone(null, "CustomizeMailToolbar");", 0);
+            window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
         });
   },
   confirmInsertToolbarItems : function() {
