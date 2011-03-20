@@ -389,10 +389,16 @@ SystemMonitorSimpleGraphItem.prototype = {
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
     this.initValueArray();
-    this.drawGraph(true);
 
     try {
         this.system.addMonitor(this.type, this, this.interval);
+
+        this.drawGraph(true);
+
+        this.addPrefListener(this);
+        this.startObserve();
+
+        this.listening = true;
     }
     catch(e) {
         dump('system-monitor: addMonitor() failed\n'+
@@ -401,10 +407,6 @@ SystemMonitorSimpleGraphItem.prototype = {
              '  error:\n'+e.toString().replace(/^/gm, '    ')+'\n');
         this.drawDisabled();
     }
-    this.addPrefListener(this);
-    this.startObserve();
-
-    this.listening = true;
   },
 
   stop : function() {
@@ -423,8 +425,13 @@ SystemMonitorSimpleGraphItem.prototype = {
              '  error:\n'+e.toString().replace(/^/gm, '    ')+'\n');
         this.drawDisabled();
     }
-    this.removePrefListener(this);
-    this.stopObserve();
+
+    try {
+        this.removePrefListener(this);
+        this.stopObserve();
+    }
+    catch(e) {
+    }
 
     this.listening = false;
   },
