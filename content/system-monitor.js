@@ -19,7 +19,7 @@ var SystemMonitorService = {
     if (!this._system) {
       try {
         let ns = {};
-        Components.utils.import('resource://system-monitor-modules/clSystem.js', ns);
+        Components.utils.import("resource://system-monitor-modules/clSystem.js", ns);
         this._system = new ns.clSystem();
         this._system.init(window);
       }
@@ -128,7 +128,7 @@ var SystemMonitorService = {
       return;
 
     var currentset = bar.currentSet;
-    var buttons = currentset.replace(/__empty/, "").split(',');
+    var buttons = currentset.replace(/__empty/, "").split(",");
 
     var autoInsertedItems = [];
     for each (let item in this.items) {
@@ -161,23 +161,23 @@ var SystemMonitorService = {
             return;
           bar.currentSet = newset;
           bar.setAttribute("currentset", newset);
-          document.persist(bar.id, 'currentset');
+          document.persist(bar.id, "currentset");
           if ("BrowserToolboxCustomizeDone" in window)
             window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
           else if ("MailToolboxCustomizeDone" in window)
-            window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
+            window.setTimeout("MailToolboxCustomizeDone(null, "CustomizeMailToolbar");", 0);
         });
   },
   confirmInsertToolbarItems : function() {
     var ns = {};
-    Components.utils.import('resource://system-monitor-modules/lib/confirmWithTab.js', ns);
+    Components.utils.import("resource://system-monitor-modules/lib/confirmWithTab.js", ns);
     return ns.confirmWithTab({
              tab     : gBrowser.selectedTab,
-             label   : this.bundle.getString('initialshow_confirm_text'),
-             value   : 'system-monitor-insert-toolbar-items',
+             label   : this.bundle.getString("initialshow_confirm_text"),
+             value   : "system-monitor-insert-toolbar-items",
              buttons : [
-               this.bundle.getString('initialshow_confirm_yes'),
-               this.bundle.getString('initialshow_confirm_no')
+               this.bundle.getString("initialshow_confirm_yes"),
+               this.bundle.getString("initialshow_confirm_no")
              ]
            })
            .next(function(aButtonIndex) {
@@ -193,7 +193,7 @@ var SystemMonitorService = {
           node.previousSibling.localName != "splitter")
         this.insertSplitterBetween(node.previousSibling, node);
       if (
-          (!node.nextSibling && !node.parentNode.querySelector('toolbar > toolbarspring, toolbar > *[flex]')) ||
+          (!node.nextSibling && !node.parentNode.querySelector("toolbar > toolbarspring, toolbar > *[flex]")) ||
           (node.nextSibling && node.nextSibling.localName != "splitter")
           )
         this.insertSplitterBetween(node, node.nextSibling);
@@ -208,15 +208,15 @@ var SystemMonitorService = {
     splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
     toolbar.insertBefore(splitter, aAfter);
     if (!aAfter) {
-      var spacer = document.createElement('spacer');
-      spacer.setAttribute('flex', 1);
-      spacer.setAttribute('class', this.SPLITTER_CLASS+'-spacer');
+      var spacer = document.createElement("spacer");
+      spacer.setAttribute("flex", 1);
+      spacer.setAttribute("class", this.SPLITTER_CLASS+"-spacer");
       aBefore.parentNode.appendChild(spacer);
     }
   },
 
   removeSplitters : function() {
-    let nodes = document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+'-spacer');
+    let nodes = document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+"-spacer");
     for (let i = 0, maxi = nodes.length; i < maxi; i++) {
       let node = nodes[i];
       node.parentNode.removeChild(node);
@@ -232,12 +232,12 @@ var SystemMonitorService = {
         aEvent.metaKey)
         return;
 
-    var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || '';
-    var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || '';
+    var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || "";
+    var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || "";
     this.ObserverService.notifyObservers(
       window,
       this.TOOLBAR_RESIZE_BEGIN,
-      previousId+'\n'+nextId
+      previousId+"\n"+nextId
     );
 
     /* canvasを非表示にしたのと同じタイミングでリサイズを行うと、
@@ -256,7 +256,7 @@ var SystemMonitorService = {
       window
         .QueryInterface(Ci.nsIInterfaceRequestor)
         .getInterface(Ci.nsIDOMWindowUtils)
-        .sendMouseEvent('mousedown', aX, aY, aButton, aDetail, flags);
+        .sendMouseEvent("mousedown", aX, aY, aButton, aDetail, flags);
       flags = null;
     }, 0, aEvent.clientX, aEvent.clientY, aEvent.button, aEvent.detail);
 
@@ -266,12 +266,12 @@ var SystemMonitorService = {
   onSplitterMouseUp : function(aSplitter, aEvent) {
     window.setTimeout(function(aSelf) {
       if (!aSelf.resizing) return;
-      var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || '';
-      var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || '';
+      var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || "";
+      var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || "";
       aSelf.ObserverService.notifyObservers(
         window,
         aSelf.TOOLBAR_RESIZE_END,
-        previousId+'\n'+nextId
+        previousId+"\n"+nextId
       );
       aSelf.resizing = false;
     }, 10, this);
@@ -316,9 +316,9 @@ function SystemMonitorSimpleGraphItem()
 SystemMonitorSimpleGraphItem.prototype = {
   __proto__ : SystemMonitorItem.prototype,
 
-  id       : '',
-  type     : '',
-  itemId   : '',
+  id       : "",
+  type     : "",
+  itemId   : "",
 
   listening : false,
   observing : false,
@@ -345,18 +345,18 @@ SystemMonitorSimpleGraphItem.prototype = {
         let stack = Components.stack;
         let backtrace = [];
         while (stack) { backtrace.push(stack); stack = stack.caller; }
-        throw new Error('unexpected access for the property "image"!\n'+backtrace.join('\n'));
+        throw new Error("unexpected access for the property \"image\"!\n"+backtrace.join("\n"));
       }
-      return this.item.getElementsByTagName('image')[0];
+      return this.item.getElementsByTagName("image")[0];
   },
   get canvas() {
       if (!this.item) {
         let stack = Components.stack;
         let backtrace = [];
         while (stack) { backtrace.push(stack); stack = stack.caller; }
-        throw new Error('unexpected access for the property "canvas"!\n'+backtrace.join('\n'));
+        throw new Error("unexpected access for the property \"canvas\"!\n"+backtrace.join("\n"));
       }
-      return this.item.getElementsByTagName('canvas')[0];
+      return this.item.getElementsByTagName("canvas")[0];
   },
 
   init : function() {
@@ -397,10 +397,10 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.listening = true;
     }
     catch(e) {
-        dump('system-monitor: addMonitor() failed\n'+
-             '  type: '+this.type+'\n'+
-             '  interval: '+this.interval+'\n'+
-             '  error:\n'+e.toString().replace(/^/gm, '    ')+'\n');
+        dump("system-monitor: addMonitor() failed\n"+
+             "  type: "+this.type+"\n"+
+             "  interval: "+this.interval+"\n"+
+             "  error:\n"+e.toString().replace(/^/gm, "    ")+"\n");
         this.drawDisabled();
     }
   },
@@ -416,9 +416,9 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.system.removeMonitor(this.type, this);
     }
     catch(e) {
-        dump('system-monitor: removeMonitor() failed\n'+
-             '  type: '+this.type+'\n'+
-             '  error:\n'+e.toString().replace(/^/gm, '    ')+'\n');
+        dump("system-monitor: removeMonitor() failed\n"+
+             "  type: "+this.type+"\n"+
+             "  error:\n"+e.toString().replace(/^/gm, "    ")+"\n");
         this.drawDisabled();
     }
 
@@ -468,7 +468,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (!aValues)
       return 0;
 
-    if (typeof aValues == 'number')
+    if (typeof aValues == "number")
       return aValues;
 
     let total = 0;
@@ -496,7 +496,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.clearAll();
     if (this.style & this.STYLE_POLYGONAL) {
       last = values[values.length-1];
-      if (last && typeof last == 'object') {
+      if (last && typeof last == "object") {
         this.drawGraphMultiplexedPolygon(values, w, h, this.foreground);
       } else {
         this.drawGraphPolygon(values || 0, h, this.foreground);
@@ -505,7 +505,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       let x = 0;
       for each (let value in values) {
         if (value) {
-          if (typeof value == 'object') {
+          if (typeof value == "object") {
             this.drawGraphMultiplexedBar(value, x, w, h);
           } else {
             this.drawGraphBar(this.foregroundGradientStyle, x, h, 0, h * value);
@@ -719,7 +719,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   // preferences listener
   onChangePref : function(aData) {
-    var part = aData.replace(this.domain+this.id+'.', '');
+    var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
       case "interval":
         this.unit = Math.ceil(this.getPref(aData) / 500);
@@ -825,15 +825,15 @@ function SystemMonitorCPUItem()
 }
 SystemMonitorCPUItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  id       : 'cpu-usage',
-  type     : 'cpu-usages',
-  itemId   : 'system-monitor-cpu-usage',
+  id       : "cpu-usage",
+  type     : "cpu-usages",
+  itemId   : "system-monitor-cpu-usage",
   multiplexed : true,
   get multiplexCount() {
     return this._multiplexCount || (this._multiplexCount = this.system.cpu.count);
   },
   get tooltip() {
-    return document.getElementById('system-monitor-cpu-usage-tooltip-label');
+    return document.getElementById("system-monitor-cpu-usage-tooltip-label");
   },
   // clISystemMonitor
   monitor : function(aValues) {
@@ -847,13 +847,13 @@ SystemMonitorCPUItem.prototype = {
     var parts = [];
     for (let i in aValues) {
       parts[i] = this.bundle.getFormattedString(
-                   'cpu_usage_tooltip_part',
+                   "cpu_usage_tooltip_part",
                    [parseInt(aValues[i] * 100)]
                  );
     }
-    parts = parts.join(this.bundle.getString('cpu_usage_tooltip_delimiter'));
+    parts = parts.join(this.bundle.getString("cpu_usage_tooltip_delimiter"));
     this.tooltip.textContent = this.bundle.getFormattedString(
-                                 'cpu_usage_tooltip',
+                                 "cpu_usage_tooltip",
                                  [parts]
                                );
   }
@@ -864,11 +864,11 @@ function SystemMonitorMemoryItem()
 }
 SystemMonitorMemoryItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  id       : 'memory-usage',
-  type     : 'memory-usage',
-  itemId   : 'system-monitor-memory-usage',
+  id       : "memory-usage",
+  type     : "memory-usage",
+  itemId   : "system-monitor-memory-usage",
   get tooltip() {
-    return document.getElementById('system-monitor-memory-usage-tooltip-label');
+    return document.getElementById("system-monitor-memory-usage-tooltip-label");
   },
   self              : "#FFEE00",
   selfGradient      : ["#FFEE00", "#FFEE00"],
@@ -908,9 +908,9 @@ SystemMonitorMemoryItem.prototype = {
     }
   },
   onChangePref : function(aData) {
-    var part = aData.replace(this.domain+this.id+'.', '');
+    var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
-      case 'color.selfGlobalAlpha':
+      case "color.selfGlobalAlpha":
         this.selfGlobalAlpha = Number(this.getPref(aData));
         if (this.listening)
           this.drawGraph(true);
@@ -921,7 +921,7 @@ SystemMonitorMemoryItem.prototype = {
   },
   // clISystemMonitor
   monitor : function(aValue) {
-    var hasSelfValue = 'self' in aValue && aValue.self > -1;
+    var hasSelfValue = "self" in aValue && aValue.self > -1;
     this.valueArray.shift();
     var value = [aValue.used / aValue.total,
                  0];
@@ -935,12 +935,12 @@ SystemMonitorMemoryItem.prototype = {
                   parseInt(aValue.used / 1024 / 1024),
                   parseInt(aValue.used / aValue.total * 100)];
     this.tooltip.textContent = hasSelfValue ?
-      this.bundle.getFormattedString('memory_usage_self_tooltip',
+      this.bundle.getFormattedString("memory_usage_self_tooltip",
         params.concat([
           parseInt(aValue.self / 1024 / 1024),
           parseInt(aValue.self / aValue.total * 100)
         ])) :
-      this.bundle.getFormattedString('memory_usage_tooltip', params) ;
+      this.bundle.getFormattedString("memory_usage_tooltip", params) ;
   }
 };
 
