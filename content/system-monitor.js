@@ -182,10 +182,6 @@ var SystemMonitorService = {
            })
            .next(function(aButtonIndex) {
              return aButtonIndex == 0;
-           })
-           .error(function(e){
-             alert(e);
-             throw e;
            });
   },
 
