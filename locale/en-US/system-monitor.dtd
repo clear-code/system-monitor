@@ -44,8 +44,8 @@
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.before "Alpha: 0&#37;">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.after  "100&#37;">
 <!ENTITY config.memory-usage.color.self "Self:">
-<!ENTITY config.memory-usage.color.selfStartAlpha.before "Alpha: 0&#37;">
-<!ENTITY config.memory-usage.color.selfStartAlpha.after  "100&#37;">
+<!ENTITY config.memory-usage.color.selfGlobalAlpha.before "Alpha: 0&#37;">
+<!ENTITY config.memory-usage.color.selfGlobalAlpha.after  "100&#37;">
 <!ENTITY config.memory-usage.color.reset "Reset">
 
 <!ENTITY config.memory-usage.interval.caption "Interval">

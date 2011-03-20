@@ -8,7 +8,7 @@ function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
   updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');
   updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');
-  updateAlphaUIFromPref('memory-usage.color.selfStartAlpha');
+  updateAlphaUIFromPref('memory-usage.color.selfGlobalAlpha');
 
   var self = document.getElementById('memory-usage-self-box');
   if (!('@clear-code.com/system;2' in Components.classes))

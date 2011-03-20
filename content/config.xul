@@ -168,10 +168,10 @@
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.self"
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.self"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.selfStartAlpha"
-                name="extensions.system-monitor@clear-code.com.memory-usage.color.selfStartAlpha"
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha"
                 type="string"
-                onchange="updateAlphaUIFromPref('memory-usage.color.selfStartAlpha');"/>
+                onchange="updateAlphaUIFromPref('memory-usage.color.selfGlobalAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 name="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 type="int"/>
@@ -225,23 +225,23 @@
       <colorpicker id="memory-usage.color.self-colorpicker"
                    type="button"
                    preference="extensions.system-monitor@clear-code.com.memory-usage.color.self"/>
-      <label value="&config.memory-usage.color.selfStartAlpha.before;"
-             control="memory-usage.color.selfStartAlpha-scale"/>
-      <scale id="memory-usage.color.selfStartAlpha-scale"
+      <label value="&config.memory-usage.color.selfGlobalAlpha.before;"
+             control="memory-usage.color.selfGlobalAlpha-scale"/>
+      <scale id="memory-usage.color.selfGlobalAlpha-scale"
              orient="horizontal"
              flex="1"
              increment="1"
              pageincrement="10"
              min="0"
              max="100"
-             onchange="updateAlphaPrefFromUI('memory-usage.color.selfStartAlpha');"/>
-      <label value="&config.memory-usage.color.selfStartAlpha.after;"
-             control="memory-usage.color.selfStartAlpha-scale"/>
+             onchange="updateAlphaPrefFromUI('memory-usage.color.selfGlobalAlpha');"/>
+      <label value="&config.memory-usage.color.selfGlobalAlpha.after;"
+             control="memory-usage.color.selfGlobalAlpha-scale"/>
       <button label="&config.memory-usage.color.reset;"
               class="reset"
               oncommand="
                 resetValue('memory-usage.color.self-colorpicker', 'color');
-                resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.selfStartAlpha');
+                resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha');
               "/>
     </hbox>
     <hbox align="center">

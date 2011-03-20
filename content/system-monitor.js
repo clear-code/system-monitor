@@ -873,15 +873,19 @@ SystemMonitorMemoryItem.prototype = {
   self              : "#FFEE00",
   selfGradient      : ["#FFEE00", "#FFEE00"],
   selfGradientStyle : null,
+  selfGlobalAlpha   : 1,
   start : function() {
     this.__proto__.__proto__.start.apply(this, arguments);
-    if (this.item)
+    if (this.item) {
+      this.onChangePref(this.domain+this.id+".color.selfGlobalAlpha");
       this.onChangePref(this.domain+this.id+".color.self");
+    }
   },
   drawGraph : function() {
     this.__proto__.__proto__.drawGraph.apply(this, arguments);
 
     var canvas = this.canvas;
+    var context = canvas.getContext("2d");
     var h = canvas.height;
     var values = this.valueArray;
     if (this.style & this.STYLE_POLYGONAL) {
@@ -892,12 +896,27 @@ SystemMonitorMemoryItem.prototype = {
       this.drawGraphPolygon(graphValues || 0, h, this.self);
     } else { // bar graph
       let x = 0;
+      context.save();
+      context.globalAlpha = this.selfGlobalAlpha;
       for each (let value in values) {
         if (value) {
           this.drawGraphBar(this.selfGradientStyle, x, h, h * (value[0] - value[1]), h * value[0]);
         }
         x += this.unit;
       }
+      context.restore();
+    }
+  },
+  onChangePref : function(aData) {
+    var part = aData.replace(this.domain+this.id+'.', '');
+    switch (part) {
+      case 'color.selfGlobalAlpha':
+        this.selfGlobalAlpha = Number(this.getPref(aData));
+        if (this.listening)
+          this.drawGraph(true);
+        return;
+      default:
+        return this.__proto__.__proto__.onChangePref.apply(this, arguments);
     }
   },
   // clISystemMonitor
