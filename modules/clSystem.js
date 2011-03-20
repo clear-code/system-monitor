@@ -36,7 +36,7 @@ function getDOMWindowUtils(aWindow) {
 
 
 function clSystem() { 
-	if (Comperator.compare(XULAppInfo.platformVersion, '1.9.99') <= 0)
+	if (Comparator.compare(XULAppInfo.platformVersion, '1.9.99') <= 0)
 		throw new Error('initialization error: JavaScript implementations are available on Gecko 2.0 o later.');
 
 	this.monitors = [];
