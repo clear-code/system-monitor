@@ -35,4 +35,5 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfStartAlpha
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.memory-usage.style", 129);
+pref("extensions.system-monitor@clear-code.com.memory-usage.WINNT.usePrivateWorkingSet", false);
 
