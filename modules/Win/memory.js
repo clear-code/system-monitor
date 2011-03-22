@@ -229,7 +229,7 @@ function getMemory() {
 				sharedPages++;
 		}
 
-		selfUsage = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
+		selfUsed = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
 
 		pages = undefined;
 		self = undefined;
