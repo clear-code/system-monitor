@@ -19,14 +19,14 @@ CL_GetMemory()
                     (PVOID*) &self,
                     sizeof(self));
 
-    DWORD pagesCount = self[0];
-    ULONG_PTR *actualSelf = (ULONG_PTR *) calloc(pagesCount + 1, sizeof(ULONG_PTR));
+    DWORD enoughPagesCount = self[0] + 1024;
+    ULONG_PTR *actualSelf = (ULONG_PTR *) calloc(enoughPagesCount, sizeof(ULONG_PTR));
     QueryWorkingSet(GetCurrentProcess(),
                     (PVOID*) actualSelf,
-                    (pagesCount + 1) * sizeof(ULONG_PTR));
+                    enoughPagesCount * sizeof(ULONG_PTR));
 
     PRUint64 selfUsage = 0;
-    for (ULONG_PTR i = 1; i < pagesCount; i++) {
+    for (ULONG_PTR i = 1; i < enoughPagesCount; i++) {
       if (actualSelf[i] == 0) {
         break;
       }
