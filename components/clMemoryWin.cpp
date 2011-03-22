@@ -4,6 +4,8 @@
 #include <psapi.h>
 #include <prmem.h>
 
+static ULONG_PTR gLastSelfUsage = 0;
+
 CL_Memory
 CL_GetMemory()
 {
@@ -19,20 +21,25 @@ CL_GetMemory()
                     (PVOID*) &self,
                     sizeof(self));
 
-    DWORD enoughPagesCount = self[0] + 1024;
+    ULONG_PTR selfUsage = 0;
+    DWORD enoughPagesCount = self[0] + 1;
     ULONG_PTR *actualSelf = (ULONG_PTR *) PR_Malloc(enoughPagesCount * sizeof(ULONG_PTR));
-    QueryWorkingSet(GetCurrentProcess(),
-                    (PVOID*) actualSelf,
-                    enoughPagesCount * sizeof(ULONG_PTR));
-
-    PRUint64 selfUsage = 0;
-    for (ULONG_PTR i = 1; i < enoughPagesCount; i++) {
-      if (actualSelf[i] == 0) {
-        break;
+    if (QueryWorkingSet(GetCurrentProcess(),
+                        (PVOID*) actualSelf,
+                        enoughPagesCount * sizeof(ULONG_PTR)) != 0) {
+      for (ULONG_PTR i = 1; i < enoughPagesCount; i++) {
+        if (actualSelf[i] == 0) {
+          break;
+        }
+        if (!(actualSelf[i] & 0x100)) {
+          selfUsage++;
+        }
       }
-      if (!(actualSelf[i] & 0x100)) {
-        selfUsage++;
-      }
+      selfUsage = selfUsage * systemInfo.dwPageSize;
+      gLastSelfUsage = selfUsage;
+    }
+    else {
+      selfUsage = gLastSelfUsage;
     }
 
     PR_Free(actualSelf);
@@ -42,7 +49,7 @@ CL_GetMemory()
         memory.ullAvailPhys,                             // free
         memory.ullTotalPhys - memory.ullAvailPhys,       // used,
         memory.ullTotalVirtual - memory.ullAvailVirtual, // virtualUsed
-        selfUsage * systemInfo.dwPageSize                // self
+        selfUsage                                        // self
     };
     return info;
 }

@@ -170,15 +170,18 @@ catch(e) {
 	declareQueryWorkingSet(gKernel32);
 }
 
+
+var gProcess = GetCurrentProcess();
+var gLastSelfUsed = 0;
+
 function getMemory() {
 	var info = new MEMORYSTATUSEX(MEMORYSTATUSEX.size, 0, 0, 0, 0, 0, 0, 0, 0);
 	GlobalMemoryStatusEx(info.address());
 
-	var process = GetCurrentProcess();
 	var selfUsed;
 	if (Prefs.getBoolPref(usePrivateWorkingSetPref)) {
 		// http://msdn.microsoft.com/en-us/library/aa965225%28v=vs.85%29.aspx#1
-		let systemInfo = new SYSTEM_INFO;
+		let systemInfo = new SYSTEM_INFO();
 		GetSystemInfo(systemInfo.address());
 
 		// http://msdn.microsoft.com/en-us/library/ms684910%28v=vs.85%29.aspx
@@ -192,52 +195,56 @@ function getMemory() {
 		 */
 		let infoArrayType = ctypes.uint32_t; // ULONG_PTR
 		let self, PSAPI_WORKING_SET_INFORMATION;
+		let tryCount = 0;
 		do {
-			PSAPI_WORKING_SET_INFORMATION = !self ?
+			if (tryCount > 1) {
+				selfUsed = gLastSelfUsed;
+				break;
+			}
+			PSAPI_WORKING_SET_INFORMATION = !tryCount ?
 				PSAPI_WORKING_SET_INFORMATION_FIRST :
 				new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
 					{ NumberOfEntries : ULONG_PTR },
-					{ WorkingSetInfo  : ctypes.ArrayType(
-						infoArrayType,
-						parseInt(self.NumberOfEntries) + 1024
-					) }
+					{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, self.NumberOfEntries) }
 				]);
 			self = new PSAPI_WORKING_SET_INFORMATION();
+			tryCount++;
 		}
-		while (QueryWorkingSet(process,
-		                       ctypes.cast(self.address(), PVOID),
+		while (QueryWorkingSet(gProcess,
+		                       self.address(),
 		                       PSAPI_WORKING_SET_INFORMATION.size) == 0);
 
-		let sharedPages = 0;
-		let pages = self.WorkingSetInfo;
-		/************************** OPTIMIZATION NOTE *************************
-		 * On Win64 environment, working set information is 64bit. So, contents
-		 * of ctypes.uint32_t array are mixed of "higher 32bit of 64bit flags"
-		 * and "lower 32bit of 64bit flags", like:
-		 *   [Hi32bitOf0, Low32bitOf0, Hi32bitOf1, Low32bitOf1, ...]
-		 * Then we can ignore odd (2n-1) elements because they are "higher 32bit"
-		 * and the "Shared" flag is the bit 8th from the last, in "lower 32bit".
-		 */
-		let step = is64bit ? 2 : 1 ;
-		let allPagesCount = 0;
-		for (let i = is64bit ? 1 : 0, maxi = pages.length; i < maxi; i += step) {
-			let flags = pages[i];
-			if (flags === 0)
-				break;
-			allPagesCount++;
-			if (flags & SHARED_FLAG)
-				sharedPages++;
+		if (!selfUsed) {
+			let sharedPages = 0;
+			let pages = self.WorkingSetInfo;
+			/************************** OPTIMIZATION NOTE *************************
+			 * On Win64 environment, working set information is 64bit. So, contents
+			 * of ctypes.uint32_t array are mixed of "higher 32bit of 64bit flags"
+			 * and "lower 32bit of 64bit flags", like:
+			 *   [Hi32bitOf0, Low32bitOf0, Hi32bitOf1, Low32bitOf1, ...]
+			 * Then we can ignore odd (2n-1) elements because they are "higher 32bit"
+			 * and the "Shared" flag is the bit 8th from the last, in "lower 32bit".
+			 */
+			let step = is64bit ? 2 : 1 ;
+			let allPagesCount = 0;
+			for (let i = is64bit ? 1 : 0, maxi = pages.length; i < maxi; i += step) {
+				let flags = pages[i];
+				if (flags === 0)
+					break;
+				allPagesCount++;
+				if (flags & SHARED_FLAG)
+					sharedPages++;
+			}
+			pages = undefined;
+			self = undefined;
+
+			selfUsed = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
+			gLastSelfUsed = selfUsed;
 		}
-
-		selfUsed = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
-
-		pages = undefined;
-		self = undefined;
-		PSAPI_WORKING_SET_INFORMATION = undefined;
 	}
 	else {
 		let self = new processMemoryCounterType();
-		GetProcessMemoryInfo(process, self.address(), processMemoryCounterType.size);
+		GetProcessMemoryInfo(gProcess, self.address(), processMemoryCounterType.size);
 		selfUsed = parseInt(self.PrivateUsage || self.WorkingSetSize);
 	}
 
