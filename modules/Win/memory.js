@@ -58,9 +58,13 @@ const PROCESS_MEMORY_COUNTERS_EX = new ctypes.StructType('PROCESS_MEMORY_COUNTER
 const gKernel32 = ctypes.open('kernel32.dll');
 addShutdownListener(function() { gKernel32.close(); });
 
-var gPsapi = ctypes.open('psapi.dll');
-addShutdownListener(function() { gKernel32.close(); });
-
+try {
+	const gPsapi = ctypes.open('psapi.dll');
+	addShutdownListener(function() { gPsapi.close(); });
+}
+catch(e) {
+	// on Windows 7 and Windows Server 2008 R2
+}
 
 const GlobalMemoryStatusEx = gKernel32.declare(
 		'GlobalMemoryStatusEx',
