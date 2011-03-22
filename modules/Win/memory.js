@@ -52,13 +52,9 @@ const SYSTEM_INFO = new ctypes.StructType('SYSTEM_INFO', [
 		{ wProcessorRevision      : WORD }
 	]);
 
+
 // http://msdn.microsoft.com/en-us/library/ms684902%28v=vs.85%29.aspx
 const SHARED_FLAG = 0x100;
-// http://msdn.microsoft.com/en-us/library/ms684910%28v=vs.85%29.aspx
-const PSAPI_WORKING_SET_INFORMATION_FIRST = new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION_FIRST', [
-		{ NumberOfEntries : ULONG_PTR },
-		{ WorkingSetInfo  : ctypes.ArrayType(ULONG_PTR, 1) }
-	]);
 
 
 const gKernel32 = ctypes.open('kernel32.dll');
@@ -124,33 +120,30 @@ function getMemory() {
 	var systemInfo = new SYSTEM_INFO;
 	GetSystemInfo(systemInfo.address());
 
-	var self = new PSAPI_WORKING_SET_INFORMATION_FIRST();
-	if (QueryWorkingSet(process,
-		                ctypes.cast(self.address(), PVOID),
-		                PSAPI_WORKING_SET_INFORMATION_FIRST.size) == 0) {
-		let padding = 1024; // enough to get all info
-		/************************** OPTIMIZATION NOTE *************************
-		 * Contents of ULONG_PTR (ctypes.unsigned_long or ctypes.uint64_t)
-		 * array become wrapped objects, not JS primitive numbers. So, the loop
-		 * become very very slow.
-		 * For optimization, I use ctypes.uint32_t instead of ULONG_PTR.
-		 * Contents of ctypes.uint32_t array become JS primitive numbers.
-		 * JS loop with primitive values will be done very fast by JIT.
-		 */
-		// let InfoArrayType = ctypes.ArrayType(ULONG_PTR, parseInt(self.NumberOfEntries) + padding);
-		let InfoArrayType = is64bit ?
-				ctypes.ArrayType(ctypes.uint32_t, parseInt(self.NumberOfEntries * 2) + padding) :
-				ctypes.ArrayType(ctypes.uint32_t, parseInt(self.NumberOfEntries) + padding) ;
-		let PSAPI_WORKING_SET_INFORMATION_ACTUAL = new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION_ACTUAL', [
+	// http://msdn.microsoft.com/en-us/library/ms684910%28v=vs.85%29.aspx
+	/************************** OPTIMIZATION NOTE *************************
+	 * Contents of ULONG_PTR (ctypes.unsigned_long or ctypes.uint64_t)
+	 * array become wrapped objects, not JS primitive numbers. So, the loop
+	 * become very very slow.
+	 * For optimization, I use ctypes.uint32_t instead of ULONG_PTR.
+	 * Contents of ctypes.uint32_t array become JS primitive numbers.
+	 * JS loop with primitive values will be done very fast by JIT.
+	 */
+	var infoArrayType = ctypes.uint32_t; // ULONG_PTR
+	var self, PSAPI_WORKING_SET_INFORMATION;
+	do {
+		PSAPI_WORKING_SET_INFORMATION = new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
 				{ NumberOfEntries : ULONG_PTR },
-				{ WorkingSetInfo  : InfoArrayType }
+				{ WorkingSetInfo  : ctypes.ArrayType(
+					infoArrayType,
+					self && (parseInt(self.NumberOfEntries) + 1024) || 1
+				) }
 			]);
-		self = new PSAPI_WORKING_SET_INFORMATION_ACTUAL();
-		if (QueryWorkingSet(process,
-		                    ctypes.cast(self.address(), PVOID),
-		                    PSAPI_WORKING_SET_INFORMATION_ACTUAL.size) == 0)
-			throw new Error('could not get the size of working pages');
+		self = new PSAPI_WORKING_SET_INFORMATION();
 	}
+	while (QueryWorkingSet(process,
+	                       ctypes.cast(self.address(), PVOID),
+	                       PSAPI_WORKING_SET_INFORMATION.size) == 0);
 
 	var sharedPages = 0;
 	var pages = self.WorkingSetInfo;
@@ -163,19 +156,27 @@ function getMemory() {
 	 * and the "Shared" flag is the bit 8th from the last, in "lower 32bit".
 	 */
 	var step = is64bit ? 2 : 1 ;
+	var allPagesCount = 0;
 	for (let i = is64bit ? 1 : 0, maxi = pages.length; i < maxi; i += step) {
 		let flags = pages[i];
 		if (flags === 0)
 			break;
+		allPagesCount++;
 		if (flags & SHARED_FLAG)
 			sharedPages++;
 	}
+
+	var selfUsage = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
+
+	pages = undefined;
+	self = undefined;
+	PSAPI_WORKING_SET_INFORMATION = undefined;
 
 	return {
 		total       : parseInt(info.ullTotalPhys),
 		free        : parseInt(info.ullAvailPhys),
 		used        : parseInt(info.ullTotalPhys - info.ullAvailPhys),
 		virtualUsed : parseInt(info.ullTotalVirtual - info.ullAvailVirtual),
-		self        : (pages.length - sharedPages) * systemInfo.dwPageSize
+		self        : selfUsage
 	};
 }
