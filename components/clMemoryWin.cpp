@@ -1,8 +1,8 @@
 #include "clMemory.h"
 
-#include <stdlib.h>
 #include <windows.h>
 #include <psapi.h>
+#include <prmem.h>
 
 CL_Memory
 CL_GetMemory()
@@ -20,7 +20,7 @@ CL_GetMemory()
                     sizeof(self));
 
     DWORD enoughPagesCount = self[0] + 1024;
-    ULONG_PTR *actualSelf = (ULONG_PTR *) calloc(enoughPagesCount, sizeof(ULONG_PTR));
+    ULONG_PTR *actualSelf = (ULONG_PTR *) PR_Malloc(enoughPagesCount * sizeof(ULONG_PTR));
     QueryWorkingSet(GetCurrentProcess(),
                     (PVOID*) actualSelf,
                     enoughPagesCount * sizeof(ULONG_PTR));
@@ -35,14 +35,14 @@ CL_GetMemory()
       }
     }
 
-    free(actualSelf);
+    PR_Free(actualSelf);
 
     CL_Memory info = {
         memory.ullTotalPhys,                             // total
         memory.ullAvailPhys,                             // free
         memory.ullTotalPhys - memory.ullAvailPhys,       // used,
         memory.ullTotalVirtual - memory.ullAvailVirtual, // virtualUsed
-        selfUsage * systemInfo.dwPageSize               // self
+        selfUsage * systemInfo.dwPageSize                // self
     };
     return info;
 }
