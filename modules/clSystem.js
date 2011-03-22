@@ -213,7 +213,7 @@ clCPU.loadUtils = function() {
 
 	var utils = {};
 	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/Win/cpu.js', utils);
+		Components.utils.import('resource://system-monitor-modules/WINNT/cpu.js', utils);
 	else if (OS.indexOf('linux') == 0)
 		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
@@ -289,7 +289,7 @@ clMemory.loadUtils = function() {
 
 	var utils = {};
 	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/Win/memory.js', utils);
+		Components.utils.import('resource://system-monitor-modules/WINNT/memory.js', utils);
 	else if (OS.indexOf('linux') == 0)
 		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
