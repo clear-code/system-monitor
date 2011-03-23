@@ -10,7 +10,7 @@ const XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 					.getService(Ci.nsIXULAppInfo)
 					.QueryInterface(Ci.nsIXULRuntime);
 
-const is64bit = XULAppInfo.XPCOMABI.indexOf('_64') > -1;
+const is64bit = false; //XULAppInfo.XPCOMABI.indexOf('_64') > -1;
 
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/vm_types.h
@@ -215,7 +215,7 @@ function getCount() {
 	}
 
 	vm_deallocate(mach_task_self(),
-	              ctypes.cast(infoArray, ctypes.uintptr_t),
+	              ctypes.cast(infoArray, vm_offset_t),
 	              infoCount.value * processor_cpu_load_info.size);
 
 	return count.value;
@@ -253,7 +253,7 @@ function getCPUTimes() {
 	}
 
 	vm_deallocate(mach_task_self(),
-	              ctypes.cast(infoArray, ctypes.uintptr_t),
+	              ctypes.cast(infoArray, vm_offset_t),
 	              infoCount.value * processor_cpu_load_info.size);
 
 	return times;
