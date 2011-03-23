@@ -219,7 +219,7 @@ clCPU.loadUtils = function() {
 	else if (OS.indexOf('darwin') == 0)
 		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
 	else
-		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
+		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
 
 	this.prototype.utils = utils;
 };
@@ -295,7 +295,7 @@ clMemory.loadUtils = function() {
 	else if (OS.indexOf('darwin') == 0)
 		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
 	else
-		throw Components.results. NS_ERROR_NOT_IMPLEMENTED;
+		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
 
 	this.prototype.utils = utils;
 };
