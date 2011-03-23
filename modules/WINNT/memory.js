@@ -101,6 +101,10 @@ catch(e) {
 	// on Windows 7 and Windows Server 2008 R2
 }
 
+const gNspr4 = ctypes.open('nspr4.dll');
+addShutdownListener(function() { gNspr4.close(); });
+
+
 const GlobalMemoryStatusEx = gKernel32.declare(
 		'GlobalMemoryStatusEx',
 		ctypes.default_abi,
@@ -170,6 +174,20 @@ catch(e) {
 	declareQueryWorkingSet(gKernel32);
 }
 
+// http://mxr.mozilla.org/mozilla-central/source/nsprpub/pr/include/prmem.h
+const PR_Malloc = gNspr4.declare(
+		'PR_Malloc',
+		ctypes.default_abi,
+		ctypes.voidptr_t,
+		ctypes.uint32_t
+	);
+const PR_Free = gNspr4.declare(
+		'PR_Free',
+		ctypes.default_abi,
+		ctypes.void_t,
+		ctypes.voidptr_t
+	);
+
 
 var gProcess = GetCurrentProcess();
 var gLastSelfUsed = 0;
@@ -205,18 +223,20 @@ function getMemory() {
 				PSAPI_WORKING_SET_INFORMATION_FIRST :
 				new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
 					{ NumberOfEntries : ULONG_PTR },
-					{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, self.NumberOfEntries) }
+					{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, self.contents.NumberOfEntries) }
 				]);
-			self = new PSAPI_WORKING_SET_INFORMATION();
+			if (self) PR_Free(self);
+			self = PR_Malloc(PSAPI_WORKING_SET_INFORMATION.size);
+			self = ctypes.cast(self, PSAPI_WORKING_SET_INFORMATION.ptr);
 			tryCount++;
 		}
 		while (QueryWorkingSet(gProcess,
-		                       self.address(),
+		                       self,
 		                       PSAPI_WORKING_SET_INFORMATION.size) == 0);
 
 		if (!selfUsed) {
 			let sharedPages = 0;
-			let pages = self.WorkingSetInfo;
+			let pages = self.contents.WorkingSetInfo;
 			/************************** OPTIMIZATION NOTE *************************
 			 * On Win64 environment, working set information is 64bit. So, contents
 			 * of ctypes.uint32_t array are mixed of "higher 32bit of 64bit flags"
@@ -235,8 +255,8 @@ function getMemory() {
 				if (flags & SHARED_FLAG)
 					sharedPages++;
 			}
-			pages = undefined;
-			self = undefined;
+
+			PR_Free(self);
 
 			selfUsed = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
 			gLastSelfUsed = selfUsed;
