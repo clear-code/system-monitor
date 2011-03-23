@@ -144,7 +144,6 @@ function getMemory() {
 	var self, PSAPI_WORKING_SET_INFORMATION;
 	var tryCount = 0;
 	do {
-		PSAPI_WORKING_SET_INFORMATION = undefined;
 		if (tryCount > 1) {
 			selfUsed = gLastSelfUsed;
 			break;
@@ -153,10 +152,10 @@ function getMemory() {
 			PSAPI_WORKING_SET_INFORMATION_FIRST :
 			new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
 				{ NumberOfEntries : ULONG_PTR },
-				{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, self.contents.NumberOfEntries) }
+				{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, parseInt(self.contents.NumberOfEntries)) }
 			]);
 		if (self) PR_Free(self);
-		self = PR_Malloc(PSAPI_WORKING_SET_INFORMATION.size);
+		self = PR_Calloc(1, PSAPI_WORKING_SET_INFORMATION.size);
 		self = ctypes.cast(self, PSAPI_WORKING_SET_INFORMATION.ptr);
 		tryCount++;
 	}
@@ -184,6 +183,7 @@ function getMemory() {
 			allPagesCount++;
 			if (flags & SHARED_FLAG)
 				sharedPages++;
+			flags = undefined;
 		}
 		pages = undefined;
 
@@ -193,6 +193,7 @@ function getMemory() {
 
 	if (self) PR_Free(self);
 	self = undefined;
+	PSAPI_WORKING_SET_INFORMATION = undefined;
 
 	return {
 		total       : parseInt(info.ullTotalPhys),
