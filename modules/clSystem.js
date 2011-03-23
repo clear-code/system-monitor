@@ -252,7 +252,6 @@ function clMemory() {
 	this.free        = memory.free;
 	this.virtualUsed = memory.virtualUsed;
 	this.self        = memory.self;
-	this.initSelfUsed();
 }
 clMemory.prototype = {
 	classDescription : 'clMemory', 
@@ -264,23 +263,6 @@ clMemory.prototype = {
 
 	toString : function() {
 		return '[object Memory]';
-	},
-
-	initSelfUsed : function() {
-		if (this.self > -1) return;
-		try {
-			var manager = Cc['@mozilla.org/memory-reporter-manager;1'].getService(Ci.nsIMemoryReporterManager);
-			var reporters = manager.enumerateReporters();
-			while (reporters.hasMoreElements()) {
-			  let reporter = reporters.getNext().QueryInterface(Ci.nsIMemoryReporter);
-			  if (reporter.path == 'malloc/allocated') {
-				this.self = reporter.memoryUsed;
-				break;
-			  }
-			}
-		}
-		catch(e) {
-		}
 	}
 };
 clMemory.loadUtils = function() {
