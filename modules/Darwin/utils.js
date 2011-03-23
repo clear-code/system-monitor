@@ -89,34 +89,25 @@ const HOST_VM_INFO_COUNT = vm_statistics.size / integer_t.size;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/task_info.h
 const task_t = natural_t;
+const task_info_t = integer_t;
 const task_flavor_t = natural_t;
 const policy_t = ctypes.int;
-const mach_vm_size_t = ctypes.uint64_t;
 const TASK_BASIC_INFO_32 = 4;
 const TASK_BASIC_INFO_64 = 5;
 const time_value_t = new ctypes.StructType('time_value_t', [
 		{ seconds      : integer_t },
 		{ microseconds : integer_t }
 	]);
-const task_basic_info_32 = new ctypes.StructType('task_basic_info_32', [
+const task_basic_info = new ctypes.StructType('task_basic_info', [
 		{ suspend_count : integer_t },
-		{ virtual_size  : natural_t },
-		{ resident_size : natural_t },
+		{ virtual_size  : vm_size_t },
+		{ resident_size : vm_size_t },
 		{ user_time     : time_value_t },
 		{ system_time   : time_value_t },
 		{ policy        : policy_t }
 	]);
-const task_basic_info_64 = new ctypes.StructType('task_basic_info_64', [
-		{ suspend_count : integer_t },
-		{ virtual_size  : mach_vm_size_t },
-		{ resident_size : mach_vm_size_t },
-		{ user_time     : time_value_t },
-		{ system_time   : time_value_t },
-		{ policy        : policy_t }
-	]);
-const TASK_BASIC_INFO = is64bit ? TASK_BASIC_INFO_64 : TASK_BASIC_INFO_32;
-const task_info_t     = is64bit ? task_basic_info_64 : task_basic_info_32;
-const TASK_BASIC_INFO_COUNT = task_info_t.size / natural_t.size;
+const TASK_BASIC_INFO_COUNT = task_basic_info.size / natural_t.size;
+const TASK_BASIC_INFO = is64bit? TASK_BASIC_INFO_64 : TASK_BASIC_INFO_32 ;
 
 
 var gLibrary,
@@ -321,16 +312,18 @@ function getMemory() {
 	var vm_page_size = total / vm_total_pages_count;
 	var free = parseInt(memory.free_count) * parseInt(vm_page_size);
 
-	var self = new task_info_t();
+	var self = new task_basic_info();
 	count = new mach_msg_type_number_t(TASK_BASIC_INFO_COUNT);
-	task_info(mach_task_self(), TASK_BASIC_INFO, self.address(), count.address());
-
+	task_info(mach_task_self(),
+	          TASK_BASIC_INFO,
+	          ctypes.cast(self.address(), task_info_t.ptr),
+	          count.address());
 
 	return {
 		total       : total,
 		free        : free,
 		used        : total - free,
 		virtualUsed : -1,
-		self        : self.resident_size
+		self        : parseInt(self.resident_size)
 	};
 }
