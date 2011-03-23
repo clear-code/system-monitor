@@ -185,11 +185,11 @@ function getMemory() {
 				sharedPages++;
 		}
 
-		PR_Free(self);
-
 		selfUsed = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
 		gLastSelfUsed = selfUsed;
 	}
+
+	if (self) PR_Free(self);
 
 	return {
 		total       : parseInt(info.ullTotalPhys),
