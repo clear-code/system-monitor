@@ -1,12 +1,12 @@
 #include "nsISupports.idl"
 
 [scriptable, uuid(c7aa45e8-7693-4e4b-b10e-d8b625d3cf42)]
-
 interface clIMemory : nsISupports
 {
   readonly attribute PRUInt64 total;
   readonly attribute PRUInt64 used;
   readonly attribute PRUInt64 free;
+  readonly attribute PRUInt64 self;
 
   readonly attribute PRUInt64 virtualUsed;
 };

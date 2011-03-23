@@ -3,7 +3,7 @@ SUBDIRS = components
 
 ACLOCAL_AMFLAGS = -I m4macros $$ACLOCAL_OPTIONS
 
-noinst_DATA = xpi
+noinst_DATA = deploy xpi
 
 JAR_TARGET_FILES = 					\
 	content					\

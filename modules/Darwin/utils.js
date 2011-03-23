@@ -6,6 +6,13 @@ const Ci = Components.interfaces;
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
 
+const XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+					.getService(Ci.nsIXULAppInfo)
+					.QueryInterface(Ci.nsIXULRuntime);
+
+const is64bit = XULAppInfo.XPCOMABI.indexOf('_64') > -1;
+
+
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/i386/vm_types.h
 const integer_t = ctypes.int;
 const natural_t = ctypes.unsigned_int;
@@ -26,11 +33,12 @@ const cpu_subtype_t = integer_t;
 const cpu_threadtype_t = integer_t;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/port.h
-const mach_port_t = natural_t;
+const mach_port_name_t = natural_t;
+const mach_port_t = mach_port_name_t;
 
 const vm_map_t = mach_port_t;
-const vm_offset_t = ctypes.uintptr_t;
-const vm_size_t = ctypes.uintptr_t;
+const vm_offset_t = is64bit ? ctypes.uintptr_t : natural_t;
+const vm_size_t = is64bit ? ctypes.uintptr_t : natural_t;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/processor_info.h
 const processor_flavor_t = ctypes.int;
@@ -59,6 +67,7 @@ const host_basic_info = new ctypes.StructType('host_basic_info', [
 const HOST_BASIC_INFO_COUNT = host_basic_info.size / integer_t.size;
 
 // /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/vm_statistics.h
+const host_flavor_t = integer_t;
 const vm_statistics = new ctypes.StructType('vm_statistics', [
 		{ free_count        : natural_t },
 		{ active_count      : natural_t },
@@ -78,58 +87,127 @@ const vm_statistics = new ctypes.StructType('vm_statistics', [
 	]);
 const HOST_VM_INFO_COUNT = vm_statistics.size / integer_t.size;
 
+// /Developer/SDKs/MacOSX10.6.sdk/usr/include/mach/task_info.h
+const task_t = natural_t;
+const task_flavor_t = natural_t;
+const policy_t = ctypes.int;
+const mach_vm_size_t = ctypes.uint64_t;
+const TASK_BASIC_INFO_32 = 4;
+const TASK_BASIC_INFO_64 = 5;
+const time_value_t = new ctypes.StructType('time_value_t', [
+		{ seconds      : integer_t },
+		{ microseconds : integer_t }
+	]);
+const task_basic_info_32 = new ctypes.StructType('task_basic_info_32', [
+		{ suspend_count : integer_t },
+		{ virtual_size  : natural_t },
+		{ resident_size : natural_t },
+		{ user_time     : time_value_t },
+		{ system_time   : time_value_t },
+		{ policy        : policy_t }
+	]);
+const task_basic_info_64 = new ctypes.StructType('task_basic_info_64', [
+		{ suspend_count : integer_t },
+		{ virtual_size  : mach_vm_size_t },
+		{ resident_size : mach_vm_size_t },
+		{ user_time     : time_value_t },
+		{ system_time   : time_value_t },
+		{ policy        : policy_t }
+	]);
+const TASK_BASIC_INFO = is64bit ? TASK_BASIC_INFO_64 : TASK_BASIC_INFO_32;
+const task_info_t     = is64bit ? task_basic_info_64 : task_basic_info_32;
+const TASK_BASIC_INFO_COUNT = task_info_t.size / natural_t.size;
 
-const CoreFoundation = ctypes.open('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
-addShutdownListener(function() { CoreFoundation.close(); });
 
-const mach_host_self = CoreFoundation.declare(
-		'mach_host_self',
-		ctypes.default_abi,
-		mach_port_t
-	);
+var gLibrary,
+	mach_host_self,
+	host_processor_info,
+	mach_task_self,
+	vm_deallocate,
+	host_info,
+	host_statistics,
+	task_info;
 
-const host_processor_info = CoreFoundation.declare(
-		'host_processor_info',
-		ctypes.default_abi,
-		kern_return_t,
-		mach_port_t,
-		processor_flavor_t,
-		natural_t.ptr,
-		processor_info_array_t.ptr.ptr,
-		mach_msg_type_number_t.ptr
-	);
-const mach_task_self = CoreFoundation.declare(
-		'mach_task_self',
-		ctypes.default_abi,
-		mach_port_t
-	);
-const vm_deallocate = CoreFoundation.declare(
-		'vm_deallocate',
-		ctypes.default_abi,
-		kern_return_t,
-		vm_map_t,
-		vm_offset_t,
-		vm_size_t
-	);
+function openLibrary(aPath) {
+	try {
+		gLibrary = ctypes.open(aPath);
+		declareFunctions();
+		addShutdownListener(function() { gLibrary.close(); });
+	}
+	catch(e) {
+		if (gLibrary) {
+			gLibrary.close();
+			gLibrary = null;
+		}
+	}
+}
 
-const host_info = CoreFoundation.declare(
-		'host_info',
-		ctypes.default_abi,
-		kern_return_t,
-		mach_port_t,
-		integer_t,
-		host_basic_info.ptr,
-		mach_msg_type_number_t.ptr
-	);
-const host_statistics = CoreFoundation.declare(
-		'host_statistics',
-		ctypes.default_abi,
-		kern_return_t,
-		mach_port_t,
-		integer_t,
-		vm_statistics.ptr,
-		mach_msg_type_number_t.ptr
-	);
+function declareFunctions() {
+	mach_host_self = gLibrary.declare(
+			'mach_host_self',
+			ctypes.default_abi,
+			mach_port_t
+		);
+
+	host_processor_info = gLibrary.declare(
+			'host_processor_info',
+			ctypes.default_abi,
+			kern_return_t,
+			mach_port_t,
+			processor_flavor_t,
+			natural_t.ptr,
+			processor_info_array_t.ptr.ptr,
+			mach_msg_type_number_t.ptr
+		);
+	mach_task_self = gLibrary.declare(
+			'mach_task_self',
+			ctypes.default_abi,
+			mach_port_t
+		);
+	vm_deallocate = gLibrary.declare(
+			'vm_deallocate',
+			ctypes.default_abi,
+			kern_return_t,
+			vm_map_t,
+			vm_offset_t,
+			vm_size_t
+		);
+
+	host_info = gLibrary.declare(
+			'host_info',
+			ctypes.default_abi,
+			kern_return_t,
+			mach_port_t,
+			host_flavor_t,
+			host_basic_info.ptr,
+			mach_msg_type_number_t.ptr
+		);
+	host_statistics = gLibrary.declare(
+			'host_statistics',
+			ctypes.default_abi,
+			kern_return_t,
+			mach_port_t,
+			host_flavor_t,
+			vm_statistics.ptr,
+			mach_msg_type_number_t.ptr
+		);
+	task_info= gLibrary.declare(
+			'task_info',
+			ctypes.default_abi,
+			kern_return_t,
+			task_t,
+			task_flavor_t,
+			task_info_t.ptr,
+			mach_msg_type_number_t.ptr
+		);
+}
+
+try {
+	openLibrary('/System/Library/Frameworks/System.framework/System');
+}
+catch(e) {
+	openLibrary('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
+}
 
 
 function getCount() {
@@ -243,10 +321,16 @@ function getMemory() {
 	var vm_page_size = total / vm_total_pages_count;
 	var free = parseInt(memory.free_count) * parseInt(vm_page_size);
 
+	var self = new task_info_t();
+	count = new mach_msg_type_number_t(TASK_BASIC_INFO_COUNT);
+	task_info(mach_task_self(), TASK_BASIC_INFO, self.address(), count.address());
+
+
 	return {
 		total       : total,
 		free        : free,
 		used        : total - free,
-		virtualUsed : -1
+		virtualUsed : -1,
+		self        : self.resident_size
 	};
 }

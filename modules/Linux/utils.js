@@ -7,6 +7,7 @@ Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
 
 const GLIBTOP_NCPU = 32;
+const pid_t = ctypes.int;
 
 const glibtop_cpu = new ctypes.StructType('glibtop_cpu', [
 		{ flags     : ctypes.uint64_t },
@@ -38,11 +39,30 @@ const glibtop_mem = new ctypes.StructType('glibtop_mem', [
 		{ buffer : ctypes.uint64_t },
 		{ cached : ctypes.uint64_t },
 		{ user   : ctypes.uint64_t },
-		{ licked : ctypes.uint64_t }
+		{ locked : ctypes.uint64_t }
+	]);
+const glibtop_proc_mem = new ctypes.StructType('glibtop_proc_mem', [
+		{ flags    : ctypes.uint64_t },
+		{ size     : ctypes.uint64_t },
+		{ vsize    : ctypes.uint64_t },
+		{ resident : ctypes.uint64_t },
+		{ share    : ctypes.uint64_t },
+		{ rss      : ctypes.uint64_t },
+		{ rss_rlim : ctypes.uint64_t }
 	]);
 
 const gLibgtop2 = ctypes.open('libgtop-2.0.so');
 addShutdownListener(function() { gLibgtop2.close(); });
+
+var gLibpcreposix;
+try {
+	gLibpcreposix = ctypes.open('libpcreposix.so.3');
+}
+catch(e) {
+	gLibpcreposix = ctypes.open('libpcreposix.so.0');
+}
+if (gLibpcreposix)
+	addShutdownListener(function() { gLibpcreposix.close(); });
 
 const glibtop_init = gLibgtop2.declare(
 		'glibtop_init',
@@ -61,7 +81,19 @@ const glibtop_get_mem = gLibgtop2.declare(
 		ctypes.void_t,
 		glibtop_mem.ptr
 	);
-	
+const glibtop_get_proc_mem = gLibgtop2.declare(
+		'glibtop_get_proc_mem',
+		ctypes.default_abi,
+		ctypes.void_t,
+		glibtop_proc_mem.ptr,
+		pid_t
+	);
+const getpid = gLibpcreposix.declare(
+		'getpid',
+		ctypes.default_abi,
+		pid_t
+	);
+
 glibtop_init();
 
 function getCount() {
@@ -124,6 +156,10 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 function getMemory() {
 	var memory = new glibtop_mem();
 	glibtop_get_mem(memory.address());
+
+	var self = new glibtop_proc_mem();
+	glibtop_get_proc_mem(self.address(), getpid());
+
 	return {
 		total       : parseInt(memory.total),
 		free        : parseInt(memory.total) -
@@ -131,7 +167,8 @@ function getMemory() {
 		              parseInt(memory.cached),
 		used        : parseInt(memory.used) -
 		              parseInt(memory.cached),
-		virtualUsed : -1
+		virtualUsed : -1,
+		self        : parseInt(self.resident)
 	};
 }
 

@@ -17,17 +17,17 @@
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.background"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.background"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundEndAlpha"
-                name="extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundEndAlpha"
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundStartAlpha"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundStartAlpha"
                 type="string"
-                onchange="updateAlphaUIFromPref('cpu-usage.color.backgroundEndAlpha');"/>
+                onchange="updateAlphaUIFromPref('cpu-usage.color.backgroundStartAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundEndAlpha"
-                name="extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundEndAlpha"
+    <preference id="extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundStartAlpha"
+                name="extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundStartAlpha"
                 type="string"
-                onchange="updateAlphaUIFromPref('cpu-usage.color.foregroundEndAlpha');"/>
+                onchange="updateAlphaUIFromPref('cpu-usage.color.foregroundStartAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.cpu-usage.interval"
                 name="extensions.system-monitor@clear-code.com.cpu-usage.interval"
                 type="int"/>
@@ -75,56 +75,69 @@
   </groupbox>
   <groupbox>
     <caption label="&config.cpu-usage.color.caption;"/>
-    <hbox align="center">
-      <label value="&config.cpu-usage.color.foreground;"
-             control="cpu-usage.color.foreground-colorpicker"/>
-      <colorpicker id="cpu-usage.color.foreground-colorpicker"
-                   type="button"
-                   preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
-      <label value="&config.cpu-usage.color.foregroundEndAlpha.before;"
-             control="cpu-usage.color.foregroundEndAlpha-scale"/>
-      <scale id="cpu-usage.color.foregroundEndAlpha-scale"
-             orient="horizontal"
-             flex="1"
-             increment="1"
-             pageincrement="10"
-             min="0"
-             max="100"
-             onchange="updateAlphaPrefFromUI('cpu-usage.color.foregroundEndAlpha');"/>
-      <label value="&config.cpu-usage.color.foregroundEndAlpha.after;"
-             control="cpu-usage.color.foregroundEndAlpha-scale"/>
-      <button label="&config.cpu-usage.color.reset;"
-              class="reset"
-              oncommand="
-                resetValue('cpu-usage.color.foreground-colorpicker', 'color');
-                resetPref('extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundEndAlpha');
-              "/>
-    </hbox>
-    <hbox align="center">
-      <label value="&config.cpu-usage.color.background;"
-             control="cpu-usage.color.background-colorpicker"/>
-      <colorpicker id="cpu-usage.color.background-colorpicker"
-                   type="button"
-                   preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
-      <label value="&config.cpu-usage.color.backgroundEndAlpha.before;"
-             control="cpu-usage.color.backgroundEndAlpha-scale"/>
-      <scale id="cpu-usage.color.backgroundEndAlpha-scale"
-             orient="horizontal"
-             flex="1"
-             increment="1"
-             pageincrement="10"
-             min="0"
-             max="100"
-             onchange="updateAlphaPrefFromUI('cpu-usage.color.backgroundEndAlpha');"/>
-      <label value="&config.cpu-usage.color.backgroundEndAlpha.after;"
-             control="cpu-usage.color.backgroundEndAlpha-scale"/>
-      <button label="&config.cpu-usage.color.reset;"
-              class="reset"
-              oncommand="
-                resetValue('cpu-usage.color.background-colorpicker', 'color');
-                resetPref('extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundEndAlpha');
-              "/>
-    </hbox>
+    <grid>
+      <columns>
+        <column/>
+        <column/>
+        <column/>
+      </columns>
+      <rows>
+        <row align="center">
+          <label value="&config.cpu-usage.color.foreground;"
+                 control="cpu-usage.color.foreground-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="cpu-usage.color.foreground-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.cpu-usage.color.foreground"/>
+            <label value="&config.cpu-usage.color.foregroundStartAlpha.before;"
+                   control="cpu-usage.color.foregroundStartAlpha-scale"/>
+            <scale id="cpu-usage.color.foregroundStartAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('cpu-usage.color.foregroundStartAlpha');"/>
+            <label value="&config.cpu-usage.color.foregroundStartAlpha.after;"
+                   control="cpu-usage.color.foregroundStartAlpha-scale"/>
+          </hbox>
+          <button label="&config.cpu-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('cpu-usage.color.foreground-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundStartAlpha');
+                  "/>
+        </row>
+        <row align="center">
+          <label value="&config.cpu-usage.color.background;"
+                 control="cpu-usage.color.background-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="cpu-usage.color.background-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.cpu-usage.color.background"/>
+            <label value="&config.cpu-usage.color.backgroundStartAlpha.before;"
+                   control="cpu-usage.color.backgroundStartAlpha-scale"/>
+            <scale id="cpu-usage.color.backgroundStartAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('cpu-usage.color.backgroundStartAlpha');"/>
+            <label value="&config.cpu-usage.color.backgroundStartAlpha.after;"
+                   control="cpu-usage.color.backgroundStartAlpha-scale"/>
+          </hbox>
+          <button label="&config.cpu-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('cpu-usage.color.background-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.cpu-usage.color.backgroundStartAlpha');
+                  "/>
+        </row>
+      </rows>
+    </grid>
   </groupbox>
   <groupbox>
     <caption label="&config.cpu-usage.interval.caption;"/>
@@ -154,17 +167,24 @@
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.background"
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.background"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.backgroundEndAlpha"
-                name="extensions.system-monitor@clear-code.com.memory-usage.color.backgroundEndAlpha"
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.backgroundStartAlpha"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.backgroundStartAlpha"
                 type="string"
-                onchange="updateAlphaUIFromPref('memory-usage.color.backgroundEndAlpha');"/>
+                onchange="updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha"
-                name="extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha"
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha"
                 type="string"
-                onchange="updateAlphaUIFromPref('memory-usage.color.foregroundEndAlpha');"/>
+                onchange="updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.self"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.self"
+                type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha"
+                type="string"
+                onchange="updateAlphaUIFromPref('memory-usage.color.selfGlobalAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 name="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 type="int"/>
@@ -187,56 +207,96 @@
   </groupbox>
   <groupbox>
     <caption label="&config.memory-usage.color.caption;"/>
-    <hbox align="center">
-      <label value="&config.memory-usage.color.foreground;"
-             control="memory-usage.color.foreground-colorpicker"/>
-      <colorpicker id="memory-usage.color.foreground-colorpicker"
-                   type="button"
-                   preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
-      <label value="&config.memory-usage.color.foregroundEndAlpha.before;"
-             control="memory-usage.color.foregroundEndAlpha-scale"/>
-      <scale id="memory-usage.color.foregroundEndAlpha-scale"
-             orient="horizontal"
-             flex="1"
-             increment="1"
-             pageincrement="10"
-             min="0"
-             max="100"
-             onchange="updateAlphaPrefFromUI('memory-usage.color.foregroundEndAlpha');"/>
-      <label value="&config.memory-usage.color.foregroundEndAlpha.after;"
-             control="memory-usage.color.foregroundEndAlpha-scale"/>
-      <button label="&config.memory-usage.color.reset;"
-              class="reset"
-              oncommand="
-                resetValue('memory-usage.color.foreground-colorpicker', 'color');
-                resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha');
-              "/>
-    </hbox>
-    <hbox align="center">
-      <label value="&config.memory-usage.color.background;"
-             control="memory-usage.color.background-colorpicker"/>
-      <colorpicker id="memory-usage.color.background-colorpicker"
-                   type="button"
-                   preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
-      <label value="&config.memory-usage.color.backgroundEndAlpha.before;"
-             control="memory-usage.color.backgroundEndAlpha-scale"/>
-      <scale id="memory-usage.color.backgroundEndAlpha-scale"
-             orient="horizontal"
-             flex="1"
-             increment="1"
-             pageincrement="10"
-             min="0"
-             max="100"
-             onchange="updateAlphaPrefFromUI('memory-usage.color.backgroundEndAlpha');"/>
-      <label value="&config.memory-usage.color.backgroundEndAlpha.after;"
-             control="memory-usage.color.backgroundEndAlpha-scale"/>
-      <button label="&config.memory-usage.color.reset;"
-              class="reset"
-              oncommand="
-                resetValue('memory-usage.color.background-colorpicker', 'color');
-                resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.backgroundEndAlpha');
-              "/>
-    </hbox>
+    <grid>
+      <columns>
+        <column/>
+        <column/>
+        <column/>
+      </columns>
+      <rows>
+        <row align="center">
+          <label value="&config.memory-usage.color.foreground;"
+                 control="memory-usage.color.foreground-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="memory-usage.color.foreground-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground"/>
+            <label value="&config.memory-usage.color.foregroundStartAlpha.before;"
+                   control="memory-usage.color.foregroundStartAlpha-scale"/>
+            <scale id="memory-usage.color.foregroundStartAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('memory-usage.color.foregroundStartAlpha');"/>
+            <label value="&config.memory-usage.color.foregroundStartAlpha.after;"
+                   control="memory-usage.color.foregroundStartAlpha-scale"/>
+          </hbox>
+          <button label="&config.memory-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('memory-usage.color.foreground-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha');
+                  "/>
+        </row>
+        <row align="center">
+          <label value="&config.memory-usage.color.self;"
+                 control="memory-usage.color.self-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="memory-usage.color.self-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.memory-usage.color.self"/>
+            <label value="&config.memory-usage.color.selfGlobalAlpha.before;"
+                   control="memory-usage.color.selfGlobalAlpha-scale"/>
+            <scale id="memory-usage.color.selfGlobalAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('memory-usage.color.selfGlobalAlpha');"/>
+            <label value="&config.memory-usage.color.selfGlobalAlpha.after;"
+                   control="memory-usage.color.selfGlobalAlpha-scale"/>
+          </hbox>
+          <button label="&config.memory-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('memory-usage.color.self-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha');
+                  "/>
+        </row>
+        <row align="center">
+          <label value="&config.memory-usage.color.background;"
+                 control="memory-usage.color.background-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="memory-usage.color.background-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.memory-usage.color.background"/>
+            <label value="&config.memory-usage.color.backgroundStartAlpha.before;"
+                   control="memory-usage.color.backgroundStartAlpha-scale"/>
+            <scale id="memory-usage.color.backgroundStartAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('memory-usage.color.backgroundStartAlpha');"/>
+            <label value="&config.memory-usage.color.backgroundStartAlpha.after;"
+                   control="memory-usage.color.backgroundStartAlpha-scale"/>
+          </hbox>
+          <button label="&config.memory-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('memory-usage.color.background-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.backgroundStartAlpha');
+                  "/>
+        </row>
+      </rows>
+    </grid>
   </groupbox>
   <groupbox>
     <caption label="&config.memory-usage.interval.caption;"/>

@@ -15,6 +15,10 @@
   max-width: 8px;
 }
 
+[orient="vertical"] > .system-monitor-splitter {
+  display: none;
+}
+
 .system-monitor-splitter-spacer {
 	visibility: hidden;
 }

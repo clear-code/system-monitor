@@ -17,6 +17,7 @@ struct CL_Memory {
     PRUint64 free;
     PRUint64 used;
     PRUint64 virtualUsed;
+    PRUint64 self;
 };
 
 extern CL_Memory CL_GetMemory();
