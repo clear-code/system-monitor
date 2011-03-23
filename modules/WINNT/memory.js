@@ -5,6 +5,7 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
+Components.utils.import('resource://system-monitor-modules/lib/prmem.js');
 
 const XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 					.getService(Ci.nsIXULAppInfo)
@@ -72,9 +73,6 @@ catch(e) {
 	// on Windows 7 and Windows Server 2008 R2
 }
 
-const gNspr4 = ctypes.open('nspr4.dll');
-addShutdownListener(function() { gNspr4.close(); });
-
 
 const GlobalMemoryStatusEx = gKernel32.declare(
 		'GlobalMemoryStatusEx',
@@ -118,20 +116,6 @@ catch(e) {
 	// on Windows 7 and Windows Server 2008 R2
 	declareQueryWorkingSet(gKernel32);
 }
-
-// http://mxr.mozilla.org/mozilla-central/source/nsprpub/pr/include/prmem.h
-const PR_Malloc = gNspr4.declare(
-		'PR_Malloc',
-		ctypes.default_abi,
-		ctypes.voidptr_t,
-		ctypes.uint32_t
-	);
-const PR_Free = gNspr4.declare(
-		'PR_Free',
-		ctypes.default_abi,
-		ctypes.void_t,
-		ctypes.voidptr_t
-	);
 
 
 var gProcess = GetCurrentProcess();
