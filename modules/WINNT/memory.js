@@ -56,9 +56,18 @@ const SYSTEM_INFO = new ctypes.StructType('SYSTEM_INFO', [
 // http://msdn.microsoft.com/en-us/library/ms684902%28v=vs.85%29.aspx
 const SHARED_FLAG = 0x100;
 // http://msdn.microsoft.com/en-us/library/ms684910%28v=vs.85%29.aspx
+/************************** OPTIMIZATION NOTE *************************
+ * Contents of ULONG_PTR (ctypes.unsigned_long or ctypes.uint64_t)
+ * array become wrapped objects, not JS primitive numbers. So, the loop
+ * become very very slow.
+ * For optimization, I use ctypes.uint32_t instead of ULONG_PTR.
+ * Contents of ctypes.uint32_t array become JS primitive numbers.
+ * JS loop with primitive values will be done very fast by JIT.
+ */
+const infoArrayType = ctypes.uint32_t; // ULONG_PTR;
 const PSAPI_WORKING_SET_INFORMATION_FIRST = new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION_FIRST', [
 		{ NumberOfEntries : ULONG_PTR },
-		{ WorkingSetInfo  : ctypes.ArrayType(ULONG_PTR, 1) }
+		{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, 1) }
 	]);
 
 
@@ -128,22 +137,14 @@ function getMemory() {
 	var selfUsed;
 
 	// http://msdn.microsoft.com/en-us/library/aa965225%28v=vs.85%29.aspx#1
-	let systemInfo = new SYSTEM_INFO();
+	var systemInfo = new SYSTEM_INFO();
 	GetSystemInfo(systemInfo.address());
 
 	// http://msdn.microsoft.com/en-us/library/ms684910%28v=vs.85%29.aspx
-	/************************** OPTIMIZATION NOTE *************************
-	 * Contents of ULONG_PTR (ctypes.unsigned_long or ctypes.uint64_t)
-	 * array become wrapped objects, not JS primitive numbers. So, the loop
-	 * become very very slow.
-	 * For optimization, I use ctypes.uint32_t instead of ULONG_PTR.
-	 * Contents of ctypes.uint32_t array become JS primitive numbers.
-	 * JS loop with primitive values will be done very fast by JIT.
-	 */
-	let infoArrayType = ctypes.uint32_t; // ULONG_PTR
-	let self, PSAPI_WORKING_SET_INFORMATION;
-	let tryCount = 0;
+	var self, PSAPI_WORKING_SET_INFORMATION;
+	var tryCount = 0;
 	do {
+		PSAPI_WORKING_SET_INFORMATION = undefined;
 		if (tryCount > 1) {
 			selfUsed = gLastSelfUsed;
 			break;
@@ -184,12 +185,14 @@ function getMemory() {
 			if (flags & SHARED_FLAG)
 				sharedPages++;
 		}
+		pages = undefined;
 
 		selfUsed = (allPagesCount - sharedPages) * systemInfo.dwPageSize;
 		gLastSelfUsed = selfUsed;
 	}
 
 	if (self) PR_Free(self);
+	self = undefined;
 
 	return {
 		total       : parseInt(info.ullTotalPhys),
