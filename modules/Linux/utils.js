@@ -54,16 +54,6 @@ const glibtop_proc_mem = new ctypes.StructType('glibtop_proc_mem', [
 const gLibgtop2 = ctypes.open('libgtop-2.0.so');
 addShutdownListener(function() { gLibgtop2.close(); });
 
-var gLibpcreposix;
-try {
-	gLibpcreposix = ctypes.open('libpcreposix.so.3');
-}
-catch(e) {
-	gLibpcreposix = ctypes.open('libpcreposix.so.0');
-}
-if (gLibpcreposix)
-	addShutdownListener(function() { gLibpcreposix.close(); });
-
 const glibtop_init = gLibgtop2.declare(
 		'glibtop_init',
 		ctypes.default_abi,
@@ -88,7 +78,7 @@ const glibtop_get_proc_mem = gLibgtop2.declare(
 		glibtop_proc_mem.ptr,
 		pid_t
 	);
-const getpid = gLibpcreposix.declare(
+const getpid = gLibgtop2.declare(
 		'getpid',
 		ctypes.default_abi,
 		pid_t
