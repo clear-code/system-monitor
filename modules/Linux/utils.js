@@ -51,8 +51,20 @@ const glibtop_proc_mem = new ctypes.StructType('glibtop_proc_mem', [
 		{ rss_rlim : ctypes.uint64_t }
 	]);
 
-const gLibgtop2 = ctypes.open('libgtop-2.0.so');
-addShutdownListener(function() { gLibgtop2.close(); });
+var gLibgtop2;
+[
+	'libgtop-2.0.so',
+	'libgtop-2.0.so.7'
+].some(function(aName) {
+	try {
+		gLibgtop2 = ctypes.open(aName);
+		addShutdownListener(function() { gLibgtop2.close(); });
+		return true;
+	}
+	catch(e) {
+	}
+	return false;
+});
 
 const glibtop_init = gLibgtop2.declare(
 		'glibtop_init',
