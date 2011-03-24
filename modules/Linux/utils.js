@@ -68,12 +68,12 @@ function openLibrary(aNames) {
 }
 
 const gLibgtop2 = openLibrary([
-		'libgtop-2.0.so',
-		'libgtop-2.0.so.7'
+		'libgtop-2.0.so.7',
+		'libgtop-2.0.so'
 	]);
 const gLibc = openLibrary([
-		'libc.so',
-		'libc.so.6'
+		'libc.so.6',
+		'libc.so'
 	]);
 
 
