@@ -52,29 +52,28 @@ const glibtop_proc_mem = new ctypes.StructType('glibtop_proc_mem', [
 	]);
 
 
-function openLibrary(aNames) {
-	var library;
-	aNames.some(function(aName) {
+function openLibrary() {
+	var names = Array.slice(arguments);
+	for each (let name in names) {
 		try {
-			library = ctypes.open(aName);
+			let library = ctypes.open(name);
 			addShutdownListener(function() { library.close(); });
-			return true;
+			return library;
 		}
 		catch(e) {
 		}
-		return false;
-	});
-	return library;
+	}
+	throw new Error('no library found:\n'+names.join('\n'));
 }
 
-const gLibgtop2 = openLibrary([
+const gLibgtop2 = openLibrary(
 		'libgtop-2.0.so.7',
 		'libgtop-2.0.so'
-	]);
-const gLibc = openLibrary([
+	);
+const gLibc = openLibrary(
 		'libc.so.6',
 		'libc.so'
-	]);
+	);
 
 
 const glibtop_init = gLibgtop2.declare(
