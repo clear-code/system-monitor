@@ -51,20 +51,31 @@ const glibtop_proc_mem = new ctypes.StructType('glibtop_proc_mem', [
 		{ rss_rlim : ctypes.uint64_t }
 	]);
 
-var gLibgtop2;
-[
-	'libgtop-2.0.so',
-	'libgtop-2.0.so.7'
-].some(function(aName) {
-	try {
-		gLibgtop2 = ctypes.open(aName);
-		addShutdownListener(function() { gLibgtop2.close(); });
-		return true;
-	}
-	catch(e) {
-	}
-	return false;
-});
+
+function openLibrary(aNames) {
+	var library;
+	aNames.some(function(aName) {
+		try {
+			library = ctypes.open(aName);
+			addShutdownListener(function() { library.close(); });
+			return true;
+		}
+		catch(e) {
+		}
+		return false;
+	});
+	return library;
+}
+
+const gLibgtop2 = openLibrary([
+		'libgtop-2.0.so',
+		'libgtop-2.0.so.7'
+	]);
+const gLibc = openLibrary([
+		'libc.so',
+		'libc.so.6'
+	]);
+
 
 const glibtop_init = gLibgtop2.declare(
 		'glibtop_init',
@@ -90,7 +101,7 @@ const glibtop_get_proc_mem = gLibgtop2.declare(
 		glibtop_proc_mem.ptr,
 		pid_t
 	);
-const getpid = gLibgtop2.declare(
+const getpid = gLibc.declare(
 		'getpid',
 		ctypes.default_abi,
 		pid_t
