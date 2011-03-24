@@ -3,7 +3,8 @@ var SystemMonitorService = {
   SPLITTER_CLASS : "system-monitor-splitter",
 
   TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
-  TOOLBAR_RESIZE_END : "system-monitor:toolbar-item-end-resize",
+  TOOLBAR_RESIZE_END   : "system-monitor:toolbar-item-end-resize",
+  TOOLBAR_RESIZE_RESET : "system-monitor:toolbar-item-reset-resize",
 
   domain : "extensions.system-monitor@clear-code.com.",
 
@@ -206,6 +207,7 @@ var SystemMonitorService = {
     splitter.setAttribute("class", this.SPLITTER_CLASS);
     splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
     splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
+    splitter.setAttribute("ondblclick", "SystemMonitorService.onSplitterDblClick(this, event);");
     toolbar.insertBefore(splitter, aAfter);
     if (!aAfter) {
       var spacer = document.createElement("spacer");
@@ -275,6 +277,34 @@ var SystemMonitorService = {
       );
       aSelf.resizing = false;
     }, 10, this);
+  },
+
+  onSplitterDblClick : function(aSplitter, aEvent) {
+    this.resizing = true;
+    var previous = aSplitter.previousSibling;
+    var previousId = (previous &&
+                      previous instanceof Components.interfaces.nsIDOMElement &&
+                      previous.className.indexOf(this.RESIZABLE_CLASS) > -1) ?
+                      previous.id :
+                      "" ;
+    var next = aSplitter.nextSibling;
+    var nextId = (next &&
+                  next instanceof Components.interfaces.nsIDOMElement &&
+                  next.className.indexOf(this.RESIZABLE_CLASS) > -1) ?
+                  next.id :
+                  "" ;
+    if (nextId && previousId) {
+      if (next.nextSibling && next.nextSibling.localName == 'splitter')
+        nextId = "";
+      else
+        previousId = "";
+    }
+    this.ObserverService.notifyObservers(
+      window,
+      this.TOOLBAR_RESIZE_RESET,
+      previousId+"\n"+nextId
+    );
+    this.resizing = false;
   },
 
   ObserverService : Cc["@mozilla.org/observer-service;1"]
@@ -436,7 +466,8 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (this.observing) return;
     this.observing = true;
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END, false);
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END,   false);
+    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_RESET, false);
   },
 
   stopObserve : function() {
@@ -444,6 +475,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.observing = false;
     this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
     this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
+    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_RESET);
   },
 
   update : function() {
@@ -811,6 +843,17 @@ SystemMonitorSimpleGraphItem.prototype = {
           this.setPref(
             this.domain+this.id+".size",
             this.canvas.parentNode.boxObject.width
+          );
+          this.start();
+        }
+        break;
+
+      case this.TOOLBAR_RESIZE_RESET:
+        if (aSubject != window || !this.item) break;
+        if (aData.indexOf(this.itemId) > -1) {
+          this.setPref(
+            this.domain+this.id+".size",
+            this.getDefaultPref(this.domain+this.id+".size")
           );
           this.start();
         }
