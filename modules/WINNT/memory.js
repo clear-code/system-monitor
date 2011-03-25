@@ -107,7 +107,7 @@ const GetSystemInfo = gKernel32.declare(
 // http://msdn.microsoft.com/en-us/library/ms684946%28v=vs.85%29.aspx
 var QueryWorkingSet;
 function declareQueryWorkingSet(aLibrary) {
-	QueryWorkingSet = aLibrary.declare.apply(gPsapi, [
+	QueryWorkingSet = aLibrary.declare.apply(aLibrary, [
 		'QueryWorkingSet',
 		ctypes.default_abi,
 		BOOL,
