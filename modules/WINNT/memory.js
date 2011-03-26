@@ -149,8 +149,8 @@ function getMemory() {
 		}
 		else if (tryCount == 1) {
 			let infoArrayCount = parseInt(self.contents.NumberOfEntries);
-			if (is64bit) infoArrayCount = infoArrayCount : 2;
-			new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
+			if (is64bit) infoArrayCount = 2;
+			PSAPI_WORKING_SET_INFORMATION = new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
 				{ NumberOfEntries : ULONG_PTR },
 				{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, infoArrayCount) }
 			]);
