@@ -144,16 +144,21 @@ function getMemory() {
 	var self, PSAPI_WORKING_SET_INFORMATION;
 	var tryCount = 0;
 	do {
-		if (tryCount > 1) {
+		if (tryCount == 0) {
+			PSAPI_WORKING_SET_INFORMATION = PSAPI_WORKING_SET_INFORMATION_FIRST;
+		}
+		else if (tryCount == 1) {
+			let infoArrayCount = parseInt(self.contents.NumberOfEntries);
+			if (is64bit) infoArrayCount = infoArrayCount : 2;
+			new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
+				{ NumberOfEntries : ULONG_PTR },
+				{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, infoArrayCount) }
+			]);
+		}
+		else {
 			selfUsed = gLastSelfUsed;
 			break;
 		}
-		PSAPI_WORKING_SET_INFORMATION = !tryCount ?
-			PSAPI_WORKING_SET_INFORMATION_FIRST :
-			new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
-				{ NumberOfEntries : ULONG_PTR },
-				{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, parseInt(self.contents.NumberOfEntries)) }
-			]);
 		if (self) PR_Free(self);
 		self = PR_Calloc(1, PSAPI_WORKING_SET_INFORMATION.size);
 		self = ctypes.cast(self, PSAPI_WORKING_SET_INFORMATION.ptr);
