@@ -1,6 +1,6 @@
 // http://mxr.mozilla.org/mozilla-central/source/nsprpub/pr/include/prmem.h
 
-var EXPORTED_SYMBOLS = ['PR_Malloc', 'PR_Calloc', 'PR_Realloc', 'PR_Free'];
+const EXPORTED_SYMBOLS = ['PR_Malloc', 'PR_Calloc', 'PR_Realloc', 'PR_Free'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -12,12 +12,12 @@ const OS = Cc['@mozilla.org/xre/app-info;1']
 			.QueryInterface(Ci.nsIXULRuntime)
 			.OS.toLowerCase();
 
-const gNspr4 = OS.indexOf('win') == 0 ?
-				ctypes.open('nspr4.dll') :
+const gNspr4 = OS.indexOf('darwin') == 0 ?
+				ctypes.open('libnspr4.dylib') :
 			OS.indexOf('linux') == 0 ?
 				ctypes.open('libnspr4.so') :
-			OS.indexOf('darwin') == 0 ?
-				ctypes.open('libnspr4.dylib') :
+			OS.indexOf('win') == 0 ?
+				ctypes.open('nspr4.dll') :
 			undefined ;
 
 if (typeof gNspr4 == 'undefined')
