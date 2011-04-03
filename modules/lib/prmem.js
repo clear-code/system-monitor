@@ -2,26 +2,9 @@
 
 const EXPORTED_SYMBOLS = ['PR_Malloc', 'PR_Calloc', 'PR_Realloc', 'PR_Free'];
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 
-const OS = Cc['@mozilla.org/xre/app-info;1']
-			.getService(Ci.nsIXULAppInfo)
-			.QueryInterface(Ci.nsIXULRuntime)
-			.OS.toLowerCase();
-
-const gNspr4 = OS.indexOf('darwin') == 0 ?
-				ctypes.open('libnspr4.dylib') :
-			OS.indexOf('linux') == 0 ?
-				ctypes.open('libnspr4.so') :
-			OS.indexOf('win') == 0 ?
-				ctypes.open('nspr4.dll') :
-			undefined ;
-
-if (typeof gNspr4 == 'undefined')
-	throw new Error('unknown platform');
+const gNspr4 = ctypes.open(ctypes.libraryName('nspr4'));
 
 const PR_Malloc = gNspr4.declare(
 		'PR_Malloc',
