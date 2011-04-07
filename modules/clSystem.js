@@ -6,10 +6,17 @@ const Ci = Components.interfaces;
 const PERMISSION_NAME = 'system-monitor';
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
-Components.utils.import('resource://gre/modules/Services.jsm');
 
-XPCOMUtils.defineLazyGetter(this, 'ObserverService', function () {
-	return Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
+XPCOMUtils.defineLazyGetter(this, 'Services', function () {
+	var ns = {};
+	Components.utils.import('resource://gre/modules/Services.jsm', ns);
+	return ns.Services;
+});
+
+XPCOMUtils.defineLazyGetter(this, 'Deferred', function () {
+	var ns = {};
+	Components.utils.import('resource://system-monitor-modules/lib/jsdeferred.js');
+	return ns.Deferred;
 });
 
 XPCOMUtils.defineLazyGetter(this, 'XULAppInfo', function () {
@@ -37,19 +44,19 @@ function getDOMWindowUtils(aWindow) {
 }
 
 
-function clSystem() { 
+function clSystem() {
 	if (Comparator.compare(XULAppInfo.platformVersion, '1.9.99') <= 0)
 		throw new Error('initialization error: JavaScript implementations are available on Gecko 2.0 o later.');
 
 	this.monitors = [];
 	this.cpu = new clCPU();
-	ObserverService.addObserver(this, this.type, false);
+	Services.obs.addObserver(this, this.type, false);
 }
 clSystem.prototype = {
-	classDescription : 'clSystem', 
+	classDescription : 'clSystem',
 	contractID : '@clear-code.com/system;2',
 	classID : Components.ID('{12ae3fc0-4883-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([ 
+	QueryInterface : XPCOMUtils.generateQI([
 		Ci.clISystem,
 		Ci.clISystemInternal,
 		Ci.nsIObserver,
@@ -78,23 +85,17 @@ clSystem.prototype = {
 		}, this);
 	},
 
-	isAllowedURISpec: function (aUriSpec) {
-		if (!aUriSpec)
-			return true;
-
-		var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
-		var uri = ios.newURI(aUriSpec, null, null);
-		var result = Services.perms.testExactPermission(uri, PERMISSION_NAME);
-
-		return result === Ci.nsIPermissionManager.ALLOW_ACTION ||
-			uri.schemeIs('chrome') ||
-			uri.schemeIs('resource');
-	},
-
 	addMonitorWithOwner : function(aTopic, aMonitor, aInterval, aOwner) {
-		if (aOwner && !this.isAllowedURISpec(aOwner.location.href))
-			return false;
-
+		switch (this.getPermission(aOwner)) {
+			case Ci.nsIPermissionManager.DENY_ACTION:
+				return false;
+			case Ci.nsIPermissionManager.ALLOW_ACTION:
+				return this._addMonitorWithOwnerInternal(aTopic, aMonitor, aInterval, aOwner);
+		}
+		// XXX ask to user
+		return true;
+	},
+	_addMonitorWithOwnerInternal : function(aTopic, aMonitor, aInterval, aOwner) {
 		if (this.monitors.every(function(aExistingMonitor) {
 				return !aExistingMonitor.equals(aTopic, aMonitor);
 			})) {
@@ -112,7 +113,7 @@ clSystem.prototype = {
 
 	type : 'quit-application-granted',
 	observe : function(aSubject, aTopic, aData) {
-		ObserverService.removeObserver(this, this.type);
+		Services.obs.removeObserver(this, this.type);
 		this.removeAllMonitors();
 		delete this.ownerUtils;
 		delete this.ownerID;
@@ -120,6 +121,21 @@ clSystem.prototype = {
 
 	get owner() {
 		return this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID);
+	},
+
+	getPermission : function(aGlobal) {
+		if (!aGlobal)
+			return Ci.nsIPermissionManager.ALLOW_ACTION;
+
+		var location = aGlobal.location;
+		if (!location)
+			return Ci.nsIPermissionManager.ALLOW_ACTION;
+
+		var uri = Services.io.newURI(location.href, null, null);
+		if (uri.schemeIs('chrome') || uri.schemeIs('resource'))
+			return Ci.nsIPermissionManager.ALLOW_ACTION;
+
+		return Services.perms.testExactPermission(uri, PERMISSION_NAME);
 	},
 
 	// nsIDOMGlobalPropertyInitializer
@@ -143,7 +159,7 @@ clSystem.prototype = {
 };
 
 var gCPU;
-function clCPU() { 
+function clCPU() {
 	if (gCPU)
 		return gCPU;
 
@@ -152,10 +168,10 @@ function clCPU() {
 	return gCPU = this;
 }
 clCPU.prototype = {
-	classDescription : 'clCPU', 
+	classDescription : 'clCPU',
 	contractID : '@clear-code.com/system/cpu;2',
 	classID : Components.ID('{ae145a80-4883-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([ 
+	QueryInterface : XPCOMUtils.generateQI([
 		Ci.clICPU
 	]),
 
@@ -242,7 +258,7 @@ clCPU.loadUtils = function() {
 	this.prototype.utils = utils;
 };
 
-function clCPUTime(aCPUTime) { 
+function clCPUTime(aCPUTime) {
 	this.user    = aCPUTime.user;
 	this.nice    = aCPUTime.nice;
 	this.system  = aCPUTime.system;
@@ -250,10 +266,10 @@ function clCPUTime(aCPUTime) {
 	this.io_wait = aCPUTime.iowait;
 }
 clCPUTime.prototype = {
-	classDescription : 'clCPUTime', 
+	classDescription : 'clCPUTime',
 	contractID : '@clear-code.com/system/time;2',
 	classID : Components.ID('{eb5ea940-4883-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([ 
+	QueryInterface : XPCOMUtils.generateQI([
 		Ci.clICPUTime
 	]),
 
@@ -262,7 +278,7 @@ clCPUTime.prototype = {
 	}
 };
 
-function clMemory() { 
+function clMemory() {
 	clMemory.loadUtils();
 	var memory = this.utils.getMemory();
 	this.total       = memory.total;
@@ -272,10 +288,10 @@ function clMemory() {
 	this.self        = memory.self;
 }
 clMemory.prototype = {
-	classDescription : 'clMemory', 
+	classDescription : 'clMemory',
 	contractID : '@clear-code.com/system/memory;2',
 	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([ 
+	QueryInterface : XPCOMUtils.generateQI([
 		Ci.clIMemory
 	]),
 
@@ -308,7 +324,7 @@ function MonitorData(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.init(aOwner);
 }
 MonitorData.prototype = {
-	QueryInterface : XPCOMUtils.generateQI([ 
+	QueryInterface : XPCOMUtils.generateQI([
 		Ci.nsITimerCallback
 	]),
 
