@@ -3,8 +3,10 @@ var EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory'];
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 
-Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+const PERMISSION_NAME = 'system-monitor';
 
+Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+Components.utils.import('resource://gre/modules/Services.jsm');
 
 XPCOMUtils.defineLazyGetter(this, 'ObserverService', function () {
 	return Cc['@mozilla.org/observer-service;1'].getService(Ci.nsIObserverService);
@@ -76,7 +78,23 @@ clSystem.prototype = {
 		}, this);
 	},
 
+    isAllowedURISpec: function (aUriSpec) {
+        if (!aUriSpec)
+            return true;
+
+        var ios = Cc['@mozilla.org/network/io-service;1'].getService(Ci.nsIIOService);
+        var uri = ios.newURI(aUriSpec, null, null);
+        var result = Services.perms.testExactPermission(uri, PERMISSION_NAME);
+
+        return result === Ci.nsIPermissionManager.ALLOW_ACTION ||
+            uri.schemeIs('chrome') ||
+            uri.schemeIs('resource');
+    },
+
 	addMonitorWithOwner : function(aTopic, aMonitor, aInterval, aOwner) {
+            if (aOwner && !this.isAllowedURISpec(aOwner.location.href))
+                return false;
+
 		if (this.monitors.every(function(aExistingMonitor) {
 				return !aExistingMonitor.equals(aTopic, aMonitor);
 			})) {
