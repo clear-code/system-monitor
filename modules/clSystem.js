@@ -19,18 +19,6 @@ XPCOMUtils.defineLazyGetter(this, 'Deferred', function () {
 	return ns.Deferred;
 });
 
-XPCOMUtils.defineLazyGetter(this, 'XULAppInfo', function () {
-	return Cc['@mozilla.org/xre/app-info;1'].getService(Ci.nsIXULAppInfo).QueryInterface(Ci.nsIXULRuntime);
-});
-
-XPCOMUtils.defineLazyGetter(this, 'OS', function () {
-	return XULAppInfo.OS.toLowerCase();
-});
-
-XPCOMUtils.defineLazyGetter(this, 'Comparator', function () {
-	return Cc['@mozilla.org/xpcom/version-comparator;1'].getService(Ci.nsIVersionComparator);
-});
-
 function getDOMWindowUtils(aWindow) {
 	try {
 		var utils = aWindow
@@ -45,7 +33,7 @@ function getDOMWindowUtils(aWindow) {
 
 
 function clSystem() {
-	if (Comparator.compare(XULAppInfo.platformVersion, '1.9.99') <= 0)
+	if (Services.vc.compare(Services.appinfo.platformVersion, '1.9.99') <= 0)
 		throw new Error('initialization error: JavaScript implementations are available on Gecko 2.0 o later.');
 
 	this.monitors = [];
@@ -246,6 +234,7 @@ clCPU.loadUtils = function() {
 		return;
 
 	var utils = {};
+	var OS = Services.appinfo.OS.toLowerCase();
 	if (OS.indexOf('win') == 0)
 		Components.utils.import('resource://system-monitor-modules/WINNT/cpu.js', utils);
 	else if (OS.indexOf('linux') == 0)
@@ -304,6 +293,7 @@ clMemory.loadUtils = function() {
 		return;
 
 	var utils = {};
+	var OS = Services.appinfo.OS.toLowerCase();
 	if (OS.indexOf('win') == 0)
 		Components.utils.import('resource://system-monitor-modules/WINNT/memory.js', utils);
 	else if (OS.indexOf('linux') == 0)
@@ -405,5 +395,3 @@ MonitorData.prototype = {
 	}
 };
 
-if (XPCOMUtils.generateNSGetFactory)
-	var NSGetFactory = XPCOMUtils.generateNSGetFactory([clSystem, clCPU, clCPUTime, clMemory]);
