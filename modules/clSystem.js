@@ -4,6 +4,11 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 const PERMISSION_NAME = 'system-monitor';
+const PERMISSION_CONFIRM_ID = 'system-monitor-add-monitor';
+const PERMISSION_CONFIRM_ICON = 'chrome://system-monitor/content/icon.png';
+const PERMISSION_CONFIRM_ICON_WIDTH = 32;
+const PERMISSION_CONFIRM_ICON_HEIGHT = 32;
+const STRING_BUNDLE_URL = 'chrome://system-monitor/locale/system-monitor.properties';
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
@@ -15,8 +20,20 @@ XPCOMUtils.defineLazyGetter(this, 'Services', function () {
 
 XPCOMUtils.defineLazyGetter(this, 'Deferred', function () {
 	var ns = {};
-	Components.utils.import('resource://system-monitor-modules/lib/jsdeferred.js');
+	Components.utils.import('resource://system-monitor-modules/lib/jsdeferred.js', ns);
 	return ns.Deferred;
+});
+
+XPCOMUtils.defineLazyGetter(this, 'confirmWithPopup', function () {
+	var ns = {};
+	Components.utils.import('resource://system-monitor-modules/lib/confirmWithPopup.js', ns);
+	return ns.confirmWithPopup;
+});
+
+XPCOMUtils.defineLazyGetter(this, 'bundle', function () {
+	var ns = {};
+	Components.utils.import('resource://system-monitor-modules/lib/stringBundle.js', ns);
+	return ns.stringBundle.get(STRING_BUNDLE_URL);
 });
 
 function getDOMWindowUtils(aWindow) {
@@ -29,6 +46,18 @@ function getDOMWindowUtils(aWindow) {
 	catch(e) {
 	}
 	return null;
+}
+
+function getOwnerFrameElement(aWindow) {
+	if (!aWindow || !(aWindow instanceof Ci.nsIDOMWindow))
+		return null;
+
+	return aWindow
+			.top
+			.QueryInterface(Ci.nsIInterfaceRequestor)
+			.getInterface(Ci.nsIWebNavigation)
+			.QueryInterface(Ci.nsIDocShell)
+			.chromeEventHandler;
 }
 
 
@@ -80,7 +109,11 @@ clSystem.prototype = {
 			case Ci.nsIPermissionManager.ALLOW_ACTION:
 				return this._addMonitorWithOwnerInternal(aTopic, aMonitor, aInterval, aOwner);
 		}
-		// XXX ask to user
+		var self = this;
+		this._ensureAllowed(aOwner)
+			.next(function() {
+				self._addMonitorWithOwnerInternal(aTopic, aMonitor, aInterval, aOwner);
+			});
 		return true;
 	},
 	_addMonitorWithOwnerInternal : function(aTopic, aMonitor, aInterval, aOwner) {
@@ -91,6 +124,45 @@ clSystem.prototype = {
 			return true;
 		}
 		return false;
+	},
+	_ensureAllowed : function(aOwner) {
+		var self = this;
+		var uri  = Services.io.newURI(aOwner.location.href, null, null)
+		return confirmWithPopup({
+					browser     : getOwnerFrameElement(aOwner),
+					label       : bundle.getFormattedString('permission_confirm_text', [uri.host]),
+					value       : PERMISSION_CONFIRM_ID,
+					image       : PERMISSION_CONFIRM_ICON,
+					imageWidth  : PERMISSION_CONFIRM_ICON_WIDTH.
+					imageHeight : PERMISSION_CONFIRM_ICON_HEIGHT,
+					buttons     : [
+						bundle.getString('permission_confirm_yes'),
+						bundle.getString('permission_confirm_yes_forever'),
+						bundle.getString('permission_confirm_no_forever')
+					]
+				})
+				.next(function(aButtonIndex) {
+					var permission , expire;
+					switch (aButtonIndex) {
+						case 0:
+							permission = Ci.nsIPermissionManager.ALLOW_ACTION;
+							expire = Ci.nsIPermissionManager.EXPIRE_SESSION;
+							break;
+						case 1:
+							permission = Ci.nsIPermissionManager.ALLOW_ACTION;
+							expire = Ci.nsIPermissionManager.EXPIRE_NEVER;
+							break;
+						case 2:
+							permission = Ci.nsIPermissionManager.DENY_ACTION;
+							expire = Ci.nsIPermissionManager.EXPIRE_NEVER;
+							break;
+						default:
+							permission = Ci.nsIPermissionManager.DENY_ACTION;
+							expire = Ci.nsIPermissionManager.EXPIRE_SESSION;
+							break;
+					}
+					Services.perms.add(uri, PERMISSION_NAME, permission, expire);
+				});
 	},
 
 	removeAllMonitors : function() {
