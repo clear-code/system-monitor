@@ -6,8 +6,6 @@ const Ci = Components.interfaces;
 const PERMISSION_NAME = 'system-monitor';
 const PERMISSION_CONFIRM_ID = 'system-monitor-add-monitor';
 const PERMISSION_CONFIRM_ICON = 'chrome://system-monitor/content/icon.png';
-const PERMISSION_CONFIRM_ICON_WIDTH = 32;
-const PERMISSION_CONFIRM_ICON_HEIGHT = 32;
 const STRING_BUNDLE_URL = 'chrome://system-monitor/locale/system-monitor.properties';
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
@@ -129,13 +127,11 @@ clSystem.prototype = {
 		var self = this;
 		var uri  = Services.io.newURI(aOwner.location.href, null, null)
 		return confirmWithPopup({
-					browser     : getOwnerFrameElement(aOwner),
-					label       : bundle.getFormattedString('permission_confirm_text', [uri.host]),
-					value       : PERMISSION_CONFIRM_ID,
-					image       : PERMISSION_CONFIRM_ICON,
-					imageWidth  : PERMISSION_CONFIRM_ICON_WIDTH,
-					imageHeight : PERMISSION_CONFIRM_ICON_HEIGHT,
-					buttons     : [
+					browser : getOwnerFrameElement(aOwner),
+					label   : bundle.getFormattedString('permission_confirm_text', [uri.host]),
+					value   : PERMISSION_CONFIRM_ID,
+					image   : PERMISSION_CONFIRM_ICON,
+					buttons : [
 						bundle.getString('permission_confirm_yes'),
 						bundle.getString('permission_confirm_yes_forever'),
 						bundle.getString('permission_confirm_no_forever')

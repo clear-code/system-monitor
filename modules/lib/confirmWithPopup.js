@@ -13,8 +13,6 @@
  *     value   : 'treestyletab-undo-close-tree',      // the internal key (optional)
  *     anchor  : '....',                              // the ID of the anchor element (optional)
  *     image   : 'chrome://....png',                  // the icon (optional)
- *     imageWidth : 32,                               // the width of the icon (optional)
- *     imageHeight : 32,                              // the height of the icon (optional)
  *     buttons : ['Yes', 'Yes forever', 'No forever], // button labels
  *     options : {
  *       // persistence, timeout, persistWhileVisible, dismissed,
@@ -94,6 +92,43 @@ var confirmWithPopup;
 
 	const DEFAULT_ANCHOR_ICON = 'default-notification-icon';
 
+	function waitImageLoad(aImage, aURI) {
+		var deferred = new namespace.Deferred();
+		aImage.src = aURI;
+		aImage.onload = function() {
+			deferred.call(aImage);
+		};
+		aImage.onerror = function() {
+			deferred.call(null);
+		};
+		return deferred;
+	}
+
+	function addStyleSheet(aDocument, aOptions) {
+		var uri = 'data:text/css,'+encodeURIComponent(
+				'.popup-notification-icon[popupid="'+aOptions.id+'"] {'+
+				'	list-style-image: url("'+aOptions.image+'");'+
+				(aOptions.width ? 'width: '+aOptions.width+'px;' : '' )+
+				(aOptions.height ? 'height: '+aOptions.height+'px;' : '' )+
+				'}'+
+				'#notification-popup-box[anchorid="'+aOptions.anchor+'"] > #'+aOptions.anchor+' {'+
+				'	display: -moz-box;'+
+				'}'
+			);
+
+		var styleSheets = aDocument.styleSheets;
+		for (var i = 0, maxi = styleSheets.length; i < maxi; i++) {
+			if (styleSheets[i].href == uri)
+				return styleSheets[i].ownerNode;
+		}
+
+		var style = aDocument.createProcessingInstruction('xml-stylesheet',
+				'type="text/css" href="'+uri+'"'
+			);
+		aDocument.insertBefore(style, aDocument.documentElement);
+		return style;
+	}
+
 	confirmWithPopup = function confirmWithPopup(aOptions) 
 	{
 		var deferred = new namespace.Deferred();
@@ -117,7 +152,9 @@ var confirmWithPopup;
 
 		var doc = browser.ownerDocument;
 		var style;
-		namespace.Deferred.next(function() {
+		var imageWidth = aOptions.imageWidth;
+		var imageHeight = aOptions.imageHeight;
+		var showPopup = function() {
 			var accessKeys = [];
 			var numericAccessKey = 0;
 			var buttons = aOptions.buttons.map(function(aLabel, aIndex) {
@@ -165,64 +202,85 @@ var confirmWithPopup;
 					};
 				});
 
+			var primaryAction = buttons[0];
 			var secondaryActions = buttons.length > 1 ? buttons.slice(1) : null ;
-
-			var options = {
-					__proto__     : aOptions.options,
-					eventCallback : function(aEventType) {
-						if (aEventType == 'dismissed')
-							deferred.fail(aEventType);
-						if (aOptions.options && 
-							aOptions.options.eventCallback)
-							aOptions.options.eventCallback(aEventType);
-					}
-				};
 
 			var id = aOptions.value || 'confirmWithPopup-'+encodeURIComponent(aOptions.label);
 			var anchor = aOptions.anchor || DEFAULT_ANCHOR_ICON;
 
-			if (aOptions.image) {
-				style = doc.createProcessingInstruction('xml-stylesheet',
-						'type="text/css" href="data:text/css,'+encodeURIComponent(
-							'.popup-notification-icon[popupid="'+id+'"] {'+
-							'	list-style-image: url("'+aOptions.image+'");'+
-							(aOptions.imageWidth ? 'width: '+aOptions.imageWidth+'px;' : '' )+
-							(aOptions.imageHeight ? 'height: '+aOptions.imageHeight+'px;' : '' )+
-							'}'+
-							'#notification-popup-box[anchorid="'+anchor+'"] > #'+anchor+' {'+
-							'	display: -moz-box;'+
-							'}'
-						)+'"'
-				);
-				doc.insertBefore(style, doc.documentElement);
-			}
+			if (aOptions.image)
+				style = addStyleSheet(doc, {
+					image  : aOptions.image,
+					id     : id,
+					width  : imageWidth,
+					height : imageHeight,
+					anchor : anchor
+				});
 
 			try {
+				/**
+				 * 1st try: Prepare the anchor icon. If the icon isn't shown,
+				 *          the popup is wrongly positioned to the current tab
+				 *          by PopupNotifications.show().
+				 */
 				doc.defaultView.PopupNotifications.show(
 					browser,
 					id,
 					aOptions.label,
 					anchor,
-					buttons[0],
+					primaryAction,
 					secondaryActions,
-					options
+					{
+						__proto__ : aOptions.options,
+						dismissed : true
+					}
 				);
+				if (!aOptions.options || !aOptions.options.dismissed) {
+					/**
+					 * 2nd try: Show the popup.
+					 */
+					namespace.Deferred.next(function() {
+						doc.defaultView.PopupNotifications.show(
+							browser,
+							id,
+							aOptions.label,
+							anchor,
+							primaryAction,
+							secondaryActions,
+							{
+								__proto__     : aOptions.options,
+								eventCallback : function(aEventType) {
+									if (aEventType == 'dismissed')
+										deferred.fail(aEventType);
+									if (aOptions.options && 
+										aOptions.options.eventCallback)
+										aOptions.options.eventCallback(aEventType);
+								}
+							}
+						);
+					});
+				}
 			}
 			catch(e) {
 				deferred.fail(e);
 			}
-		});
+		};
+
+		if (aOptions.image && (!imageWidth || !imageHeight)) {
+			waitImageLoad(new doc.defaultView.Image(), aOptions.image)
+				.next(function(aImage) {
+					imageWidth = aImage.width;
+					imageHeight = aImage.height;
+				})
+				.next(showPopup);
+		}
+		else {
+			namespace.Deferred.next(showPopup);
+		}
 
 		return deferred
 				.next(function(aButtonIndex) {
-//					if (doc && style) doc.removeChild(style);
-					return aButtonIndex;
-				})
-				.error(function(aError) {
-//					if (doc && style) doc.removeChild(style);
-					throw aError;
-				})
-				.next(function(aButtonIndex) {
+					if (doc && style) doc.removeChild(style);
 					return aButtonIndex;
 				});
 	};
