@@ -11,6 +11,7 @@
  *     browser : gBrowser.selectedBrowser,            // the related browser
  *     label   : 'Ara you ready?',                    // the message
  *     value   : 'treestyletab-undo-close-tree',      // the internal key (optional)
+ *     anchor  : '....',                              // the ID of the anchor element (optional)
  *     image   : 'chrome://....png',                  // the icon (optional)
  *     imageWidth : 32,                               // the width of the icon (optional)
  *     imageHeight : 32,                              // the height of the icon (optional)
@@ -90,6 +91,8 @@ var confirmWithPopup;
 
 	if (!available)
 		return confirmWithPopup = unavailable;
+
+	const DEFAULT_ANCHOR_ICON = 'default-notification-icon';
 
 	confirmWithPopup = function confirmWithPopup(aOptions) 
 	{
@@ -176,6 +179,7 @@ var confirmWithPopup;
 				};
 
 			var id = aOptions.value || 'confirmWithPopup-'+encodeURIComponent(aOptions.label);
+			var anchor = aOptions.anchor || DEFAULT_ANCHOR_ICON;
 
 			if (aOptions.image) {
 				style = doc.createProcessingInstruction('xml-stylesheet',
@@ -184,6 +188,9 @@ var confirmWithPopup;
 							'	list-style-image: url("'+aOptions.image+'");'+
 							(aOptions.imageWidth ? 'width: '+aOptions.imageWidth+'px;' : '' )+
 							(aOptions.imageHeight ? 'height: '+aOptions.imageHeight+'px;' : '' )+
+							'}'+
+							'#notification-popup-box[anchorid="'+anchor+'"] > #'+anchor+' {'+
+							'	display: -moz-box;'+
 							'}'
 						)+'"'
 				);
@@ -195,7 +202,7 @@ var confirmWithPopup;
 					browser,
 					id,
 					aOptions.label,
-					null,
+					anchor,
 					buttons[0],
 					secondaryActions,
 					options
