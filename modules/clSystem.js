@@ -133,7 +133,7 @@ clSystem.prototype = {
 					label       : bundle.getFormattedString('permission_confirm_text', [uri.host]),
 					value       : PERMISSION_CONFIRM_ID,
 					image       : PERMISSION_CONFIRM_ICON,
-					imageWidth  : PERMISSION_CONFIRM_ICON_WIDTH.
+					imageWidth  : PERMISSION_CONFIRM_ICON_WIDTH,
 					imageHeight : PERMISSION_CONFIRM_ICON_HEIGHT,
 					buttons     : [
 						bundle.getString('permission_confirm_yes'),
