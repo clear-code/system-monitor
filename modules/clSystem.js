@@ -1,12 +1,18 @@
-var EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory'];
-
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+const PACKAGE_NAME = 'system-monitor';
+const MODULES_ROOT = 'resource://system-monitor-modules/';
 
 const PERMISSION_NAME = 'system-monitor';
 const PERMISSION_CONFIRM_ID = 'system-monitor-add-monitor';
-const PERMISSION_CONFIRM_ICON = 'chrome://system-monitor/content/icon.png';
-const STRING_BUNDLE_URL = 'chrome://system-monitor/locale/system-monitor.properties';
+const PERMISSION_CONFIRM_ICON = 'chrome://'+PACKAGE_NAME+'/content/icon.png';
+const STRING_BUNDLE_URL = 'chrome://'+PACKAGE_NAME+'/locale/system-monitor.properties';
+
+const PERMISSION_DENIED_TOPIC = 'system-monitor:permission-denied';
+const PERMISSION_UNKNOWN_TOPIC = 'system-monitor:unknown-permission';
+
+const EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory'];
+
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 
@@ -18,19 +24,19 @@ XPCOMUtils.defineLazyGetter(this, 'Services', function () {
 
 XPCOMUtils.defineLazyGetter(this, 'Deferred', function () {
 	var ns = {};
-	Components.utils.import('resource://system-monitor-modules/lib/jsdeferred.js', ns);
+	Components.utils.import(MODULES_ROOT+'lib/jsdeferred.js', ns);
 	return ns.Deferred;
 });
 
 XPCOMUtils.defineLazyGetter(this, 'confirmWithPopup', function () {
 	var ns = {};
-	Components.utils.import('resource://system-monitor-modules/lib/confirmWithPopup.js', ns);
+	Components.utils.import(MODULES_ROOT+'lib/confirmWithPopup.js', ns);
 	return ns.confirmWithPopup;
 });
 
 XPCOMUtils.defineLazyGetter(this, 'bundle', function () {
 	var ns = {};
-	Components.utils.import('resource://system-monitor-modules/lib/stringBundle.js', ns);
+	Components.utils.import(MODULES_ROOT+'lib/stringBundle.js', ns);
 	return ns.stringBundle.get(STRING_BUNDLE_URL);
 });
 
@@ -103,10 +109,12 @@ clSystem.prototype = {
 	addMonitorWithOwner : function(aTopic, aMonitor, aInterval, aOwner) {
 		switch (this.getPermission(aOwner)) {
 			case Ci.nsIPermissionManager.DENY_ACTION:
+				Services.obs.notifyObservers(aOwner, PERMISSION_DENIED_TOPIC, null);
 				return false;
 			case Ci.nsIPermissionManager.ALLOW_ACTION:
 				return this._addMonitorWithOwnerInternal(aTopic, aMonitor, aInterval, aOwner);
 		}
+		Services.obs.notifyObservers(aOwner, PERMISSION_UNKNOWN_TOPIC, null);
 		var self = this;
 		this._ensureAllowed(aOwner)
 			.next(function() {
@@ -138,7 +146,7 @@ clSystem.prototype = {
 					]
 				})
 				.next(function(aButtonIndex) {
-					var permission , expire;
+					var permission, expire;
 					switch (aButtonIndex) {
 						case 0:
 							permission = Ci.nsIPermissionManager.ALLOW_ACTION;
@@ -153,9 +161,7 @@ clSystem.prototype = {
 							expire = Ci.nsIPermissionManager.EXPIRE_NEVER;
 							break;
 						default:
-							permission = Ci.nsIPermissionManager.DENY_ACTION;
-							expire = Ci.nsIPermissionManager.EXPIRE_SESSION;
-							break;
+							return;
 					}
 					Services.perms.add(uri, PERMISSION_NAME, permission, expire);
 				});
@@ -304,11 +310,11 @@ clCPU.loadUtils = function() {
 	var utils = {};
 	var OS = Services.appinfo.OS.toLowerCase();
 	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/WINNT/cpu.js', utils);
+		Components.utils.import(MODULES_ROOT+'WINNT/cpu.js', utils);
 	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
+		Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
+		Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
 	else
 		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
 
@@ -363,11 +369,11 @@ clMemory.loadUtils = function() {
 	var utils = {};
 	var OS = Services.appinfo.OS.toLowerCase();
 	if (OS.indexOf('win') == 0)
-		Components.utils.import('resource://system-monitor-modules/WINNT/memory.js', utils);
+		Components.utils.import(MODULES_ROOT+'WINNT/memory.js', utils);
 	else if (OS.indexOf('linux') == 0)
-		Components.utils.import('resource://system-monitor-modules/Linux/utils.js', utils);
+		Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
 	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import('resource://system-monitor-modules/Darwin/utils.js', utils);
+		Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
 	else
 		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
 

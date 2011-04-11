@@ -9,6 +9,12 @@
 #include <nsComponentManagerUtils.h>
 #include <nsServiceManagerUtils.h>
 #include <nsITimer.h>
+#include <nsIObserverService.h>
+#include <nsPIDOMWindow.h>
+#include <nsIDocShell.h>
+#include <nsIWebNavigation.h>
+#include <nsIPermissionManager.h>
+#include <nsIURI.h>
 #include <nsCRT.h>
 
 #ifdef HAVE_LIBGTOP2
@@ -67,10 +73,61 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     return NS_FAILED(rv) ? NS_ERROR_FAILURE : NS_OK;
 }
 
+#include <stdio.h>
+
+PRBool
+EnsureAllowed(nsIDOMWindow *aOwner)
+{
+    if (!aOwner)
+        return PR_TRUE;
+
+    nsresult rv;
+
+    nsCOMPtr<nsPIDOMWindow> window = do_QueryInterface(aOwner);
+    nsCOMPtr<nsIDocShell> docShell = window->GetDocShell();
+    nsCOMPtr<nsIWebNavigation> webNavigation = do_QueryInterface(docShell);
+    nsCOMPtr<nsIURI> uri;
+    rv = webNavigation->GetCurrentURI(getter_AddRefs(uri));
+    if (NS_FAILED(rv))
+        return PR_FALSE;
+
+    PRBool isChrome = PR_FALSE;
+    if ((NS_SUCCEEDED(uri->SchemeIs("chrome", &isChrome)) && isChrome) ||
+        (NS_SUCCEEDED(uri->SchemeIs("resource", &isChrome)) && isChrome))
+        return PR_TRUE;
+
+    nsCOMPtr<nsIPermissionManager> permissionManager = do_GetService(NS_PERMISSIONMANAGER_CONTRACTID, &rv);
+    if (NS_FAILED(rv))
+        return PR_FALSE;
+
+    PRUint32 permission;
+    rv = permissionManager->TestExactPermission(uri, "system-monitor", &permission);
+    if (NS_FAILED(rv))
+        return PR_FALSE;
+
+    nsCOMPtr<nsIObserverService> os = do_GetService(NS_OBSERVERSERVICE_CONTRACTID, &rv);
+    if (permission != nsIPermissionManager::ALLOW_ACTION) {
+        if (permission == nsIPermissionManager::DENY_ACTION)
+          os->NotifyObservers(static_cast<nsISupports *>(window),
+                              "system-monitor:permission-denied",
+                              nsnull);
+        else
+          os->NotifyObservers(static_cast<nsISupports *>(window),
+                              "system-monitor:unknown-permission",
+                              nsnull);
+        return PR_FALSE;
+    }
+
+    return PR_TRUE;
+}
+
 NS_IMETHODIMP
 clSystem::AddMonitorWithOwner(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt32 aInterval, nsIDOMWindow *aOwner, PRBool *_retval NS_OUTPARAM)
 {
     *_retval = PR_FALSE;
+
+    if (EnsureAllowed(aOwner) == PR_FALSE)
+      return NS_OK;
 
     nsresult rv;
     nsCOMPtr<nsITimer> timer = do_CreateInstance("@mozilla.org/timer;1", &rv);
