@@ -15,6 +15,8 @@
 #include <nsIWebNavigation.h>
 #include <nsIPermissionManager.h>
 #include <nsIURI.h>
+#include <nsIPropertyBag2.h>
+#include <nsIVariant.h>
 #include <nsCRT.h>
 
 #ifdef HAVE_LIBGTOP2
@@ -73,8 +75,6 @@ clSystem::AddMonitor(const nsAString & aTopic, clISystemMonitor *aMonitor, PRInt
     return NS_FAILED(rv) ? NS_ERROR_FAILURE : NS_OK;
 }
 
-#include <stdio.h>
-
 PRBool
 EnsureAllowed(nsIDOMWindow *aOwner)
 {
@@ -95,6 +95,19 @@ EnsureAllowed(nsIDOMWindow *aOwner)
     if ((NS_SUCCEEDED(uri->SchemeIs("chrome", &isChrome)) && isChrome) ||
         (NS_SUCCEEDED(uri->SchemeIs("resource", &isChrome)) && isChrome))
         return PR_TRUE;
+
+    nsCOMPtr<nsIPropertyBag2> clPermission = do_GetService("@clear-code.com/system/permission;1", &rv);
+    if (NS_SUCCEEDED(rv)) {
+        nsCAutoString host;
+        uri->GetHost(host);
+        nsCOMPtr<nsIVariant> temporaryAllowed;
+        if (NS_SUCCEEDED(clPermission->Get(NS_ConvertASCIItoUTF16(host),
+                                           getter_AddRefs(temporaryAllowed)))) {
+            PRBool temporaryAllowedValue;
+            if (NS_SUCCEEDED(temporaryAllowed->GetAsBool(&temporaryAllowedValue)))
+                return temporaryAllowedValue;
+        }
+    }
 
     nsCOMPtr<nsIPermissionManager> permissionManager = do_GetService(NS_PERMISSIONMANAGER_CONTRACTID, &rv);
     if (NS_FAILED(rv))

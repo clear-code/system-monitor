@@ -54,8 +54,13 @@ clSystemPermission.prototype = {
 		{ category : 'app-startup', service : true }
 	],
 	QueryInterface : XPCOMUtils.generateQI([
-		Ci.nsIObserver
+		Ci.nsIObserver,
+		Ci.nsIPropertyBag2
 	]),
+
+	get wrappedJSObject() { return this; },
+
+	temporaryAllowedSites : {},
 
 	get bundle() {
 		if (!this._bundle) {
@@ -77,6 +82,7 @@ clSystemPermission.prototype = {
 	},
 	_confirmWithTab : null,
 
+	// nsIObserver
 	observe : function(aSubject, aTopic, aData) {
 		switch (aTopic)
 		{
@@ -99,6 +105,13 @@ clSystemPermission.prototype = {
 		}
 	},
 
+	// nsIPropertyBag2
+	get : function(aHost) {
+		if (this.temporaryAllowedSites.hasOwnProperty(aHost))
+			return this.temporaryAllowedSites[aHost];
+		throw Components.results.NS_ERROR_FAILURE;
+	},
+
 	onUnknownPermission : function(aOwner) {
 		var tab = getOwnerTab(aOwner);
 		if (!tab)
@@ -111,6 +124,7 @@ clSystemPermission.prototype = {
 				label   : this.bundle.getString('permission_confirm_forever'),
 				checked : false
 			};
+		var self = this;
 		this.confirmWithTab({
 				tab     : tab,
 				label   : this.bundle.getFormattedString('permission_confirm_text', [uri.host]),
@@ -125,27 +139,32 @@ clSystemPermission.prototype = {
 			})
 			.next(function(aButtonIndex) {
 				var permission;
-				var expire = checkbox.checked ?
-							Ci.nsIPermissionManager.EXPIRE_NEVER :
-							Ci.nsIPermissionManager.EXPIRE_SESSION;
+				var allowed;
 				switch (aButtonIndex) {
 					case 0:
 						permission = Ci.nsIPermissionManager.ALLOW_ACTION;
+						allowed = true;
 						break;
 					case 1:
 						permission = Ci.nsIPermissionManager.DENY_ACTION;
+						allowed = false;
 						break;
 					default:
 						return;
 				}
-				Cc['@mozilla.org/permissionmanager;1']
-					.getService(Ci.nsIPermissionManager)
-					.add(uri, PERMISSION_NAME, permission, expire);
-				if (permission == Ci.nsIPermissionManager.ALLOW_ACTION)
+
+				if (checkbox.checked)
+					Cc['@mozilla.org/permissionmanager;1']
+						.getService(Ci.nsIPermissionManager)
+						.add(uri, PERMISSION_NAME, permission);
+				else
+					self.temporaryAllowedSites[uri.host] = allowed;
+
+				if (allowed)
 					tab.linkedBrowser.reload();
 			});
 	}
 };
 
-if (!XPCOMUtils.generateNSGetFactory)
+if (XPCOMUtils.generateNSGetModule)
 	var NSGetModule = XPCOMUtils.generateNSGetModule([clSystemPermission]);
