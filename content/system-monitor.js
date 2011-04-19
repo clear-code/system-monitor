@@ -34,7 +34,7 @@ var SystemMonitorService = {
     return this._system;
   },
 
-  init : function() {
+  init : function SystemMonitorService_init() {
     window.removeEventListener("load", this, false);
     window.addEventListener("unload", this, false);
 
@@ -53,14 +53,14 @@ var SystemMonitorService = {
     }, 100, this);
   },
 
-  destroy : function() {
+  destroy : function SystemMonitorService_destroy() {
     window.removeEventListener("unload", this, false);
     this.destroyToolbarItems();
   },
 
 
   // toolbar customize
-  updateToolbarMethods : function() {
+  updateToolbarMethods : function SystemMonitorService_updateToolbarMethods() {
     if ("BrowserCustomizeToolbar" in window) {
       eval("window.BrowserCustomizeToolbar = "+
         window.BrowserCustomizeToolbar.toSource().replace(
@@ -102,21 +102,21 @@ var SystemMonitorService = {
     }
   },
 
-  initToolbarItems : function() {
+  initToolbarItems : function SystemMonitorService_initToolbarItems() {
     for each (let item in this.items) {
       item.init();
     }
     this.insertSplitters();
   },
 
-  destroyToolbarItems : function() {
+  destroyToolbarItems : function SystemMonitorService_destroyToolbarItems() {
     for each (let item in this.items) {
       item.destroy();
     }
     this.removeSplitters();
   },
 
-  initialShow : function() {
+  initialShow : function SystemMonitorService_initialShow() {
     var bar;
     this.getPref(this.domain+"defaultTargetToolbar")
       .split(/[,\s]+/)
@@ -169,7 +169,7 @@ var SystemMonitorService = {
             window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
         });
   },
-  confirmInsertToolbarItems : function() {
+  confirmInsertToolbarItems : function SystemMonitorService_confirmInsertToolbarItems() {
     var ns = {};
     Components.utils.import("resource://system-monitor-modules/lib/confirmWithTab.js", ns);
     return ns.confirmWithTab({
@@ -186,7 +186,7 @@ var SystemMonitorService = {
            });
   },
 
-  insertSplitters : function() {
+  insertSplitters : function SystemMonitorService_insertSplitters() {
     let nodes = document.querySelectorAll("."+this.RESIZABLE_CLASS);
     for (let i = 0, maxi = nodes.length; i < maxi; i++) {
       let node = nodes[i];
@@ -201,7 +201,7 @@ var SystemMonitorService = {
     }
   },
 
-  insertSplitterBetween : function(aBefore, aAfter) {
+  insertSplitterBetween : function SystemMonitorService_insertSplitterBetween(aBefore, aAfter) {
     var toolbar = (aAfter || aBefore).parentNode;
     var splitter = document.createElement("splitter");
     splitter.setAttribute("class", this.SPLITTER_CLASS);
@@ -217,7 +217,7 @@ var SystemMonitorService = {
     }
   },
 
-  removeSplitters : function() {
+  removeSplitters : function SystemMonitorService_removeSplitters() {
     let nodes = document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+"-spacer");
     for (let i = 0, maxi = nodes.length; i < maxi; i++) {
       let node = nodes[i];
@@ -225,7 +225,7 @@ var SystemMonitorService = {
     }
   },
 
-  onSplitterMouseDown : function(aSplitter, aEvent) {
+  onSplitterMouseDown : function SystemMonitorService_onSplitterMouseDown(aSplitter, aEvent) {
     if (this.resizing ||
         aEvent.button != 0 ||
         aEvent.altKey ||
@@ -265,7 +265,7 @@ var SystemMonitorService = {
     this.resizing = true;
   },
 
-  onSplitterMouseUp : function(aSplitter, aEvent) {
+  onSplitterMouseUp : function SystemMonitorService_onSplitterMouseUp(aSplitter, aEvent) {
     window.setTimeout(function(aSelf) {
       if (!aSelf.resizing) return;
       var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || "";
@@ -279,7 +279,7 @@ var SystemMonitorService = {
     }, 10, this);
   },
 
-  onSplitterDblClick : function(aSplitter, aEvent) {
+  onSplitterDblClick : function SystemMonitorService_onSplitterDblClick(aSplitter, aEvent) {
     this.resizing = true;
     var previous = aSplitter.previousSibling;
     var previousId = (previous &&
@@ -311,7 +311,7 @@ var SystemMonitorService = {
                       .getService(Ci.nsIObserverService),
 
   // nsIDOMEventListener
-  handleEvent : function(aEvent) {
+  handleEvent : function SystemMonitorService_handleEvent(aEvent) {
     switch (aEvent.type) {
       case "load":
         this.init();
@@ -333,9 +333,9 @@ SystemMonitorItem.prototype = {
   item : null,
   itemId : null,
   id   : null,
-  init : function() {
+  init : function SystemMonitorItem_init() {
   },
-  destroy : function() {
+  destroy : function SystemMonitorItem_destroy() {
   }
 };
 
@@ -389,15 +389,15 @@ SystemMonitorSimpleGraphItem.prototype = {
       return this.item.getElementsByTagName("canvas")[0];
   },
 
-  init : function() {
+  init : function SystemMonitorSimpleGraph_init() {
     this.start();
   },
 
-  destroy : function() {
+  destroy : function SystemMonitorSimpleGraph_destroy() {
     this.stop();
   },
 
-  start : function() {
+  start : function SystemMonitorSimpleGraph_start() {
     var item = this.item;
     if (!this.initialized ||
         !item ||
@@ -435,7 +435,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  stop : function() {
+  stop : function SystemMonitorSimpleGraph_stop() {
     var item = this.item;
     if (!this.initialized ||
         !item ||
@@ -462,7 +462,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.listening = false;
   },
 
-  startObserve : function() {
+  startObserve : function SystemMonitorSimpleGraph_startObserve() {
     if (this.observing) return;
     this.observing = true;
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
@@ -470,7 +470,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_RESET, false);
   },
 
-  stopObserve : function() {
+  stopObserve : function SystemMonitorSimpleGraph_stopObserve() {
     if (!this.observing) return;
     this.observing = false;
     this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
@@ -478,12 +478,12 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_RESET);
   },
 
-  update : function() {
+  update : function SystemMonitorSimpleGraph_update() {
     this.stop();
     this.start();
   },
 
-  initValueArray : function() {
+  initValueArray : function SystemMonitorSimpleGraph_initValueArray() {
     if (this.valueArray === null)
       this.valueArray = [];
     var arraySize = parseInt(this.size / this.unit);
@@ -496,7 +496,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  getSum : function(aValues) {
+  getSum : function SystemMonitorSimpleGraph_getSum(aValues) {
     if (!aValues)
       return 0;
 
@@ -516,7 +516,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   STYLE_STACKED   : 256,
   STYLE_LAYERED   : 512,
   STYLE_SEPARATED : 1024,
-  drawGraph : function(aDrawAll) {
+  drawGraph : function SystemMonitorSimpleGraph_drawGraph(aDrawAll) {
     var canvas = this.canvas;
     var w = canvas.width;
     var h = canvas.height;
@@ -550,7 +550,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       this.drawSeparators(w, h);
   },
 
-  clearAll : function() { 
+  clearAll : function SystemMonitorSimpleGraph_clearAll() { 
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     context.save();
@@ -560,7 +560,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.restore();
   },
 
-  drawVerticalLine : function(aStyle, aX, aMaxY, aBeginY, aEndY, aWidth) {
+  drawVerticalLine : function SystemMonitorSimpleGraph_drawVerticalLine(aStyle, aX, aMaxY, aBeginY, aEndY, aWidth) {
     // On Mac OS X, a zero-length line wrongly covers whole the canvas!
     if (aBeginY == aEndY) return;
 
@@ -583,7 +583,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.restore();
   },
 
-  drawSeparators : function(aMaxX, aMaxY)
+  drawSeparators : function SystemMonitorSimpleGraph_drawSeparators(aMaxX, aMaxY)
   {
     var context = this.canvas.getContext("2d");
     context.save();
@@ -598,11 +598,11 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   // bar graph
-  drawGraphBar : function(aStyle, aX, aMaxY, aBeginY, aEndY) {
+  drawGraphBar : function SystemMonitorSimpleGraph_drawGraphBar(aStyle, aX, aMaxY, aBeginY, aEndY) {
     this.drawVerticalLine(aStyle, aX, aMaxY, aBeginY, aEndY, this.unit);
   },
 
-  drawGraphMultiplexedBar : function(aValues, aX, aMaxX, aMaxY) {
+  drawGraphMultiplexedBar : function SystemMonitorSimpleGraph_drawGraphMultiplexedBar(aValues, aX, aMaxX, aMaxY) {
     var context = this.canvas.getContext("2d");
     context.save();
     context.globalAlpha = 1;
@@ -651,7 +651,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   // polygonal graph
-  drawGraphPolygon : function(aValues, aMaxY, aStyle) {
+  drawGraphPolygon : function SystemMonitorSimpleGraph_drawGraphPolygon(aValues, aMaxY, aStyle) {
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -673,7 +673,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.restore();
   },
 
-  drawGraphMultiplexedPolygon : function(aValues, aMaxX, aMaxY, aStyle) {
+  drawGraphMultiplexedPolygon : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygon(aValues, aMaxX, aMaxY, aStyle) {
     var context = this.canvas.getContext("2d");
     var count = this.multiplexCount;
     if (this.style & this.STYLE_STACKED) {
@@ -718,7 +718,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  drawDisabled : function() {
+  drawDisabled : function SystemMonitorSimpleGraph_drawDisabled() {
     this.clearAll();
 
     var canvas = this.canvas;
@@ -743,14 +743,14 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   // clISystemMonitor
-  monitor : function(aValue) {
+  monitor : function SystemMonitorSimpleGraph_monitor(aValue) {
     this.valueArray.shift();
     this.valueArray.push(aValue);
     this.drawGraph();
   },
 
   // preferences listener
-  onChangePref : function(aData) {
+  onChangePref : function SystemMonitorSimpleGraph_onChangePref(aData) {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
       case "interval":
@@ -780,7 +780,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   },
 
-  updateColors : function(aTarget) {
+  updateColors : function SystemMonitorSimpleGraph_updateColors(aTarget) {
     var key = this.domain+this.id+".color."+aTarget;
     var base = this.getPref(key);
     var startAlpha = Number(this.getPref(key+"StartAlpha"));
@@ -804,7 +804,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     gradient.addColorStop(1, endColor);
     this[aTarget+"GradientStyle"] = gradient;
   },
-  RGBToRGBA : function(aBase, aAlpha) {
+  RGBToRGBA : function SystemMonitorSimpleGraph_RGBToRGBA(aBase, aAlpha) {
     var rgb;
     switch (aBase.length) {
       case 3: rgb = aBase.split(""); break;
@@ -819,7 +819,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   // nsIObserver
-  observe : function(aSubject, aTopic, aData) {
+  observe : function SystemMonitorSimpleGraph_observe(aSubject, aTopic, aData) {
     switch (aTopic) {
       case "nsPref:changed":
         this.onChangePref(aData);
@@ -879,7 +879,7 @@ SystemMonitorCPUItem.prototype = {
     return document.getElementById("system-monitor-cpu-usage-tooltip-label");
   },
   // clISystemMonitor
-  monitor : function(aValues) {
+  monitor : function SystemMonitorCPUMonitor_monitor(aValues) {
     this.valueArray.shift();
     this.valueArray.push(aValues);
     this.drawGraph();
@@ -917,14 +917,14 @@ SystemMonitorMemoryItem.prototype = {
   selfGradient      : ["#FFEE00", "#FFEE00"],
   selfGradientStyle : null,
   selfGlobalAlpha   : 1,
-  start : function() {
+  start : function SystemMonitorMemoryMonitor_start() {
     this.__proto__.__proto__.start.apply(this, arguments);
     if (this.item) {
       this.onChangePref(this.domain+this.id+".color.selfGlobalAlpha");
       this.onChangePref(this.domain+this.id+".color.self");
     }
   },
-  drawGraph : function() {
+  drawGraph : function SystemMonitorMemoryMonitor_drawGraph() {
     this.__proto__.__proto__.drawGraph.apply(this, arguments);
 
     var canvas = this.canvas;
@@ -950,7 +950,7 @@ SystemMonitorMemoryItem.prototype = {
       context.restore();
     }
   },
-  onChangePref : function(aData) {
+  onChangePref : function SystemMonitorMemoryMonitor_onChangePref(aData) {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
       case "color.selfGlobalAlpha":
@@ -963,7 +963,7 @@ SystemMonitorMemoryItem.prototype = {
     }
   },
   // clISystemMonitor
-  monitor : function(aValue) {
+  monitor : function SystemMonitorMemoryMonitor_monitor(aValue) {
     var hasSelfValue = "self" in aValue && aValue.self > -1;
     this.valueArray.shift();
     var value = [aValue.used / aValue.total,
