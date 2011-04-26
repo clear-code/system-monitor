@@ -1,0 +1,8 @@
+ * Support the System Information API (W3C editor's draft)
+   http://dev.w3.org/2009/dap/system-info/#cpu
+ * Network monitoring feature
+   * Windows: ?
+   * Mac OS X: ?
+   * Linux: "netload" of libgtop-2.0
+     /usr/include/libgtop-2.0/glibtop/netload.h
+
