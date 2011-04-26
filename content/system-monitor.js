@@ -205,6 +205,8 @@ var SystemMonitorService = {
     var toolbar = (aAfter || aBefore).parentNode;
     var splitter = document.createElement("splitter");
     splitter.setAttribute("class", this.SPLITTER_CLASS);
+    splitter.setAttribute("resizebefore", "closest");
+    splitter.setAttribute("resizeafter", "closest");
     splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
     splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
     splitter.setAttribute("ondblclick", "SystemMonitorService.onSplitterDblClick(this, event);");
