@@ -190,15 +190,24 @@ var SystemMonitorService = {
     let nodes = document.querySelectorAll("."+this.RESIZABLE_CLASS);
     for (let i = 0, maxi = nodes.length; i < maxi; i++) {
       let node = nodes[i];
-      if (node.previousSibling &&
-          node.previousSibling.localName != "splitter")
+      if (this.isResizableItem(node.previousSibling))
         this.insertSplitterBetween(node.previousSibling, node);
       if (
           (!node.nextSibling && !node.parentNode.querySelector("toolbar > toolbarspring, toolbar > *[flex]")) ||
-          (node.nextSibling && node.nextSibling.localName != "splitter")
+          this.isResizableItem(node.nextSibling)
           )
         this.insertSplitterBetween(node, node.nextSibling);
     }
+  },
+  isResizableItem : function SystemMonitorService_isResizableItem(aElement) {
+    return (
+      aElement &&
+      aElement.localName != "splitter" &&
+      (
+        aElement.hasAttribute("flex") ||
+        aElement.className.indexOf(this.RESIZABLE_CLASS) > -1
+      )
+    );
   },
 
   insertSplitterBetween : function SystemMonitorService_insertSplitterBetween(aBefore, aAfter) {
