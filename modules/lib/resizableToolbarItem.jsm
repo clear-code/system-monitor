@@ -118,6 +118,7 @@ var resizableToolbarItem;
 
 
 		insertSplitters : function RTI_insertSplitters(aWindow) {
+			this.removeSplitters(aWindow);
 			var nodes = aWindow.document.querySelectorAll('.'+this.RESIZABLE_CLASS);
 			for (let i = 0, maxi = nodes.length; i < maxi; i++) {
 				let node = nodes[i];
@@ -127,8 +128,8 @@ var resizableToolbarItem;
 					!node.nextSibling ||
 					(node.nextSibling.boxObject && !node.nextSibling.boxObject.width) ||
 					this.isResizableItem(node.nextSibling)
-				)
-				this.insertSplitterBetween(node, node.nextSibling);
+					)
+					this.insertSplitterBetween(node, node.nextSibling);
 			}
 		},
 
@@ -160,6 +161,7 @@ var resizableToolbarItem;
 		hasFlexiblePreceding : function RTI_hasFlexiblePreceding(aElement) {
 			return (
 				aElement &&
+				aElement.id &&
 				aElement.parentNode.querySelector(
 					'toolbar > toolbarspring:not([hidden]) ~ #'+aElement.id+', '+
 					'toolbar > *[flex]:not([hidden]) ~ #'+aElement.id
@@ -169,6 +171,7 @@ var resizableToolbarItem;
 		hasFlexibleFollowing : function RTI_hasFlexibleFollowing(aElement) {
 			return (
 				aElement &&
+				aElement.id &&
 				aElement.parentNode.querySelector(
 					'#'+aElement.id+' ~ toolbarspring:not([hidden]), '+
 					'#'+aElement.id+' ~ *[flex]:not([hidden])'
