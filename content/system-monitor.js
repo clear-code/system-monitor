@@ -1,6 +1,6 @@
 var SystemMonitorService = {
   RESIZABLE_CLASS : "system-monitor-resizable-item",
-  SPLITTER_CLASS : "system-monitor-splitter",
+  SPLITTER_CLASS  : "system-monitor-splitter",
 
   TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
   TOOLBAR_RESIZE_END   : "system-monitor:toolbar-item-end-resize",
@@ -32,6 +32,18 @@ var SystemMonitorService = {
       }
     }
     return this._system;
+  },
+
+  get Deferred() {
+    delete this.Deferred;
+    try {
+      var ns = {};
+      Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", ns);
+      this.Deferred = ns.Deferred;
+    }
+    catch(e) {
+    }
+    return this.Deferred;
   },
 
   init : function SystemMonitorService_init() {
@@ -106,7 +118,11 @@ var SystemMonitorService = {
     for each (let item in this.items) {
       item.init();
     }
-    this.insertSplitters();
+    var self = this;
+	this.Deferred
+		.next(function() {
+			self.insertSplitters();
+		});
   },
 
   destroyToolbarItems : function SystemMonitorService_destroyToolbarItems() {
@@ -131,6 +147,18 @@ var SystemMonitorService = {
     var currentset = bar.currentSet;
     var buttons = currentset.replace(/__empty/, "").split(",");
 
+	var insertionPoint = buttons.length - 1;
+	for (let i = insertionPoint; i > -1; i--) {
+	  let item = document.getElementById(buttons[i]);
+	  if (item && item.boxObject.width) {
+	    insertionPoint = i;
+	    break;
+	  }
+	}
+	if (insertionPoint < 0)
+	  insertionPoint = buttons.lenght - 1;
+    insertionPoint++;
+
     var autoInsertedItems = [];
     for each (let item in this.items) {
       if (this.getPref(this.domain+item.id+".initialShow"))
@@ -141,8 +169,8 @@ var SystemMonitorService = {
             currentset.indexOf("urlbar-container") < 0 &&
             currentset.indexOf("search-container") < 0 &&
             buttons.indexOf("spring") < 0)
-          buttons.push("spring");
-        buttons.push(item.itemId);
+          buttons.splice(insertionPoint, 0, "spring");
+        buttons.splice(insertionPoint, 0, item.itemId);
         autoInsertedItems.push(item.id);
       }
     }
@@ -163,10 +191,16 @@ var SystemMonitorService = {
           bar.currentSet = newset;
           bar.setAttribute("currentset", newset);
           document.persist(bar.id, "currentset");
-          if ("BrowserToolboxCustomizeDone" in window)
-            window.setTimeout("BrowserToolboxCustomizeDone(true);", 0);
-          else if ("MailToolboxCustomizeDone" in window)
-            window.setTimeout("MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');", 0);
+          if ("BrowserToolboxCustomizeDone" in window) {
+            self.Deferred.next(function() {
+              BrowserToolboxCustomizeDone(true);
+            });
+          }
+          else if ("MailToolboxCustomizeDone" in window) {
+            self.Deferred.next(function() {
+              MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');
+            });
+          }
         });
   },
   confirmInsertToolbarItems : function SystemMonitorService_confirmInsertToolbarItems() {
@@ -193,7 +227,8 @@ var SystemMonitorService = {
       if (this.isResizableItem(node.previousSibling))
         this.insertSplitterBetween(node.previousSibling, node);
       if (
-          (!node.nextSibling && !node.parentNode.querySelector("toolbar > toolbarspring, toolbar > *[flex]")) ||
+          !node.nextSibling ||
+          (node.nextSibling.boxObject && !node.nextSibling.boxObject.width) ||
           this.isResizableItem(node.nextSibling)
           )
         this.insertSplitterBetween(node, node.nextSibling);
@@ -203,9 +238,30 @@ var SystemMonitorService = {
     return (
       aElement &&
       aElement.localName != "splitter" &&
+      !aElement.hasAttribute("hidden") &&
       (
         aElement.hasAttribute("flex") ||
+        this.hasFlexiblePreceding(aElement) ||
+        this.hasFlexibleFollowing(aElement) ||
         aElement.className.indexOf(this.RESIZABLE_CLASS) > -1
+      )
+    );
+  },
+  hasFlexiblePreceding : function SystemMonitorService_hasFlexiblePreceding(aElement) {
+    return (
+      aElement &&
+      aElement.parentNode.querySelector(
+        "toolbar > toolbarspring:not([hidden]) ~ #"+aElement.id+", "+
+        "toolbar > *[flex]:not([hidden]) ~ #"+aElement.id
+      )
+    );
+  },
+  hasFlexibleFollowing : function SystemMonitorService_hasFlexibleFollowing(aElement) {
+    return (
+      aElement &&
+      aElement.parentNode.querySelector(
+        "#"+aElement.id+" ~ toolbarspring:not([hidden]), "+
+        "#"+aElement.id+" ~ *[flex]:not([hidden])"
       )
     );
   },
@@ -214,18 +270,34 @@ var SystemMonitorService = {
     var toolbar = (aAfter || aBefore).parentNode;
     var splitter = document.createElement("splitter");
     splitter.setAttribute("class", this.SPLITTER_CLASS);
-    splitter.setAttribute("resizebefore", "closest");
-    splitter.setAttribute("resizeafter", "closest");
+    if (
+    	!aAfter ||
+    	(aAfter.boxObject && !aAfter.boxObject.width)
+        ) {
+      // don't insert if there is no following item but a "spring" item.
+      if (this.hasFlexiblePreceding(aBefore)) return;
+      let spacer = document.createElement("spacer");
+      spacer.setAttribute("flex", 1);
+      spacer.setAttribute("class", this.SPLITTER_CLASS+"-spacer");
+      aBefore.parentNode.insertBefore(spacer, aBefore.nextSibling);
+      aAfter = spacer;
+    }
+    if (
+        (!aBefore || aBefore.className.indexOf(this.RESIZABLE_CLASS) < 0) &&
+        this.hasFlexiblePreceding(aAfter)
+       ) {
+	  splitter.setAttribute("resizebefore", "flex");
+    }
+    else if (
+             (!aAfter || aAfter.className.indexOf(this.RESIZABLE_CLASS) < 0) &&
+             this.hasFlexibleFollowing(aBefore)
+            ) {
+	  splitter.setAttribute("resizeafter", "flex");
+    }
     splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
     splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
     splitter.setAttribute("ondblclick", "SystemMonitorService.onSplitterDblClick(this, event);");
     toolbar.insertBefore(splitter, aAfter);
-    if (!aAfter) {
-      var spacer = document.createElement("spacer");
-      spacer.setAttribute("flex", 1);
-      spacer.setAttribute("class", this.SPLITTER_CLASS+"-spacer");
-      aBefore.parentNode.appendChild(spacer);
-    }
   },
 
   removeSplitters : function SystemMonitorService_removeSplitters() {
