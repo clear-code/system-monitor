@@ -331,6 +331,8 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.onChangePref(this.domain+this.id+".color.foregroundMinAlpha");
     this.onChangePref(this.domain+this.id+".style");
 
+    this.image.src = "";
+
     var canvas = this.canvas;
     canvas.style.width = (canvas.width = item.width = this.size)+"px";
     this.initValueArray();
@@ -768,7 +770,6 @@ SystemMonitorSimpleGraphItem.prototype = {
         break;
 
       case this.resizableToolbarItem.EVENT_TYPE_RESIZE_END:
-        this.image.src = "";
         this.setPref(
           this.domain+this.id+".size",
           this.canvas.parentNode.boxObject.width
