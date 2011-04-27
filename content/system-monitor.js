@@ -1,11 +1,4 @@
 var SystemMonitorService = {
-  RESIZABLE_CLASS : "system-monitor-resizable-item",
-  SPLITTER_CLASS  : "system-monitor-splitter",
-
-  TOOLBAR_RESIZE_BEGIN : "system-monitor:toolbar-item-begin-resize",
-  TOOLBAR_RESIZE_END   : "system-monitor:toolbar-item-end-resize",
-  TOOLBAR_RESIZE_RESET : "system-monitor:toolbar-item-reset-resize",
-
   domain : "extensions.system-monitor@clear-code.com.",
 
   initialized : false,
@@ -35,16 +28,32 @@ var SystemMonitorService = {
   },
 
   get Deferred() {
-    delete this.Deferred;
-    try {
-      var ns = {};
-      Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", ns);
-      this.Deferred = ns.Deferred;
+    if (!this._Deferred) {
+      try {
+        var ns = {};
+        Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", ns);
+        this._Deferred = ns.Deferred;
+      }
+      catch(e) {
+      }
     }
-    catch(e) {
-    }
-    return this.Deferred;
+    return this._Deferred;
   },
+  _Deferred : null,
+
+  get resizableToolbarItem() {
+    if (!this._resizableToolbarItem) {
+      try {
+        var ns = {};
+        Components.utils.import("resource://system-monitor-modules/lib/resizableToolbarItem.jsm", ns);
+        this._resizableToolbarItem = ns.resizableToolbarItem;
+      }
+      catch(e) {
+      }
+    }
+    return this._resizableToolbarItem;
+  },
+  _resizableToolbarItem : null,
 
   init : function SystemMonitorService_init() {
     window.removeEventListener("load", this, false);
@@ -121,7 +130,7 @@ var SystemMonitorService = {
     var self = this;
 	this.Deferred
 		.next(function() {
-			self.insertSplitters();
+			self.resizableToolbarItem.insertSplitters(window);
 		});
   },
 
@@ -129,7 +138,7 @@ var SystemMonitorService = {
     for each (let item in this.items) {
       item.destroy();
     }
-    this.removeSplitters();
+    this.resizableToolbarItem.removeSplitters(window);
   },
 
   initialShow : function SystemMonitorService_initialShow() {
@@ -157,7 +166,6 @@ var SystemMonitorService = {
 	}
 	if (insertionPoint < 0)
 	  insertionPoint = buttons.lenght - 1;
-    insertionPoint++;
 
     var autoInsertedItems = [];
     for each (let item in this.items) {
@@ -169,8 +177,8 @@ var SystemMonitorService = {
             currentset.indexOf("urlbar-container") < 0 &&
             currentset.indexOf("search-container") < 0 &&
             buttons.indexOf("spring") < 0)
-          buttons.splice(insertionPoint, 0, "spring");
-        buttons.splice(insertionPoint, 0, item.itemId);
+          buttons.splice(++insertionPoint, 0, "spring");
+        buttons.splice(++insertionPoint, 0, item.itemId);
         autoInsertedItems.push(item.id);
       }
     }
@@ -219,179 +227,6 @@ var SystemMonitorService = {
              return aButtonIndex == 0;
            });
   },
-
-  insertSplitters : function SystemMonitorService_insertSplitters() {
-    let nodes = document.querySelectorAll("."+this.RESIZABLE_CLASS);
-    for (let i = 0, maxi = nodes.length; i < maxi; i++) {
-      let node = nodes[i];
-      if (this.isResizableItem(node.previousSibling))
-        this.insertSplitterBetween(node.previousSibling, node);
-      if (
-          !node.nextSibling ||
-          (node.nextSibling.boxObject && !node.nextSibling.boxObject.width) ||
-          this.isResizableItem(node.nextSibling)
-          )
-        this.insertSplitterBetween(node, node.nextSibling);
-    }
-  },
-  isResizableItem : function SystemMonitorService_isResizableItem(aElement) {
-    return (
-      aElement &&
-      aElement.localName != "splitter" &&
-      !aElement.hasAttribute("hidden") &&
-      (
-        aElement.hasAttribute("flex") ||
-        this.hasFlexiblePreceding(aElement) ||
-        this.hasFlexibleFollowing(aElement) ||
-        aElement.className.indexOf(this.RESIZABLE_CLASS) > -1
-      )
-    );
-  },
-  hasFlexiblePreceding : function SystemMonitorService_hasFlexiblePreceding(aElement) {
-    return (
-      aElement &&
-      aElement.parentNode.querySelector(
-        "toolbar > toolbarspring:not([hidden]) ~ #"+aElement.id+", "+
-        "toolbar > *[flex]:not([hidden]) ~ #"+aElement.id
-      )
-    );
-  },
-  hasFlexibleFollowing : function SystemMonitorService_hasFlexibleFollowing(aElement) {
-    return (
-      aElement &&
-      aElement.parentNode.querySelector(
-        "#"+aElement.id+" ~ toolbarspring:not([hidden]), "+
-        "#"+aElement.id+" ~ *[flex]:not([hidden])"
-      )
-    );
-  },
-
-  insertSplitterBetween : function SystemMonitorService_insertSplitterBetween(aBefore, aAfter) {
-    var toolbar = (aAfter || aBefore).parentNode;
-    var splitter = document.createElement("splitter");
-    splitter.setAttribute("class", this.SPLITTER_CLASS);
-    if (
-    	!aAfter ||
-    	(aAfter.boxObject && !aAfter.boxObject.width)
-        ) {
-      // don't insert if there is no following item but a "spring" item.
-      if (this.hasFlexiblePreceding(aBefore)) return;
-      let spacer = document.createElement("spacer");
-      spacer.setAttribute("flex", 1);
-      spacer.setAttribute("class", this.SPLITTER_CLASS+"-spacer");
-      aBefore.parentNode.insertBefore(spacer, aBefore.nextSibling);
-      aAfter = spacer;
-    }
-    if (
-        (!aBefore || aBefore.className.indexOf(this.RESIZABLE_CLASS) < 0) &&
-        this.hasFlexiblePreceding(aAfter)
-       ) {
-	  splitter.setAttribute("resizebefore", "flex");
-    }
-    else if (
-             (!aAfter || aAfter.className.indexOf(this.RESIZABLE_CLASS) < 0) &&
-             this.hasFlexibleFollowing(aBefore)
-            ) {
-	  splitter.setAttribute("resizeafter", "flex");
-    }
-    splitter.setAttribute("onmousedown", "SystemMonitorService.onSplitterMouseDown(this, event);");
-    splitter.setAttribute("onmouseup", "SystemMonitorService.onSplitterMouseUp(this, event);");
-    splitter.setAttribute("ondblclick", "SystemMonitorService.onSplitterDblClick(this, event);");
-    toolbar.insertBefore(splitter, aAfter);
-  },
-
-  removeSplitters : function SystemMonitorService_removeSplitters() {
-    let nodes = document.querySelectorAll("."+this.SPLITTER_CLASS+", ."+this.SPLITTER_CLASS+"-spacer");
-    for (let i = 0, maxi = nodes.length; i < maxi; i++) {
-      let node = nodes[i];
-      node.parentNode.removeChild(node);
-    }
-  },
-
-  onSplitterMouseDown : function SystemMonitorService_onSplitterMouseDown(aSplitter, aEvent) {
-    if (this.resizing ||
-        aEvent.button != 0 ||
-        aEvent.altKey ||
-        aEvent.ctrlKey ||
-        aEvent.shiftKey ||
-        aEvent.metaKey)
-        return;
-
-    var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || "";
-    var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || "";
-    this.ObserverService.notifyObservers(
-      window,
-      this.TOOLBAR_RESIZE_BEGIN,
-      previousId+"\n"+nextId
-    );
-
-    /* canvasを非表示にしたのと同じタイミングでリサイズを行うと、
-       まだ内部的にcanvasの大きさが残ったままなので、その大きさ以下に
-       タブバーの幅を縮められなくなる。手動でイベントを再送してやると
-       この問題を防ぐことができる。 */
-    aEvent.preventDefault();
-    aEvent.stopPropagation();
-    var flags = 0;
-    const nsIDOMNSEvent = Ci.nsIDOMNSEvent;
-    if (aEvent.altKey) flags |= nsIDOMNSEvent.ALT_MASK;
-    if (aEvent.ctrlKey) flags |= nsIDOMNSEvent.CONTROL_MASK;
-    if (aEvent.shiftKey) flags |= nsIDOMNSEvent.SHIFT_MASK;
-    if (aEvent.metaKey) flags |= nsIDOMNSEvent.META_MASK;
-    window.setTimeout(function(aX, aY, aButton, aDetail) {
-      window
-        .QueryInterface(Ci.nsIInterfaceRequestor)
-        .getInterface(Ci.nsIDOMWindowUtils)
-        .sendMouseEvent("mousedown", aX, aY, aButton, aDetail, flags);
-      flags = null;
-    }, 0, aEvent.clientX, aEvent.clientY, aEvent.button, aEvent.detail);
-
-    this.resizing = true;
-  },
-
-  onSplitterMouseUp : function SystemMonitorService_onSplitterMouseUp(aSplitter, aEvent) {
-    window.setTimeout(function(aSelf) {
-      if (!aSelf.resizing) return;
-      var previousId = aSplitter.previousSibling && aSplitter.previousSibling.id || "";
-      var nextId = aSplitter.nextSibling && aSplitter.nextSibling.id || "";
-      aSelf.ObserverService.notifyObservers(
-        window,
-        aSelf.TOOLBAR_RESIZE_END,
-        previousId+"\n"+nextId
-      );
-      aSelf.resizing = false;
-    }, 10, this);
-  },
-
-  onSplitterDblClick : function SystemMonitorService_onSplitterDblClick(aSplitter, aEvent) {
-    this.resizing = true;
-    var previous = aSplitter.previousSibling;
-    var previousId = (previous &&
-                      previous instanceof Components.interfaces.nsIDOMElement &&
-                      previous.className.indexOf(this.RESIZABLE_CLASS) > -1) ?
-                      previous.id :
-                      "" ;
-    var next = aSplitter.nextSibling;
-    var nextId = (next &&
-                  next instanceof Components.interfaces.nsIDOMElement &&
-                  next.className.indexOf(this.RESIZABLE_CLASS) > -1) ?
-                  next.id :
-                  "" ;
-    if (nextId && previousId) {
-      if (next.nextSibling && next.nextSibling.localName == 'splitter')
-        nextId = "";
-      else
-        previousId = "";
-    }
-    this.ObserverService.notifyObservers(
-      window,
-      this.TOOLBAR_RESIZE_RESET,
-      previousId+"\n"+nextId
-    );
-    this.resizing = false;
-  },
-
-  ObserverService : Cc["@mozilla.org/observer-service;1"]
-                      .getService(Ci.nsIObserverService),
 
   // nsIDOMEventListener
   handleEvent : function SystemMonitorService_handleEvent(aEvent) {
@@ -473,6 +308,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   init : function SystemMonitorSimpleGraph_init() {
+    this.resizableToolbarItem.allowResize(this.item);
     this.start();
   },
 
@@ -548,17 +384,17 @@ SystemMonitorSimpleGraphItem.prototype = {
   startObserve : function SystemMonitorSimpleGraph_startObserve() {
     if (this.observing) return;
     this.observing = true;
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_BEGIN, false);
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_END,   false);
-    this.ObserverService.addObserver(this, this.TOOLBAR_RESIZE_RESET, false);
+    window.addEventListener(this.resizableToolbarItem.EVENT_TYPE_RESIZE_BEGIN, this, false);
+    window.addEventListener(this.resizableToolbarItem.EVENT_TYPE_RESIZE_END, this, false);
+    window.addEventListener(this.resizableToolbarItem.EVENT_TYPE_RESET, this, false);
   },
 
   stopObserve : function SystemMonitorSimpleGraph_stopObserve() {
     if (!this.observing) return;
     this.observing = false;
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_BEGIN);
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_END);
-    this.ObserverService.removeObserver(this, this.TOOLBAR_RESIZE_RESET);
+    window.removeEventListener(this.resizableToolbarItem.EVENT_TYPE_RESIZE_BEGIN, this, false);
+    window.removeEventListener(this.resizableToolbarItem.EVENT_TYPE_RESIZE_END, this, false);
+    window.removeEventListener(this.resizableToolbarItem.EVENT_TYPE_RESET, this, false);
   },
 
   update : function SystemMonitorSimpleGraph_update() {
@@ -907,33 +743,41 @@ SystemMonitorSimpleGraphItem.prototype = {
       case "nsPref:changed":
         this.onChangePref(aData);
         break;
+    }
+  },
 
-      case this.TOOLBAR_RESIZE_BEGIN:
-        if (aSubject != window || !this.item) break;
-        if (aData.indexOf(this.itemId) > -1) {
-          let canvas = this.canvas;
-          this.image.src = canvas.toDataURL();
-          this.stop();
-          this.startObserve();
-          canvas.style.width = (canvas.width = 1)+"px";
-        }
+  // nsIDOMEventListener
+  handleEvent : function SystemMonitorSimpleGraph_handleEvent(aEvent) {
+    var item = this.item;
+    if (!item)
+    	return;
+
+    var target = aEvent.target;
+    if (target != item &&
+    	target != item.nextSibling &&
+    	target != item.previousSibling)
+      return;
+
+    switch (aEvent.type) {
+      case this.resizableToolbarItem.EVENT_TYPE_RESIZE_BEGIN:
+        let canvas = this.canvas;
+        this.image.src = canvas.toDataURL();
+        this.stop();
+        this.startObserve();
+        canvas.style.width = (canvas.width = 1)+"px";
         break;
 
-      case this.TOOLBAR_RESIZE_END:
-        if (aSubject != window || !this.item) break;
-        if (aData.indexOf(this.itemId) > -1) {
-          this.image.src = "";
-          this.setPref(
-            this.domain+this.id+".size",
-            this.canvas.parentNode.boxObject.width
-          );
-          this.start();
-        }
+      case this.resizableToolbarItem.EVENT_TYPE_RESIZE_END:
+        this.image.src = "";
+        this.setPref(
+          this.domain+this.id+".size",
+          this.canvas.parentNode.boxObject.width
+        );
+        this.start();
         break;
 
-      case this.TOOLBAR_RESIZE_RESET:
-        if (aSubject != window || !this.item) break;
-        if (aData.indexOf(this.itemId) > -1) {
+      case this.resizableToolbarItem.EVENT_TYPE_RESET:
+        if (target == item) {
           this.setPref(
             this.domain+this.id+".size",
             this.getDefaultPref(this.domain+this.id+".size")

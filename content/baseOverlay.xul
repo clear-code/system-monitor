@@ -18,7 +18,7 @@
   </tooltip>
 
   <toolbaritem id="system-monitor-cpu-usage"
-               class="system-monitor-item system-monitor-resizable-item"
+               class="system-monitor-item"
                tooltip="system-monitor-cpu-usage-tooltip"
                orient="vertical"
                pack="center"
@@ -36,7 +36,7 @@
            value="&toolbar.cpu-usage.label;"/>
   </toolbaritem>
   <toolbaritem id="system-monitor-memory-usage"
-               class="system-monitor-item system-monitor-resizable-item"
+               class="system-monitor-item"
                tooltip="system-monitor-memory-usage-tooltip"
                orient="vertical"
                pack="center"
