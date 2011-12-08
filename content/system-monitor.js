@@ -218,6 +218,7 @@ var SystemMonitorService = {
              tab     : gBrowser.selectedTab,
              label   : this.bundle.getString("initialshow_confirm_text"),
              value   : "system-monitor-insert-toolbar-items",
+             persistence : -1, // don't hide automatically by page loadings
              buttons : [
                this.bundle.getString("initialshow_confirm_yes"),
                this.bundle.getString("initialshow_confirm_no")
