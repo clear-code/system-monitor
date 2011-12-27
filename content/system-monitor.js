@@ -1,3 +1,7 @@
+var { SystemMonitorManager } = Cu.import("resource://system-monitor-modules/SystemMonitorManager.js", {});
+
+// function log(s) { dump(s + "\n"); }
+
 var SystemMonitorService = {
   domain : "extensions.system-monitor@clear-code.com.",
 
@@ -9,33 +13,11 @@ var SystemMonitorService = {
     return document.getElementById("system-monitor-bundle");
   },
 
-  get system() {
-    if (!this._system) {
-      try {
-        let ns = {};
-        Components.utils.import("resource://system-monitor-modules/clSystem.js", ns);
-        this._system = new ns.clSystem();
-        this._system.init(window);
-      }
-      catch(e) {
-        this._system = (
-          Components.classes["@clear-code.com/system;2"] ||
-          Components.classes["@clear-code.com/system;1"]
-        ).getService(Components.interfaces.clISystem);
-      }
-    }
-    return this._system;
-  },
-
   get Deferred() {
     if (!this._Deferred) {
-      try {
-        var ns = {};
-        Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", ns);
-        this._Deferred = ns.Deferred;
-      }
-      catch(e) {
-      }
+      var ns = {};
+      Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", ns);
+      this._Deferred = ns.Deferred;
     }
     return this._Deferred;
   },
@@ -308,6 +290,15 @@ SystemMonitorSimpleGraphItem.prototype = {
       return this.item.getElementsByTagName("canvas")[0];
   },
 
+  get Services() {
+    if (!this._Services) {
+      var ns = {};
+      const { Services } = Cu.import("resource://gre/modules/Services.jsm", ns);
+      this._Services = ns.Services;
+    }
+    return this._Services;
+  },
+
   init : function SystemMonitorSimpleGraph_init() {
     this.resizableToolbarItem.allowResize(this.item);
     this.start();
@@ -339,7 +330,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.initValueArray();
 
     try {
-        this.system.addMonitor(this.type, this, this.interval);
+        this.Services.obs.addObserver(this, this.type, false);
 
         this.drawGraph(true);
 
@@ -365,7 +356,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         return;
 
     try {
-        this.system.removeMonitor(this.type, this);
+        this.Services.obs.removeObserver(this, this.type);
     }
     catch(e) {
         dump("system-monitor: removeMonitor() failed\n"+
@@ -746,6 +737,9 @@ SystemMonitorSimpleGraphItem.prototype = {
       case "nsPref:changed":
         this.onChangePref(aData);
         break;
+      case this.type:
+        this.monitor(aSubject.wrappedJSObject);
+        break;
     }
   },
 
@@ -802,7 +796,7 @@ SystemMonitorCPUItem.prototype = {
   itemId   : "system-monitor-cpu-usage",
   multiplexed : true,
   get multiplexCount() {
-    return this._multiplexCount || (this._multiplexCount = this.system.cpu.count);
+    return this._multiplexCount || (this._multiplexCount = SystemMonitorManager.cpuCount);
   },
   get tooltip() {
     return document.getElementById("system-monitor-cpu-usage-tooltip-label");
