@@ -1,4 +1,4 @@
-var { SystemMonitorManager } = Cu.import("resource://system-monitor-modules/SystemMonitorManager.js", {});
+var { SystemMonitorManager } = Components.utils.import("resource://system-monitor-modules/SystemMonitorManager.js", {});
 
 // function log(s) { dump(s + "\n"); }
 
@@ -15,9 +15,8 @@ var SystemMonitorService = {
 
   get Deferred() {
     if (!this._Deferred) {
-      var ns = {};
-      Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", ns);
-      this._Deferred = ns.Deferred;
+      var { Deferred } = Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", {});
+      this._Deferred = Deferred;
     }
     return this._Deferred;
   },
@@ -25,9 +24,8 @@ var SystemMonitorService = {
 
   get prefs() {
     if (!this._prefs) {
-      var ns = {};
-      Components.utils.import("resource://system-monitor-modules/lib/prefs.js", ns);
-      this._prefs = ns.prefs;
+      var { prefs } = Components.utils.import("resource://system-monitor-modules/lib/prefs.js", {});
+      this._prefs = prefs;
     }
     return this._prefs;
   },
@@ -36,9 +34,8 @@ var SystemMonitorService = {
   get resizableToolbarItem() {
     if (!this._resizableToolbarItem) {
       try {
-        var ns = {};
-        Components.utils.import("resource://system-monitor-modules/lib/resizableToolbarItem.jsm", ns);
-        this._resizableToolbarItem = ns.resizableToolbarItem;
+        var { resizableToolbarItem } = Components.utils.import("resource://system-monitor-modules/lib/resizableToolbarItem.jsm", {});
+        this._resizableToolbarItem = resizableToolbarItem;
       }
       catch(e) {
       }
@@ -305,9 +302,8 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   get Services() {
     if (!this._Services) {
-      var ns = {};
-      const { Services } = Cu.import("resource://gre/modules/Services.jsm", ns);
-      this._Services = ns.Services;
+      var { Services } = Components.utils.import("resource://gre/modules/Services.jsm", {});
+      this._Services = Services;
     }
     return this._Services;
   },
@@ -356,7 +352,8 @@ SystemMonitorSimpleGraphItem.prototype = {
         dump("system-monitor: addMonitor() failed\n"+
              "  type: "+this.type+"\n"+
              "  interval: "+this.interval+"\n"+
-             "  error:\n"+e.toString().replace(/^/gm, "    ")+"\n");
+             "  error:\n"+e.toString().replace(/^/gm, "    ")+"\n"+
+             e.stack+"\n");
         this.drawDisabled();
     }
   },
