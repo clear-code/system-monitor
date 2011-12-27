@@ -23,6 +23,16 @@ var SystemMonitorService = {
   },
   _Deferred : null,
 
+  get prefs() {
+    if (!this._prefs) {
+      var ns = {};
+      Components.utils.import("resource://system-monitor-modules/lib/prefs.js", ns);
+      this._prefs = ns.prefs;
+    }
+    return this._prefs;
+  },
+  _prefs : null,
+
   get resizableToolbarItem() {
     if (!this._resizableToolbarItem) {
       try {
@@ -110,10 +120,10 @@ var SystemMonitorService = {
       item.init();
     }
     var self = this;
-	this.Deferred
-		.next(function() {
-			self.resizableToolbarItem.insertSplitters(window);
-		});
+    this.Deferred
+        .next(function() {
+            self.resizableToolbarItem.insertSplitters(window);
+        });
   },
 
   destroyToolbarItems : function SystemMonitorService_destroyToolbarItems() {
@@ -125,7 +135,7 @@ var SystemMonitorService = {
 
   initialShow : function SystemMonitorService_initialShow() {
     var bar;
-    this.getPref(this.domain+"defaultTargetToolbar")
+    this.prefs.getPref(this.domain+"defaultTargetToolbar")
       .split(/[,\s]+/)
       .some(function(aTarget) {
         bar = document.getElementById(aTarget);
@@ -138,20 +148,20 @@ var SystemMonitorService = {
     var currentset = bar.currentSet;
     var buttons = currentset.replace(/__empty/, "").split(",");
 
-	var insertionPoint = buttons.length - 1;
-	for (let i = insertionPoint; i > -1; i--) {
-	  let item = document.getElementById(buttons[i]);
-	  if (item && item.boxObject.width) {
-	    insertionPoint = i;
-	    break;
-	  }
-	}
-	if (insertionPoint < 0)
-	  insertionPoint = buttons.lenght - 1;
+    var insertionPoint = buttons.length - 1;
+    for (let i = insertionPoint; i > -1; i--) {
+      let item = document.getElementById(buttons[i]);
+      if (item && item.boxObject.width) {
+        insertionPoint = i;
+        break;
+      }
+    }
+    if (insertionPoint < 0)
+      insertionPoint = buttons.lenght - 1;
 
     var autoInsertedItems = [];
     for each (let item in this.items) {
-      if (this.getPref(this.domain+item.id+".initialShow"))
+      if (this.prefs.getPref(this.domain+item.id+".initialShow"))
         return;
 
       if (currentset.indexOf(item.itemId) < 0) {
@@ -174,7 +184,7 @@ var SystemMonitorService = {
     this.confirmInsertToolbarItems()
         .next(function(aInsert) {
           for each (let item in autoInsertedItems) {
-            self.setPref(self.domain+item+".initialShow", true);
+            self.prefs.setPref(self.domain+item+".initialShow", true);
           }
           if (!aInsert)
             return;
@@ -223,7 +233,6 @@ var SystemMonitorService = {
     }
   }
 };
-SystemMonitorService.__proto__ = window["piro.sakura.ne.jp"].prefs;
 
 
 function SystemMonitorItem()
@@ -315,8 +324,8 @@ SystemMonitorSimpleGraphItem.prototype = {
         this.listening)
         return;
 
-    this.size = this.getPref(this.domain+this.id+".size");
-    this.interval = this.getPref(this.domain+this.id+".interval");
+    this.size = this.prefs.getPref(this.domain+this.id+".size");
+    this.interval = this.prefs.getPref(this.domain+this.id+".interval");
 
     this.onChangePref(this.domain+this.id+".color.background");
     this.onChangePref(this.domain+this.id+".color.foreground");
@@ -334,7 +343,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
         this.drawGraph(true);
 
-        this.addPrefListener(this);
+        this.prefs.addPrefListener(this);
         this.startObserve();
 
         this.listening = true;
@@ -366,7 +375,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
 
     try {
-        this.removePrefListener(this);
+        this.prefs.removePrefListener(this);
         this.stopObserve();
     }
     catch(e) {
@@ -667,18 +676,18 @@ SystemMonitorSimpleGraphItem.prototype = {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
       case "interval":
-        this.unit = Math.ceil(this.getPref(aData) / 500);
+        this.unit = Math.ceil(this.prefs.getPref(aData) / 500);
       case "size":
         if (this.listening)
           this.update();
         break;
 
       case "color.foregroundMinAlpha":
-        this.foregroundMinAlpha = Number(this.getPref(aData));
+        this.foregroundMinAlpha = Number(this.prefs.getPref(aData));
         break;
 
       case "style":
-        this.style = this.getPref(this.domain+this.id+".style");
+        this.style = this.prefs.getPref(this.domain+this.id+".style");
         if (this.listening)
           this.drawGraph(true);
         break;
@@ -695,9 +704,9 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   updateColors : function SystemMonitorSimpleGraph_updateColors(aTarget) {
     var key = this.domain+this.id+".color."+aTarget;
-    var base = this.getPref(key);
-    var startAlpha = Number(this.getPref(key+"StartAlpha"));
-    var endAlpha   = Math.max(startAlpha, Number(this.getPref(key+"EndAlpha")));
+    var base = this.prefs.getPref(key);
+    var startAlpha = Number(this.prefs.getPref(key+"StartAlpha"));
+    var endAlpha   = Math.max(startAlpha, Number(this.prefs.getPref(key+"EndAlpha")));
 
     var startColor = base,
         endColor = base;
@@ -747,12 +756,12 @@ SystemMonitorSimpleGraphItem.prototype = {
   handleEvent : function SystemMonitorSimpleGraph_handleEvent(aEvent) {
     var item = this.item;
     if (!item)
-    	return;
+        return;
 
     var target = aEvent.target;
     if (target != item &&
-    	target != item.nextSibling &&
-    	target != item.previousSibling)
+        target != item.nextSibling &&
+        target != item.previousSibling)
       return;
 
     switch (aEvent.type) {
@@ -765,7 +774,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         break;
 
       case this.resizableToolbarItem.EVENT_TYPE_RESIZE_END:
-        this.setPref(
+        this.prefs.setPref(
           this.domain+this.id+".size",
           this.canvas.parentNode.boxObject.width
         );
@@ -774,9 +783,9 @@ SystemMonitorSimpleGraphItem.prototype = {
 
       case this.resizableToolbarItem.EVENT_TYPE_RESET:
         if (target == item) {
-          this.setPref(
+          this.prefs.setPref(
             this.domain+this.id+".size",
-            this.getDefaultPref(this.domain+this.id+".size")
+            this.prefs.getDefaultPref(this.domain+this.id+".size")
           );
           this.start();
         }
@@ -877,7 +886,7 @@ SystemMonitorMemoryItem.prototype = {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
       case "color.selfGlobalAlpha":
-        this.selfGlobalAlpha = Number(this.getPref(aData));
+        this.selfGlobalAlpha = Number(this.prefs.getPref(aData));
         if (this.listening)
           this.drawGraph(true);
         return;

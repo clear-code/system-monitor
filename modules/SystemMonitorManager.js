@@ -6,13 +6,11 @@ const { Services } = Cu.import("resource://gre/modules/Services.jsm", {});
 
 const BRANCH_ROOT = "extensions.system-monitor@clear-code.com";
 const DOMAIN = BRANCH_ROOT + ".";
-const { Preferences } = Cu.import('resource://system-monitor-modules/lib/Preferences.js', {});
-const preferences = new Preferences("");
+
+const { prefs } = Cu.import('resource://system-monitor-modules/lib/prefs.js', {});
 
 const { clSystem } = Cu.import("resource://system-monitor-modules/clSystem.js", {});
 const system = new clSystem();
-
-const Prefs = Cc['@mozilla.org/preferences;1'].getService(Ci.nsIPrefBranch).QueryInterface(Ci.nsIPrefBranch2);
 
 function log(str) {
   dump(str + "\n");
@@ -23,7 +21,7 @@ function SystemMonitorListener(type, id) {
   this.type = type;
   this.id = id;
   this.start();
-  Prefs.addObserver(DOMAIN, this, false);
+  prefs.addPrefListener(this);
 }
 
 SystemMonitorListener.prototype = {
@@ -31,7 +29,7 @@ SystemMonitorListener.prototype = {
   type: "",
   _interval: 1000,
   get interval() {
-    return preferences.get(DOMAIN + this.id + ".interval") || this._interval;
+    return prefs.getPref(DOMAIN + this.id + ".interval") || this._interval;
   },
 
   start: function () {
@@ -58,6 +56,7 @@ SystemMonitorListener.prototype = {
   },
 
   // nsIObserver
+  domain : DOMAIN,
   observe: function (aSubject, aTopic, aData) {
     switch (aTopic) {
     case "nsPref:changed":
