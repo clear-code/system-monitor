@@ -556,7 +556,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       let width = Math.round(aMaxX / count) - 1;
       for (let i = 0; i < count; i++) {
         let value = aValues[i];
-        let endY = aMaxY * aValue;
+        let endY = aMaxY * value;
         context.save();
         context.translate((width + 1) * i, 0);
         this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
