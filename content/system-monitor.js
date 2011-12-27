@@ -3,7 +3,7 @@ var { SystemMonitorManager } = Cu.import("resource://system-monitor-modules/Syst
 // function log(s) { dump(s + "\n"); }
 
 var SystemMonitorService = {
-  domain : "extensions.system-monitor@clear-code.com.",
+  domain : SystemMonitorManager.DOMAIN,
 
   initialized : false,
   resizing : false,
@@ -277,6 +277,10 @@ SystemMonitorSimpleGraphItem.prototype = {
   multiplexCount : 1,
   valueArray : null,
 
+  get topic() {
+    return SystemMonitorManager.TOPIC_BASE + this.type;
+  },
+
   get item() {
     return document.getElementById(this.itemId);
   },
@@ -339,7 +343,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.initValueArray();
 
     try {
-        this.Services.obs.addObserver(this, this.type, false);
+        this.Services.obs.addObserver(this, this.topic, false);
 
         this.drawGraph(true);
 
@@ -365,7 +369,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         return;
 
     try {
-        this.Services.obs.removeObserver(this, this.type);
+        this.Services.obs.removeObserver(this, this.topic);
     }
     catch(e) {
         dump("system-monitor: removeMonitor() failed\n"+
@@ -746,7 +750,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       case "nsPref:changed":
         this.onChangePref(aData);
         break;
-      case this.type:
+      case this.topic:
         this.monitor(aSubject.wrappedJSObject);
         break;
     }

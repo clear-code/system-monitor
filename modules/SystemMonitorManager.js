@@ -7,6 +7,8 @@ const { Services } = Cu.import("resource://gre/modules/Services.jsm", {});
 const BRANCH_ROOT = "extensions.system-monitor@clear-code.com";
 const DOMAIN = BRANCH_ROOT + ".";
 
+const TOPIC_BASE = "SystemMonitor:";
+
 const { prefs } = Cu.import('resource://system-monitor-modules/lib/prefs.js', {});
 
 const { clSystem } = Cu.import("resource://system-monitor-modules/clSystem.js", {});
@@ -52,7 +54,7 @@ SystemMonitorListener.prototype = {
   monitor: function (aValue) {
     var container = {};
     container.wrappedJSObject = aValue;
-    Services.obs.notifyObservers(container, this.type, "");
+    Services.obs.notifyObservers(container, TOPIC_BASE + this.type, "");
   },
 
   // nsIObserver
@@ -76,6 +78,9 @@ SystemMonitorListener.prototype = {
 };
 
 var SystemMonitorManager = {
+  TOPIC_BASE : TOPIC_BASE,
+  DOMAIN : DOMAIN,
+
   get _system() {
     return system;
   },
