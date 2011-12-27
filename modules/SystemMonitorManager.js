@@ -1,4 +1,4 @@
-var EXPORTED_SYMBOLS = ["SystemMonitorListener"];
+var EXPORTED_SYMBOLS = ["SystemMonitorManager"];
 
 const { classes: Cc, interfaces: Ci, utils: Cu, results: Cr } = Components;
 
