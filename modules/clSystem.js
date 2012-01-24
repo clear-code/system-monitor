@@ -278,10 +278,6 @@ clCPU.prototype = {
 		return '[object CPU]';
 	},
 
-	sumCPUTimes : function (aCPUTimes) {
-		return gNativeAPI.cpu.sumCPUTimes(aCPUTimes);
-	},
-
 	getCurrentTimeInternal : function() {
 		return gNativeAPI.cpu.getCurrentTimeInternal();
 	},
@@ -310,6 +306,24 @@ clCPU.prototype = {
 	}
 };
 
+clCPU.sumCPUTimes = function (aCPUTimes) {
+	var total = {
+		user   : 0,
+		system : 0,
+		nice   : 0,
+		idle   : 0,
+		iowait : 0
+	};
+	for (let [, time] in Iterator(aCPUTimes)) {
+		total.user   += time.user;
+		total.system += time.system;
+		total.nice   += time.nice;
+		total.idle   += time.idle;
+		total.iowait += time.iowait;
+	}
+	return total;
+};
+
 gNativeAPI.addAPI(
 	"cpu",
 	(function () {
@@ -325,29 +339,11 @@ gNativeAPI.addAPI(
 		else
 			throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
 
-		utils.sumCPUTimes = function (aCPUTimes) {
-			var total = {
-				user   : 0,
-				system : 0,
-				nice   : 0,
-				idle   : 0,
-				iowait : 0
-			};
-			for (let [, time] in Iterator(aCPUTimes)) {
-				total.user   += time.user;
-				total.system += time.system;
-				total.nice   += time.nice;
-				total.idle   += time.idle;
-				total.iowait += time.iowait;
-			}
-			return total;
-		};
-
 		var mPreviousTimesForTime = utils.getCPUTimes();
 
 		utils.getCurrentTimeInternal = function() {
 			var current = utils.getCPUTimes();
-			var time = utils.calculateCPUUsage(utils.sumCPUTimes(mPreviousTimesForTime), utils.sumCPUTimes(current));
+			var time = utils.calculateCPUUsage(clCPU.sumCPUTimes(mPreviousTimesForTime), clCPU.sumCPUTimes(current));
 			mPreviousTimesForTime = current;
 			return time;
 		};
