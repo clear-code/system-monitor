@@ -4,7 +4,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
-Components.utils.import('resource://system-monitor-modules/shutdown-listener.js');
+Components.utils.import('resource://system-monitor-modules/ShutdownListener.js');
 
 const GLIBTOP_NCPU = 32;
 const pid_t = ctypes.int;
