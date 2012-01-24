@@ -1,38 +1,36 @@
 const EXPORTED_SYMBOLS = ['CachedAPI'];
 
-function CachedAPI(aInterval) {
-	this.defaultInterval = aInterval || 1000;
+function CachedAPI(aSource, aCachedMethods, aLifetime) {
+	this._init(aSource, aCachedMethods, aLifetime);
 }
 
 CachedAPI.prototype = {
-	register: function (aName, aObject, aCachingMethods, aInterval) {
-		// intentionally use methods as it is (do not copy)
-		var wrapped = {
-				__noSuchMethod__ : function(aId, aArgs) aObject[aId].apply(aObject, aArgs)
-			};
-		this[aName] = wrapped;
+	__noSuchMethod__ : function(aId, aArgs) this._source[aId].apply(this._source, aArgs),
+	_init : function (aSource, aCachedMethods, aLifetime) {
+		this._source = aSource;
+		this._lifetime = aLifetime || 1000;
 
 		// curtail function call for specified methods
-		if (aCachingMethods) {
-			for (let [i, methodName] in Iterator(aCachingMethods)) {
-				wrapped[methodName] = CachedAPI.curtailFunctionCall(
-					aObject,
+		if (aCachedMethods) {
+			for (let [i, methodName] in Iterator(aCachedMethods)) {
+				this[methodName] = CachedAPI.curtailFunctionCall(
+					aSource,
 					methodName,
-					aInterval || this.defaultInterval
+					this._lifetime
 				);
 			}
 		}
 	}
 };
 
-CachedAPI.curtailFunctionCall = function (aObject, aMethodName, aInterval) {
+CachedAPI.curtailFunctionCall = function (aObject, aMethodName, aLifetime) {
 	var args = arguments;
 	var lastCallTime = null;
 	var lastReturnValue = null;
 
 	return function curtailedFunction() {
 		var nowTime = Date.now();
-		if (!lastCallTime || nowTime >= (lastCallTime + aInterval)) {
+		if (!lastCallTime || nowTime >= (lastCallTime + aLifetime)) {
 			lastCallTime = nowTime;
 			lastReturnValue = aObject[aMethodName].apply(aObject, args);
 		}

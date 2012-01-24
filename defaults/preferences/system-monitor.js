@@ -1,3 +1,6 @@
+pref("extensions.system-monitor@clear-code.com.lifetime.cpu", 1000);
+pref("extensions.system-monitor@clear-code.com.lifetime.memory", 1000);
+
 pref("extensions.system-monitor@clear-code.com.defaultTargetToolbar", "toolbar-menubar,nav-bar,mail-toolbar-menubar2,mail-bar3");
 
 pref("extensions.system-monitor@clear-code.com.cpu-usage.initialShow", false);
