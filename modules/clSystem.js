@@ -64,6 +64,44 @@ function getOwnerFrameElement(aWindow) {
 			.chromeEventHandler;
 }
 
+function clNativeAPI(leastInterval) {
+	this.leastInterval = leastInterval || 1000;
+}
+
+clNativeAPI.prototype = {
+	addAPI: function (name, methods, curtailTargets, leastInterval) {
+		// intentionally use methods as it is (do not copy)
+		this[name] = methods;
+
+		// curtail function call for specified methods
+		if (curtailTargets) {
+			for (let [i, methodName] in Iterator(curtailTargets)) {
+				methods[methodName] = clNativeAPI.curtailFunctionCall(
+					methods[methodName],
+					leastInterval || this.leastInterval
+				);
+			}
+		}
+	}
+};
+
+clNativeAPI.curtailFunctionCall = function (method, leastInterval) {
+	var args = arguments;
+	var lastCallTime = null;
+	var lastReturnValue = null;
+
+	return function curtailedFunction() {
+		var nowTime = Date.now();
+		if (!lastCallTime || nowTime >= (lastCallTime + leastInterval)) {
+			lastCallTime = nowTime;
+			lastReturnValue = method.apply(this, args);
+		}
+
+		return lastReturnValue;
+	};
+};
+
+var gNativeAPI = new clNativeAPI();
 
 function clSystem() {
 	if (Services.vc.compare(Services.appinfo.platformVersion, '1.9.99') <= 0)
@@ -225,8 +263,7 @@ function clCPU() {
 	if (gCPU)
 		return gCPU;
 
-	clCPU.loadUtils();
-	this.mPreviousTimes = this.utils.getCPUTimes();
+	this.mPreviousTimes = gNativeAPI.cpu.getCPUTimes();
 	return gCPU = this;
 }
 clCPU.prototype = {
@@ -241,45 +278,22 @@ clCPU.prototype = {
 		return '[object CPU]';
 	},
 
-	sumCPUTimes : function(aCPUTimes) {
-		var total = {
-				user   : 0,
-				system : 0,
-				nice   : 0,
-				idle   : 0,
-				iowait : 0
-			};
-		for (let [, time] in Iterator(aCPUTimes)) {
-			total.user   += time.user;
-			total.system += time.system;
-			total.nice   += time.nice;
-			total.idle   += time.idle;
-			total.iowait += time.iowait;
-		}
-		return total;
+	sumCPUTimes : function (aCPUTimes) {
+		return gNativeAPI.cpu.sumCPUTimes(aCPUTimes);
 	},
 
+	getCurrentTimeInternal : function() {
+		return gNativeAPI.cpu.getCurrentTimeInternal();
+	},
 	getCurrentTime : function() {
 		return new clCPUTime(this.getCurrentTimeInternal());
 	},
-	getCurrentTimeInternal : function() {
-		var current = this.utils.getCPUTimes();
-		var time = this.utils.calculateCPUUsage(this.sumCPUTimes(this.mPreviousTimes), this.sumCPUTimes(current));
-		this.mPreviousTimes = current;
-		return time;
-	},
 
+	getCurrentTimesInternal : function() {
+		return gNativeAPI.cpu.getCurrentTimesInternal();
+	},
 	getCurrentTimes : function() {
 		return this.getCurrentTimesInternal().map(function (time) new clCPUTime(time));
-	},
-	getCurrentTimesInternal : function() {
-		var current = this.utils.getCPUTimes();
-		var times = [];
-		for (let i in current) {
-		  times[i] = this.utils.calculateCPUUsage(this.mPreviousTimes[i], current[i]);
-		}
-		this.mPreviousTimes = current;
-		return times;
 	},
 
 	getUsage : function() {
@@ -292,26 +306,72 @@ clCPU.prototype = {
 	},
 
 	get count() {
-		return this.utils.getCount();
+		return gNativeAPI.cpu.getCount();
 	}
 };
-clCPU.loadUtils = function() {
-	if (this.prototype.utils)
-		return;
 
-	var utils = {};
-	var OS = Services.appinfo.OS.toLowerCase();
-	if (OS.indexOf('win') == 0)
-		Components.utils.import(MODULES_ROOT+'WINNT/cpu.js', utils);
-	else if (OS.indexOf('linux') == 0)
-		Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
-	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
-	else
-		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
+gNativeAPI.addAPI(
+	"cpu",
+	(function () {
+		var utils = {};
+		var OS = Services.appinfo.OS.toLowerCase();
 
-	this.prototype.utils = utils;
-};
+		if (OS.indexOf('win') == 0)
+			Components.utils.import(MODULES_ROOT+'WINNT/cpu.js', utils);
+		else if (OS.indexOf('linux') == 0)
+			Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
+		else if (OS.indexOf('darwin') == 0)
+			Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
+		else
+			throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
+
+		utils.sumCPUTimes = function (aCPUTimes) {
+			var total = {
+				user   : 0,
+				system : 0,
+				nice   : 0,
+				idle   : 0,
+				iowait : 0
+			};
+			for (let [, time] in Iterator(aCPUTimes)) {
+				total.user   += time.user;
+				total.system += time.system;
+				total.nice   += time.nice;
+				total.idle   += time.idle;
+				total.iowait += time.iowait;
+			}
+			return total;
+		};
+
+		var mPreviousTimesForTime = utils.getCPUTimes();
+
+		utils.getCurrentTimeInternal = function() {
+			var current = utils.getCPUTimes();
+			var time = utils.calculateCPUUsage(utils.sumCPUTimes(mPreviousTimesForTime), utils.sumCPUTimes(current));
+			mPreviousTimesForTime = current;
+			return time;
+		};
+
+		var mPreviousTimesForTimes = mPreviousTimesForTime;
+
+		utils.getCurrentTimesInternal = function() {
+			var current = utils.getCPUTimes();
+			var times = [];
+			for (let i in current) {
+				times[i] = utils.calculateCPUUsage(mPreviousTimesForTimes[i], current[i]);
+			}
+			mPreviousTimesForTimes = current;
+			return times;
+		};
+
+		return utils;
+	})(), [
+		"getCPUTimes",
+		"getCount",
+		"getCurrentTimeInternal",
+		"getCurrentTimesInternal"
+	]
+);
 
 function clCPUTime(aCPUTime) {
 	this.user    = aCPUTime.user;
@@ -334,8 +394,7 @@ clCPUTime.prototype = {
 };
 
 function clMemory() {
-	clMemory.loadUtils();
-	var memory = this.utils.getMemory();
+	var memory = gNativeAPI.memory.getMemory();
 	this.total       = memory.total;
 	this.used        = memory.used;
 	this.free        = memory.free;
@@ -354,23 +413,27 @@ clMemory.prototype = {
 		return '[object Memory]';
 	}
 };
-clMemory.loadUtils = function() {
-	if (this.prototype.utils)
-		return;
 
-	var utils = {};
-	var OS = Services.appinfo.OS.toLowerCase();
-	if (OS.indexOf('win') == 0)
-		Components.utils.import(MODULES_ROOT+'WINNT/memory.js', utils);
-	else if (OS.indexOf('linux') == 0)
-		Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
-	else if (OS.indexOf('darwin') == 0)
-		Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
-	else
-		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
+gNativeAPI.addAPI(
+	"memory",
+	(function () {
+		var utils = {};
+		var OS = Services.appinfo.OS.toLowerCase();
 
-	this.prototype.utils = utils;
-};
+		if (OS.indexOf('win') == 0)
+			Components.utils.import(MODULES_ROOT+'WINNT/memory.js', utils);
+		else if (OS.indexOf('linux') == 0)
+			Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
+		else if (OS.indexOf('darwin') == 0)
+			Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
+		else
+			throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
+
+		return utils;
+	})(), [
+		"getMemory"
+	]
+);
 
 function MonitorData(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.topic = aTopic;
