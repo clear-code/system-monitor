@@ -344,8 +344,8 @@ gNativeAPI.register(
 		var mPreviousTimesForTime = utils.getCPUTimes();
 
 		utils.getCurrentTimeInternal = function() {
-			var current = utils.getCPUTimes();
-			var time = utils.calculateCPUUsage(clCPU.sumCPUTimes(mPreviousTimesForTime), clCPU.sumCPUTimes(current));
+			var current = this.getCPUTimes();
+			var time = this.calculateCPUUsage(clCPU.sumCPUTimes(mPreviousTimesForTime), clCPU.sumCPUTimes(current));
 			mPreviousTimesForTime = current;
 			return time;
 		};
@@ -353,10 +353,10 @@ gNativeAPI.register(
 		var mPreviousTimesForTimes = mPreviousTimesForTime;
 
 		utils.getCurrentTimesInternal = function() {
-			var current = utils.getCPUTimes();
+			var current = this.getCPUTimes();
 			var times = [];
 			for (let i in current) {
-				times[i] = utils.calculateCPUUsage(mPreviousTimesForTimes[i], current[i]);
+				times[i] = this.calculateCPUUsage(mPreviousTimesForTimes[i], current[i]);
 			}
 			mPreviousTimesForTimes = current;
 			return times;
