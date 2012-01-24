@@ -15,6 +15,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
+Components.utils.import(MODULES_ROOT+'CachedAPI.js');
 
 XPCOMUtils.defineLazyGetter(this, 'Services', function () {
 	var ns = {};
@@ -64,47 +65,7 @@ function getOwnerFrameElement(aWindow) {
 			.chromeEventHandler;
 }
 
-function APICache(aInterval) {
-	this.defaultInterval = aInterval || 1000;
-}
-
-APICache.prototype = {
-	register: function (aName, aObject, aCachingMethods, aInterval) {
-		// intentionally use methods as it is (do not copy)
-		var wrapped = {
-				__noSuchMethod__ : function(aId, aArgs) aObject[aId].apply(aObject, aArgs)
-			};
-		this[aName] = wrapped;
-
-		// curtail function call for specified methods
-		if (aCachingMethods) {
-			for (let [i, methodName] in Iterator(aCachingMethods)) {
-				wrapped[methodName] = APICache.curtailFunctionCall(
-					aObject,
-					methodName,
-					aInterval || this.defaultInterval
-				);
-			}
-		}
-	}
-};
-APICache.curtailFunctionCall = function (aObject, aMethodName, aInterval) {
-	var args = arguments;
-	var lastCallTime = null;
-	var lastReturnValue = null;
-
-	return function curtailedFunction() {
-		var nowTime = Date.now();
-		if (!lastCallTime || nowTime >= (lastCallTime + aInterval)) {
-			lastCallTime = nowTime;
-			lastReturnValue = aObject[aMethodName].apply(aObject, args);
-		}
-
-		return lastReturnValue;
-	};
-};
-
-var gNativeAPI = new APICache();
+var gNativeAPI = new CachedAPI();
 
 function clSystem() {
 	if (Services.vc.compare(Services.appinfo.platformVersion, '1.9.99') <= 0)
