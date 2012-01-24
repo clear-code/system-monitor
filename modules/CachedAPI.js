@@ -24,7 +24,6 @@ CachedAPI.prototype = {
 };
 
 CachedAPI.createCachedFunctionCall = function (aObject, aMethodName, aLifetime) {
-	var args = arguments;
 	var lastCallTime = null;
 	var lastReturnValue = null;
 
@@ -32,7 +31,7 @@ CachedAPI.createCachedFunctionCall = function (aObject, aMethodName, aLifetime) 
 		var nowTime = Date.now();
 		if (!lastCallTime || nowTime >= (lastCallTime + aLifetime)) {
 			lastCallTime = nowTime;
-			lastReturnValue = aObject[aMethodName].apply(aObject, args);
+			lastReturnValue = aObject[aMethodName].apply(aObject, arguments);
 		}
 		return lastReturnValue;
 	};

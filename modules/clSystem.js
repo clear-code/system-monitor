@@ -141,6 +141,13 @@ XPCOMUtils.defineLazyGetter(this, 'gNativeMemory', function () {
 	return utils;
 });
 
+/**
+ * On some environments, too frequently calls of system functions can
+ * break the result. (For example, on Windows, CPU usage will be 100%
+ * wrongly if there are two (or more) watchers.)
+ * This version returns the cached (last) result for frequently calls.
+ * Lifetime of caches can be customized by user preferences.
+ */
 var gCachedNativeAPI = {
 	_definitions : {
 		cpu : {
