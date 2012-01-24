@@ -16,7 +16,6 @@
     const Ci = Components.interfaces;
   ]]></script>
   <script type="application/x-javascript" src="chrome://system-monitor/content/transwindow.js"/>
-  <script type="application/x-javascript" src="chrome://system-monitor/content/prefs.js"/>
   <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
 
   <popupset>
