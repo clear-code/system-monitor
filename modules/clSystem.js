@@ -199,7 +199,6 @@ gCachedNativeAPI.init();
 
 
 function clSystem() {
-dump('clSystem initialize\n');
 	if (Services.vc.compare(Services.appinfo.platformVersion, '1.9.99') <= 0)
 		throw new Error('initialization error: JavaScript implementations are available on Gecko 2.0 o later.');
 
