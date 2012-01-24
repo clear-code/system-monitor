@@ -13,7 +13,7 @@ CachedAPI.prototype = {
 		// curtail function call for specified methods
 		if (aCachedMethods) {
 			for (let [i, methodName] in Iterator(aCachedMethods)) {
-				this[methodName] = CachedAPI.curtailFunctionCall(
+				this[methodName] = CachedAPI.createCachedFunctionCall(
 					aSource,
 					methodName,
 					this._lifetime
@@ -23,18 +23,17 @@ CachedAPI.prototype = {
 	}
 };
 
-CachedAPI.curtailFunctionCall = function (aObject, aMethodName, aLifetime) {
+CachedAPI.createCachedFunctionCall = function (aObject, aMethodName, aLifetime) {
 	var args = arguments;
 	var lastCallTime = null;
 	var lastReturnValue = null;
 
-	return function curtailedFunction() {
+	return function cachedFunctionCall() {
 		var nowTime = Date.now();
 		if (!lastCallTime || nowTime >= (lastCallTime + aLifetime)) {
 			lastCallTime = nowTime;
 			lastReturnValue = aObject[aMethodName].apply(aObject, args);
 		}
-
 		return lastReturnValue;
 	};
 };
