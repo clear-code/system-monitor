@@ -64,44 +64,46 @@ function getOwnerFrameElement(aWindow) {
 			.chromeEventHandler;
 }
 
-function clNativeAPI(leastInterval) {
-	this.leastInterval = leastInterval || 1000;
+function APICache(aInterval) {
+	this.defaultInterval = aInterval || 1000;
 }
 
-clNativeAPI.prototype = {
-	addAPI: function (name, methods, curtailTargets, leastInterval) {
+APICache.prototype = {
+	register: function (aName, aObject, aCachingMethods, aInterval) {
 		// intentionally use methods as it is (do not copy)
-		this[name] = methods;
+		var wrapped = {
+				__noSuchMethod__ : function(aId, aArgs) aObject[aId].apply(aObject, aArgs)
+			};
+		this[aName] = wrapped;
 
 		// curtail function call for specified methods
-		if (curtailTargets) {
-			for (let [i, methodName] in Iterator(curtailTargets)) {
-				methods[methodName] = clNativeAPI.curtailFunctionCall(
-					methods[methodName],
-					leastInterval || this.leastInterval
+		if (aCachingMethods) {
+			for (let [i, methodName] in Iterator(aCachingMethods)) {
+				wrapped[methodName] = APICache.curtailFunctionCall(
+					aObject[methodName],
+					aInterval || this.defaultInterval
 				);
 			}
 		}
 	}
 };
-
-clNativeAPI.curtailFunctionCall = function (method, leastInterval) {
+APICache.curtailFunctionCall = function (aMethod, aInterval) {
 	var args = arguments;
 	var lastCallTime = null;
 	var lastReturnValue = null;
 
 	return function curtailedFunction() {
 		var nowTime = Date.now();
-		if (!lastCallTime || nowTime >= (lastCallTime + leastInterval)) {
+		if (!lastCallTime || nowTime >= (lastCallTime + aInterval)) {
 			lastCallTime = nowTime;
-			lastReturnValue = method.apply(this, args);
+			lastReturnValue = aMethod.apply(this, args);
 		}
 
 		return lastReturnValue;
 	};
 };
 
-var gNativeAPI = new clNativeAPI();
+var gNativeAPI = new APICache();
 
 function clSystem() {
 	if (Services.vc.compare(Services.appinfo.platformVersion, '1.9.99') <= 0)
@@ -324,8 +326,8 @@ clCPU.sumCPUTimes = function (aCPUTimes) {
 	return total;
 };
 
-gNativeAPI.addAPI(
-	"cpu",
+gNativeAPI.register(
+	'cpu',
 	(function () {
 		var utils = {};
 		var OS = Services.appinfo.OS.toLowerCase();
@@ -361,11 +363,12 @@ gNativeAPI.addAPI(
 		};
 
 		return utils;
-	})(), [
-		"getCPUTimes",
-		"getCount",
-		"getCurrentTimeInternal",
-		"getCurrentTimesInternal"
+	})(),
+	[
+		'getCPUTimes',
+		'getCount',
+		'getCurrentTimeInternal',
+		'getCurrentTimesInternal'
 	]
 );
 
@@ -410,8 +413,8 @@ clMemory.prototype = {
 	}
 };
 
-gNativeAPI.addAPI(
-	"memory",
+gNativeAPI.register(
+	'memory',
 	(function () {
 		var utils = {};
 		var OS = Services.appinfo.OS.toLowerCase();
@@ -426,8 +429,9 @@ gNativeAPI.addAPI(
 			throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
 
 		return utils;
-	})(), [
-		"getMemory"
+	})(),
+	[
+		'getMemory'
 	]
 );
 
