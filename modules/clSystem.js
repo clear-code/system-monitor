@@ -249,7 +249,7 @@ clCPU.prototype = {
 				idle   : 0,
 				iowait : 0
 			};
-		for each (let time in aCPUTimes) {
+		for (let [, time] in Iterator(aCPUTimes)) {
 			total.user   += time.user;
 			total.system += time.system;
 			total.nice   += time.nice;
@@ -270,11 +270,7 @@ clCPU.prototype = {
 	},
 
 	getCurrentTimes : function() {
-		let times = this.getCurrentTimesInternal();
-		for (let i in times) {
-		  times[i] = new clCPUTime(times[i]);
-		}
-		return times;
+		return this.getCurrentTimesInternal().map(function (time) new clCPUTime(time));
 	},
 	getCurrentTimesInternal : function() {
 		var current = this.utils.getCPUTimes();
@@ -292,11 +288,7 @@ clCPU.prototype = {
 	},
 
 	getUsages : function() {
-		var times = this.getCurrentTimesInternal();
-		for (let i in times) {
-		  times[i] = times[i].user + times[i].system;
-		}
-		return times;
+		return this.getCurrentTimesInternal().map(function (time) time.user + time.system);
 	},
 
 	get count() {
