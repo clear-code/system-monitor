@@ -80,14 +80,15 @@ APICache.prototype = {
 		if (aCachingMethods) {
 			for (let [i, methodName] in Iterator(aCachingMethods)) {
 				wrapped[methodName] = APICache.curtailFunctionCall(
-					aObject[methodName],
+					aObject,
+					methodName,
 					aInterval || this.defaultInterval
 				);
 			}
 		}
 	}
 };
-APICache.curtailFunctionCall = function (aMethod, aInterval) {
+APICache.curtailFunctionCall = function (aObject, aMethodName, aInterval) {
 	var args = arguments;
 	var lastCallTime = null;
 	var lastReturnValue = null;
@@ -96,7 +97,7 @@ APICache.curtailFunctionCall = function (aMethod, aInterval) {
 		var nowTime = Date.now();
 		if (!lastCallTime || nowTime >= (lastCallTime + aInterval)) {
 			lastCallTime = nowTime;
-			lastReturnValue = aMethod.apply(this, args);
+			lastReturnValue = aObject[aMethodName].apply(aObject, args);
 		}
 
 		return lastReturnValue;
