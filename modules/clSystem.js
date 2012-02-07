@@ -314,9 +314,7 @@ clSystem.prototype = {
 		delete this.ownerID;
 	},
 
-	get owner() {
-		return this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID);
-	},
+	get owner() this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID),
 
 	getPermission : function(aGlobal) {
 		if (!aGlobal)
@@ -344,9 +342,7 @@ clSystem.prototype = {
 						addMonitor : Function.bind.call(aSystem.addMonitor, aSystem),
 						removeMonitor : Function.bind.call(aSystem.removeMonitor, aSystem),
 						toString : Function.bind.call(aSystem.toString, aSystem),
-						get cpu() {
-							return aSystem.cpu;
-						}
+						get cpu() aSystem.cpu
 					};
 				})
 			]]>.toString(), Components.utils.Sandbox(aWindow))(this);
@@ -396,9 +392,7 @@ clCPU.prototype = {
 		return this.getCurrentTimesInternal().map(function (time) time.user + time.system);
 	},
 
-	get count() {
-		return gCachedNativeAPI.cpu.getCount();
-	}
+	get count() gCachedNativeAPI.cpu.getCount()
 };
 
 function clCPUTime(aCPUTime) {
@@ -455,9 +449,7 @@ MonitorData.prototype = {
 		Ci.nsITimerCallback
 	]),
 
-	get owner() {
-		return this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID);
-	},
+	get owner() this.ownerID && this.ownerUtils.getOuterWindowWithId(this.ownerID),
 	init : function(aOwner) {
 		this.ownerUtils = getDOMWindowUtils(aOwner);
 		this.ownerID = this.ownerUtils && this.ownerUtils.outerWindowID;
