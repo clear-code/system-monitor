@@ -1,6 +1,7 @@
 radio.image,
 radio.image .radio-label-box,
 radio.image .radio-label {
+  box-align: center;
   -moz-box-align: center;
 }
 

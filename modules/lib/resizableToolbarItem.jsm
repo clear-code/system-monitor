@@ -59,6 +59,7 @@ var resizableToolbarItem;
 
 		STYLE : <![CDATA[
 			.%SPLITTER_CLASS% {
+				appearance: none !important;
 				-moz-appearance: none !important;
 				background: transparent !important;
 				border: 0 none !important;
