@@ -53,7 +53,8 @@ var SystemMonitorService = {
       new SystemMonitorMemoryItem()
     ];
 
-    this.updateToolbarMethods();
+    window.addEventListener("beforecustomization", this, false);
+    window.addEventListener("aftercustomization", this, false);
 
     this.initialized = true;
 
@@ -65,53 +66,13 @@ var SystemMonitorService = {
 
   destroy : function SystemMonitorService_destroy() {
     window.removeEventListener("unload", this, false);
+    window.removeEventListener("beforecustomization", this, false);
+    window.removeEventListener("aftercustomization", this, false);
     this.destroyToolbarItems();
   },
 
 
-  // toolbar customize
-  updateToolbarMethods : function SystemMonitorService_updateToolbarMethods() {
-    if ("BrowserCustomizeToolbar" in window) {
-      eval("window.BrowserCustomizeToolbar = "+
-        window.BrowserCustomizeToolbar.toSource().replace(
-          "{",
-          "{ SystemMonitorService.destroyToolbarItems(); "
-        )
-      );
-    }
-    if ("CustomizeMailToolbar" in window) {
-      eval("window.CustomizeMailToolbar = "+
-        window.CustomizeMailToolbar.toSource().replace(
-          "{",
-          "{ SystemMonitorService.destroyToolbarItems(); "
-        )
-      );
-    }
-    var toolbox = document.getElementById("navigator-toolbox") ||
-                  document.getElementById("mail-toolbox");
-    if (toolbox && toolbox.customizeDone) {
-      toolbox.__systemmonitor__customizeDone = toolbox.customizeDone;
-      toolbox.customizeDone = function(aChanged) {
-        this.__systemmonitor__customizeDone(aChanged);
-        SystemMonitorService.initToolbarItems();
-      };
-    }
-    if ("BrowserToolboxCustomizeDone" in window) {
-      window.__systemmonitor__BrowserToolboxCustomizeDone = window.BrowserToolboxCustomizeDone;
-      window.BrowserToolboxCustomizeDone = function(aChanged) {
-        window.__systemmonitor__BrowserToolboxCustomizeDone.apply(window, arguments);
-        SystemMonitorService.initToolbarItems();
-      };
-    }
-    if ("MailToolboxCustomizeDone" in window) {
-      window.__systemmonitor__MailToolboxCustomizeDone = window.MailToolboxCustomizeDone;
-      window.MailToolboxCustomizeDone = function() {
-        window.__systemmonitor__MailToolboxCustomizeDone.apply(window, arguments);
-        SystemMonitorService.initToolbarItems();
-      };
-    }
-  },
-
+  // toolbar customization
   initToolbarItems : function SystemMonitorService_initToolbarItems() {
     for each (let item in this.items) {
       item.init();
@@ -226,6 +187,12 @@ var SystemMonitorService = {
         break;
       case "unload":
         this.destroy();
+        break;
+      case "beforecustomization":
+        this.destroyToolbarItems();
+        break;
+      case "aftercustomization":
+        this.initToolbarItems();
         break;
     }
   }
