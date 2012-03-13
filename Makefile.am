@@ -13,13 +13,15 @@ JAR_TARGET_FILES = 					\
 XPI_TARGET_FILES = 					\
 	install.rdf				\
 	components/*.js				\
-	components/*.xpt			\
 	components/gecko2*/*.xpt			\
 	chrome				\
 	defaults				\
-	platform				\
 	modules				\
 	chrome.manifest
+
+XPI_TARGET_FILES_LEGACY = $(XPI_TARGET_FILES)	\
+	components/*.xpt			\
+	platform
 
 if PLATFORM_WINNT
 BINARY_SOURCE_DIR = components/SystemMonitor/Release
@@ -41,6 +43,23 @@ xpi:
 	 cp components/gecko1.9.2/*.xpt components/ && \
 	 rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
 	 zip -q -r -9 $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi $(XPI_TARGET_FILES) -x \*.git/\* && \
+	 cp -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
+	 rm -rf xpi_temp && \
+	 mkdir -p xpi_temp && \
+	 sed -e "s#^.*<em:*\\(updateURL\\|updateKey\\)>.*</em:*\\(updateURL\\|updateKey\\)>##g" -e "s#^.*em:*\\(updateURL\\|updateKey\\)=\\(\\".*\\"\\|'.*'\\)##g" install.rdf > xpi_temp/install.rdf && \
+	 cd xpi_temp && \
+	 zip -q -9 ../$(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi install.rdf && \
+	 cd ..)
+
+legacy-xpi:
+	(rm -rf chrome && \
+	 mkdir -p chrome && \
+	 zip -q -r -9 chrome/$(PACKAGE_NAME).jar $(JAR_TARGET_FILES) -x \*.git/\* && \
+	 rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi && \
+	 rm -f components/*.xpt && \
+	 cp components/gecko1.9.2/*.xpt components/ && \
+	 rm -f $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
+	 zip -q -r -9 $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi $(XPI_TARGET_FILES_LEGACY) -x \*.git/\* && \
 	 cp -f $(PACKAGE_NAME)-$(PACKAGE_VERSION).xpi $(PACKAGE_NAME)-$(PACKAGE_VERSION)-noupdate.xpi && \
 	 rm -rf xpi_temp && \
 	 mkdir -p xpi_temp && \
