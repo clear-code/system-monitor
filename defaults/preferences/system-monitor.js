@@ -1,7 +1,9 @@
 pref("extensions.system-monitor@clear-code.com.lifetime.cpu", 1000);
 pref("extensions.system-monitor@clear-code.com.lifetime.memory", 1000);
 
-pref("extensions.system-monitor@clear-code.com.defaultTargetToolbar", "toolbar-menubar,nav-bar,mail-toolbar-menubar2,mail-bar3");
+// pref("extensions.system-monitor@clear-code.com.defaultTargetToolbar", "...");
+pref("extensions.system-monitor@clear-code.com.platform.default.defaultTargetToolbar", "toolbar-menubar,nav-bar,mail-toolbar-menubar2,mail-bar3");
+pref("extensions.system-monitor@clear-code.com.platform.Darwin.defaultTargetToolbar", "nav-bar,mail-bar3");
 
 pref("extensions.system-monitor@clear-code.com.cpu-usage.initialShow", false);
 pref("extensions.system-monitor@clear-code.com.cpu-usage.size", 48);

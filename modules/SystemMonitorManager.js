@@ -92,15 +92,42 @@ var SystemMonitorManager = {
   _listeners: [],
   addListener: function (args) {
     this._listeners.push(new SystemMonitorListener(args.type, args.id));
+  },
+
+  init: function () {
+    this.applyPlatformDefaultPrefs();
+
+    this.addListener({
+      type : "cpu-usages",
+      id   : "cpu-usage"
+    });
+
+    this.addListener({
+      type : "memory-usage",
+      id   : "memory-usage"
+    });
+  },
+
+  applyPlatformDefaultPrefs: function () {
+    const XULAppInfo = Cc["@mozilla.org/xre/app-info;1"]
+                         .getService(Ci.nsIXULAppInfo)
+                         .QueryInterface(Ci.nsIXULRuntime);
+    var OS = XULAppInfo.OS;
+    var processed = {};
+    var originalKeys = prefs.getDescendant(DOMAIN+"platform."+OS);
+    for (let i = 0, maxi = originalKeys.length; i < maxi; i++) {
+      let originalKey = originalKeys[i];
+      let key = originalKey.replace("platform."+OS+".", "");
+      prefs.setDefaultPref(key, prefs.getPref(originalKey));
+      processed[key] = true;
+    }
+    originalKeys = prefs.getDescendant(DOMAIN+"platform.default");
+    for (let i = 0, maxi = originalKeys.length; i < maxi; i++) {
+      let originalKey = originalKeys[i];
+      let key = originalKey.replace("platform.default.", "");
+      if (!(key in processed))
+        prefs.setDefaultPref(key, prefs.getPref(originalKey));
+    }
   }
 };
-
-SystemMonitorManager.addListener({
-  type : "cpu-usages",
-  id   : "cpu-usage"
-});
-
-SystemMonitorManager.addListener({
-  type : "memory-usage",
-  id   : "memory-usage"
-});
+SystemMonitorManager.init();
