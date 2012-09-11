@@ -1,4 +1,4 @@
-var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage', 'getMemory'];
+var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage', 'getMemory', 'getNetworkLoad'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -50,6 +50,27 @@ const glibtop_proc_mem = new ctypes.StructType('glibtop_proc_mem', [
 		{ rss      : ctypes.uint64_t },
 		{ rss_rlim : ctypes.uint64_t }
 	]);
+const glibtop_netload = new ctypes.StructType('glibtop_netload', [
+		{ flags         : ctypes.uint64_t },
+		{ if_flags      : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_IF_FLAGS      */
+		{ mtu           : ctypes.uint32_t }, /* GLIBTOP_NETLOAD_MTU           */
+		{ subnet        : ctypes.uint32_t }, /* GLIBTOP_NETLOAD_SUBNET        */
+		{ netaddress    : ctypes.uint32_t }, /* GLIBTOP_NETLOAD_ADDRESS       */
+		{ packets_in    : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_PACKETS_IN    */
+		{ packets_out   : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_PACKETS_OUT   */
+		{ packets_total : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_PACKETS_TOTAL */
+		{ bytes_in      : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_BYTES_IN      */
+		{ bytes_out     : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_BYTES_OUT     */
+		{ bytes_total   : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_BYTES_TOTAL   */
+		{ errors_in     : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_ERRORS_IN     */
+		{ errors_out    : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_ERRORS_OUT    */
+		{ errors_total  : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_ERRORS_TOTAL  */
+		{ collisions    : ctypes.uint64_t }, /* GLIBTOP_NETLOAD_COLLISIONS    */
+		{ address6      : ctypes.ArrayType(ctypes.uint8_t, 16) },    /* GLIBTOP_NETLOAD_ADDRESS6      */
+		{ prefix6       : ctypes.ArrayType(ctypes.uint8_t, 16) },    /* GLIBTOP_NETLOAD_PREXIF6       */
+		{ scope6        : ctypes.uint8_t },    /* GLIBTOP_NETLOAD_SCOPE6        */
+		{ hwaddress     : ctypes.ArrayType(ctypes.uint8_t, 8) }      /* GLIBTOP_NETLOAD_HWADDRESS     */
+	]);
 
 
 function openLibrary() {
@@ -99,6 +120,13 @@ const glibtop_get_proc_mem = gLibgtop2.declare(
 		ctypes.void_t,
 		glibtop_proc_mem.ptr,
 		pid_t
+	);
+const glibtop_get_netload = gLibgtop2.declare(
+		'glibtop_get_netload',
+		ctypes.default_abi,
+		ctypes.void_t,
+		glibtop_netload.ptr,
+		ctypes.char.ptr
 	);
 const getpid = gLibc.declare(
 		'getpid',
@@ -184,3 +212,13 @@ function getMemory() {
 	};
 }
 
+function getNetworkLoad() {
+	var netload = new glibtop_netload();
+	glibtop_get_netload(netload.address(), "eth0");
+
+	return {
+		downBytes  : netload.bytes_in,
+		upBytes    : netload.bytes_out,
+		totalBytes : netload.bytes_total
+	};
+}
