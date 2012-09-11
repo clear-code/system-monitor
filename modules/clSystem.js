@@ -10,7 +10,7 @@ const STRING_BUNDLE_URL = 'chrome://'+PACKAGE_NAME+'/locale/system-monitor.prope
 const PERMISSION_DENIED_TOPIC = 'system-monitor:permission-denied';
 const PERMISSION_UNKNOWN_TOPIC = 'system-monitor:unknown-permission';
 
-const EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory'];
+const EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory', 'clNetwork'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -141,6 +141,22 @@ XPCOMUtils.defineLazyGetter(this, 'gNativeMemory', function () {
 	return utils;
 });
 
+XPCOMUtils.defineLazyGetter(this, 'gNativeNetwork', function () {
+	var utils = {};
+	var OS = Services.appinfo.OS.toLowerCase();
+
+	if (OS.indexOf('win') == 0)
+		Components.utils.import(MODULES_ROOT+'WINNT/network.js', utils);
+	else if (OS.indexOf('linux') == 0)
+		Components.utils.import(MODULES_ROOT+'Linux/utils.js', utils);
+	else if (OS.indexOf('darwin') == 0)
+		Components.utils.import(MODULES_ROOT+'Darwin/utils.js', utils);
+	else
+		throw Components.results.NS_ERROR_NOT_IMPLEMENTED;
+
+	return utils;
+});
+
 /**
  * On some environments, too frequently calls of system functions can
  * break the result. (For example, on Windows, CPU usage will be 100%
@@ -163,6 +179,12 @@ var gCachedNativeAPI = {
 			get source() gNativeMemory,
 			methods : [
 				'getMemory'
+			]
+		},
+		network : {
+			get source() gNativeNetwork,
+			methods : [
+				'getNetworkLoad'
 			]
 		}
 	},
@@ -436,7 +458,6 @@ clMemory.prototype = {
 	}
 };
 
-
 function MonitorData(aTopic, aMonitor, aInterval, aOwner, aSystem) {
 	this.topic = aTopic;
 	this.monitor = aMonitor;
@@ -489,6 +510,11 @@ MonitorData.prototype = {
 				return this.system.cpu.getCurrentTimes();
 			case 'memory-usage':
 				return new clMemory();
+
+			case 'network-usages':
+			case 'network-usage':
+				return gCachedNativeAPI.network.getNetworkLoad();
+
 			default:
 				this.destroy();
 				throw Components.results.NS_ERROR_FAILURE;

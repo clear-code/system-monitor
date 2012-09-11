@@ -50,7 +50,8 @@ var SystemMonitorService = {
 
     this.items = [
       new SystemMonitorCPUItem(),
-      new SystemMonitorMemoryItem()
+      new SystemMonitorMemoryItem(),
+      new SystemMonitorNetworkItem()
     ];
 
     window.addEventListener("beforecustomization", this, false);
@@ -440,7 +441,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       this.drawSeparators(w, h);
   },
 
-  clearAll : function SystemMonitorSimpleGraph_clearAll() { 
+  clearAll : function SystemMonitorSimpleGraph_clearAll() {
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     context.save();
@@ -887,5 +888,108 @@ SystemMonitorMemoryItem.prototype = {
   }
 };
 
+function createWindow(defaultValue) {
+  var maxValue = null;
+
+  return {
+    getMaxValue: function () {
+      if (maxValue === null)
+        return defaultValue;
+      return maxValue;
+    },
+    addNewValue: function (value) {
+      if (value > this.getMaxValue())
+        maxValue = value;
+      return this.getMaxValue();
+    }
+  };
+}
+
+function SystemMonitorNetworkItem()
+{
+  // 64KB/s
+  this.mostMinimumMaximumValue = this.maximumValue = 64 * 1024;
+}
+SystemMonitorNetworkItem.prototype = {
+  __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  id       : "network-usage",
+  type     : "network-usages",
+  itemId   : "system-monitor-network-usage",
+  multiplexed : false,
+  get multiplexCount() {
+    return 1;
+    // return this._multiplexCount || (this._multiplexCount = SystemMonitorManager.cpuCount);
+  },
+  get tooltip() {
+    return document.getElementById("system-monitor-network-usage-tooltip-label");
+  },
+  mostMinimumMaximumValue: null,
+  maximumValue: null,
+  updateMaximumValue: function (nextMaximumValue, notExpire) {
+    var previousMaximumValue = this.maximumValue;
+    this.maximumValue = nextMaximumValue;
+
+    if (previousMaximumValue === nextMaximumValue)
+      return;
+
+    log("adjust!");
+
+    // Adjust past ratio to current maximum value
+    for (let [i, previousRatio] in Iterator(this.valueArray)) {
+      if (previousRatio) {
+        var previousValue = previousMaximumValue * previousRatio;
+        this.valueArray[i] = previousValue / nextMaximumValue;
+        if (this.valueArray[i] > 1.0)
+          this.valueArray[i] = 1.0;
+      }
+    }
+
+    if (notExpire)
+      return;
+
+    if (this.timer) {
+      clearTimer(this.timer);
+      this.timer = null;
+    }
+
+    // Set expiration
+    var self = this;
+    this.timer = setTimeout(function () {
+      log("Expired: " + nextMaximumValue);
+      self.timer = null;
+      self.updateMaximumValue(self.mostMinimumMaximumValue, true /* not expire */);
+    }, 10 * 1000);
+  },
+  tryToUpdateMaximumValue: function (currentValue) {
+    if (this.maximumValue === null ||
+        currentValue > this.maximumValue) {
+      this.updateMaximumValue(currentValue);
+    }
+  },
+  computeUsageForLoad: function (aDownBytesDelta) {
+    var networkUsage = aDownBytesDelta / this.maximumValue;
+    if (networkUsage > 1)
+      networkUsage = 1;
+
+    return networkUsage;
+  },
+  // Reset maximum value
+  previousNetworkLoad: null,
+  monitor: function SystemMonitorNetworkItem_monitor(aNetworkLoad) {
+    if (!this.previousNetworkLoad)
+      this.previousNetworkLoad = aNetworkLoad;
+    var downBytesDelta = aNetworkLoad.downBytes - this.previousNetworkLoad.downBytes;
+    this.previousNetworkLoad = aNetworkLoad;
+
+    this.valueArray.shift();
+    this.valueArray.push(this.computeUsageForLoad(downBytesDelta));
+    this.tryToUpdateMaximumValue(downBytesDelta);
+    this.drawGraph();
+
+    // Setup the tooltip text
+    this.tooltip.textContent = ~~(downBytesDelta / 1024) + "KB/s"
+      + "(Max: " + ~~(this.maximumValue / 1024) + "KB/s)";
+  }
+};
 
 window.addEventListener("load", SystemMonitorService, false);

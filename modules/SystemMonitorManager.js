@@ -106,6 +106,11 @@ var SystemMonitorManager = {
       type : "memory-usage",
       id   : "memory-usage"
     });
+
+    this.addListener({
+      type : "network-usages",
+      id   : "network-usage"
+    });
   },
 
   applyPlatformDefaultPrefs: function () {

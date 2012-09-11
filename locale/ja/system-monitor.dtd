@@ -1,5 +1,6 @@
 <!ENTITY toolbar.cpu-usage.label   "CPU使用率">
 <!ENTITY toolbar.memory-usage.label   "メモリ使用率">
+<!ENTITY toolbar.network-usage.label   "ネットワーク使用率">
 
 
 <!ENTITY config.title "システムモニターの設定">

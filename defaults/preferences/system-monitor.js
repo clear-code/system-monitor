@@ -1,5 +1,6 @@
 pref("extensions.system-monitor@clear-code.com.lifetime.cpu", 1000);
 pref("extensions.system-monitor@clear-code.com.lifetime.memory", 1000);
+pref("extensions.system-monitor@clear-code.com.lifetime.network", 1000);
 
 // pref("extensions.system-monitor@clear-code.com.defaultTargetToolbar", "...");
 pref("extensions.system-monitor@clear-code.com.platform.default.defaultTargetToolbar", "toolbar-menubar,nav-bar,mail-toolbar-menubar2,mail-bar3");
@@ -41,3 +42,13 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfEndAlpha",
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.memory-usage.style", 129);
 
+pref("extensions.system-monitor@clear-code.com.network-usage.initialShow", false);
+pref("extensions.system-monitor@clear-code.com.network-usage.size", 48);
+pref("extensions.system-monitor@clear-code.com.network-usage.interval", 1000);
+pref("extensions.system-monitor@clear-code.com.network-usage.color.background", "#000000");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha", "0.7");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.backgroundEndAlpha", "0.95");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground", "#33FF33");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha", "0.4");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundEndAlpha", "1");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundMinAlpha", "0.2");

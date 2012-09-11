@@ -16,6 +16,10 @@
     <label id="system-monitor-memory-usage-tooltip-label"
       class="system-monitor-tooltip-label">&toolbar.memory-usage.label;</label>
   </tooltip>
+  <tooltip id="system-monitor-network-usage-tooltip">
+    <label id="system-monitor-network-usage-tooltip-label"
+      class="system-monitor-tooltip-label">&toolbar.network-usage.label;</label>
+  </tooltip>
 
   <toolbaritem id="system-monitor-cpu-usage"
                class="system-monitor-item"
@@ -52,6 +56,24 @@
     </stack>
     <label class="toolbarbutton-text"
            value="&toolbar.memory-usage.label;"/>
+  </toolbaritem>
+  <toolbaritem id="system-monitor-network-usage"
+               class="system-monitor-item"
+               tooltip="system-monitor-network-usage-tooltip"
+               orient="vertical"
+               pack="center"
+               title="&toolbar.network-usage.label;">
+    <stack>
+      <hbox class="system-monitor-canvas-background"
+            flex="1"/>
+      <image id="system-monitor-network-usage-backup" flex="1"/>
+      <canvas xmlns="http://www.w3.org/1999/xhtml"
+              id="system-monitor-network-usage-canvas"
+              width="48"
+              height="24"/>
+    </stack>
+    <label class="toolbarbutton-text"
+           value="&toolbar.network-usage.label;"/>
   </toolbaritem>
 
 </overlay>

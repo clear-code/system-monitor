@@ -27,6 +27,10 @@
       <label id="system-monitor-memory-usage-tooltip-label"
         class="system-monitor-tooltip-label">&toolbar.memory-usage.label;</label>
     </tooltip>
+    <tooltip id="system-monitor-network-usage-tooltip">
+      <label id="system-monitor-network-usage-tooltip-label"
+        class="system-monitor-tooltip-label">&toolbar.network-usage.label;</label>
+    </tooltip>
   </popupset>
 
   <stack id="system-monitor-cpu-usage">
@@ -47,6 +51,17 @@
     <hbox>
       <canvas xmlns="http://www.w3.org/1999/xhtml"
               id="system-monitor-memory-usage-canvas"
+              width="48"
+              height="24"/>
+    </hbox>
+  </stack>
+  <stack id="system-monitor-network-usage">
+    <hbox class="system-monitor-canvas-background"
+          flex="1"/>
+    <image id="system-monitor-network-usage-backup" flex="1"/>
+    <hbox>
+      <canvas xmlns="http://www.w3.org/1999/xhtml"
+              id="system-monitor-network-usage-canvas"
               width="48"
               height="24"/>
     </hbox>

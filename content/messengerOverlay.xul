@@ -9,11 +9,13 @@
   <popupset id="mainPopupSet">
     <tooltip id="system-monitor-cpu-usage-tooltip"/>
     <tooltip id="system-monitor-memory-usage-tooltip"/>
+    <tooltip id="system-monitor-network-usage-tooltip"/>
   </popupset>
 
   <toolbarpalette id="MailToolbarPalette">
     <toolbaritem id="system-monitor-cpu-usage"/>
     <toolbaritem id="system-monitor-memory-usage"/>
+    <toolbaritem id="system-monitor-network-usage"/>
   </toolbarpalette>
 
 </overlay>
