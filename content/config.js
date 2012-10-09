@@ -11,6 +11,12 @@ function initMemoryUsagePane() {
   updateAlphaUIFromPref('memory-usage.color.selfGlobalAlpha');
 }
 
+function initNetworkUsagePane() {
+  updateStyleUIFromPref('network-usage');
+  updateAlphaUIFromPref('network-usage.color.backgroundStartAlpha');
+  updateAlphaUIFromPref('network-usage.color.foregroundStartAlpha');
+}
+
 function updateStyleUIFromPref(aKey) {
   var slot = document.getElementById('extensions.system-monitor@clear-code.com.'+aKey+'.style');
   var value = parseInt(slot.value);

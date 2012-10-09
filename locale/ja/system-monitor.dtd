@@ -53,3 +53,25 @@
 <!ENTITY config.memory-usage.interval.before "">
 <!ENTITY config.memory-usage.interval.after "ミリ秒">
 
+
+<!ENTITY config.network-usage.caption "ネットワーク使用率">
+
+<!ENTITY config.network-usage.style.caption "スタイル">
+<!ENTITY config.network-usage.style.bar "棒グラフ">
+<!ENTITY config.network-usage.style.polygon "折れ線グラフ">
+
+<!ENTITY config.network-usage.color.caption "色">
+<!ENTITY config.network-usage.color.background "背景色：">
+<!ENTITY config.network-usage.color.backgroundStartAlpha.before "不透明度：0&#37;">
+<!ENTITY config.network-usage.color.backgroundStartAlpha.after "100&#37;">
+<!ENTITY config.network-usage.color.foreground "前景色：">
+<!ENTITY config.network-usage.color.foregroundStartAlpha.before "不透明度：0&#37;">
+<!ENTITY config.network-usage.color.foregroundStartAlpha.after "100&#37;">
+<!ENTITY config.network-usage.color.reset "リセット">
+
+<!ENTITY config.network-usage.logscale.caption "対数グラフ">
+<!ENTITY config.network-usage.logscale.enable "グラフを対数グラフとして表示する">
+
+<!ENTITY config.network-usage.interval.caption "グラフの更新間隔">
+<!ENTITY config.network-usage.interval.before "">
+<!ENTITY config.network-usage.interval.after "ミリ秒">

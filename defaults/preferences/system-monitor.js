@@ -52,3 +52,4 @@ pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground", 
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundMinAlpha", "0.2");
+pref("extensions.system-monitor@clear-code.com.network-usage.logscale", true);

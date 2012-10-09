@@ -776,8 +776,10 @@ SystemMonitorScalableGraphItem.prototype = {
   valueArray : null,
   rawValueArray : null,
   set logMode(value) {
+    var logModeChanged = this._logMode !== value;
     this._logMode = value;
-    this.rescaleValueArray();
+    if (logModeChanged)
+      this.rescaleValueArray();
   },
   get logMode() {
     return this._logMode;
@@ -820,6 +822,15 @@ SystemMonitorScalableGraphItem.prototype = {
     this.rawValueArray.push(newValue);
     this.valueArray.shift();
     this.valueArray.push(this.scaleValue(newValue));
+  },
+  // @Override
+  onChangePref: function (aPrefName) {
+    SystemMonitorSimpleGraphItem.prototype.onChangePref.call(this, aPrefName);
+    var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
+    if (prefLeafName === "logscale") {
+      this.logMode = this.prefs.getPref(aPrefName);
+      this.drawGraph(true);
+    }
   }
 };
 

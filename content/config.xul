@@ -315,6 +315,148 @@
   </groupbox>
 </prefpane>
 
+<prefpane id="prefpane-network-usage"
+          label="&config.network-usage.caption;"
+          onpaneload="initNetworkUsagePane();">
+  <preferences>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.style"
+                name="extensions.system-monitor@clear-code.com.network-usage.style"
+                type="int"
+                onchange="updateStyleUIFromPref('network-usage');"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.background"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.background"
+                type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha"
+                type="string"
+                onchange="updateAlphaUIFromPref('network-usage.color.backgroundStartAlpha');"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.foreground"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.foreground"
+                type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha"
+                type="string"
+                onchange="updateAlphaUIFromPref('network-usage.color.foregroundStartAlpha');"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.self"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.self"
+                type="string"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.selfGlobalAlpha"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.selfGlobalAlpha"
+                type="string"
+                onchange="updateAlphaUIFromPref('network-usage.color.selfGlobalAlpha');"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.logscale"
+                name="extensions.system-monitor@clear-code.com.network-usage.logscale"
+                type="bool"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.interval"
+                name="extensions.system-monitor@clear-code.com.network-usage.interval"
+                type="int"/>
+  </preferences>
+
+  <groupbox oncommand="updateStylePrefFromUI('network-usage');">
+    <caption label="&config.network-usage.style.caption;"/>
+    <radiogroup id="network-usage.style.base.radiogroup"
+                orient="horizontal"
+                align="center">
+      <radio class="image"
+             src="chrome://system-monitor/content/res/bar-unified.png"
+             value="1"
+             label="&config.network-usage.style.bar;"/>
+      <radio class="image"
+             src="chrome://system-monitor/content/res/polygon-unified.png"
+             value="2"
+             label="&config.network-usage.style.polygon;"/>
+    </radiogroup>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.network-usage.color.caption;"/>
+    <grid>
+      <columns>
+        <column/>
+        <column/>
+        <column/>
+      </columns>
+      <rows>
+        <row align="center">
+          <label value="&config.network-usage.color.foreground;"
+                 control="network-usage.color.foreground-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="network-usage.color.foreground-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.network-usage.color.foreground"/>
+            <label value="&config.network-usage.color.foregroundStartAlpha.before;"
+                   control="network-usage.color.foregroundStartAlpha-scale"/>
+            <scale id="network-usage.color.foregroundStartAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('network-usage.color.foregroundStartAlpha');"/>
+            <label value="&config.network-usage.color.foregroundStartAlpha.after;"
+                   control="network-usage.color.foregroundStartAlpha-scale"/>
+          </hbox>
+          <button label="&config.network-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('network-usage.color.foreground-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha');
+                  "/>
+        </row>
+        <row align="center">
+          <label value="&config.network-usage.color.background;"
+                 control="network-usage.color.background-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="network-usage.color.background-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.network-usage.color.background"/>
+            <label value="&config.network-usage.color.backgroundStartAlpha.before;"
+                   control="network-usage.color.backgroundStartAlpha-scale"/>
+            <scale id="network-usage.color.backgroundStartAlpha-scale"
+                   orient="horizontal"
+                   flex="1"
+                   increment="1"
+                   pageincrement="10"
+                   min="0"
+                   max="100"
+                   onchange="updateAlphaPrefFromUI('network-usage.color.backgroundStartAlpha');"/>
+            <label value="&config.network-usage.color.backgroundStartAlpha.after;"
+                   control="network-usage.color.backgroundStartAlpha-scale"/>
+          </hbox>
+          <button label="&config.network-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('network-usage.color.background-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha');
+                  "/>
+        </row>
+      </rows>
+    </grid>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.network-usage.logscale.caption;"/>
+    <hbox align="center">
+      <checkbox label="&config.network-usage.logscale.enable;"
+                preference="extensions.system-monitor@clear-code.com.network-usage.logscale" />
+    </hbox>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.network-usage.interval.caption;"/>
+    <hbox align="center">
+      <label value="&config.network-usage.interval.before;"
+             control="network-usage.interval-textbox"/>
+      <textbox id="network-usage.interval-textbox"
+               preference="extensions.system-monitor@clear-code.com.network-usage.interval"
+               style="width: 5em;"
+               type="number"
+               min="100"
+               increment="1"/>
+      <label value="&config.network-usage.interval.after;"
+             control="network-usage.interval-textbox"/>
+    </hbox>
+  </groupbox>
+</prefpane>
+
 <script type="application/x-javascript" src="chrome://system-monitor/content/config.js"/>
 
 </prefwindow>
