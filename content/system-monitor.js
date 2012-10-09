@@ -911,20 +911,18 @@ function SystemMonitorNetworkItem()
   this.mostMinimumMaximumValue = this.maximumValue = 64 * 1024;
 }
 SystemMonitorNetworkItem.prototype = {
-  __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  id       : "network-usage",
-  type     : "network-usages",
-  itemId   : "system-monitor-network-usage",
-  multiplexed : false,
-  get multiplexCount() {
-    return 1;
-    // return this._multiplexCount || (this._multiplexCount = SystemMonitorManager.cpuCount);
-  },
+  __proto__      : SystemMonitorSimpleGraphItem.prototype,
+  id             : "network-usage",
+  type           : "network-usages",
+  itemId         : "system-monitor-network-usage",
+  multiplexed    : false,
+  multiplexCount : 1,
   get tooltip() {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
   mostMinimumMaximumValue: null,
   maximumValue: null,
+  expirationTime: 30 * 1000,
   updateMaximumValue: function (nextMaximumValue, notExpire) {
     var previousMaximumValue = this.maximumValue;
     this.maximumValue = nextMaximumValue;
@@ -955,10 +953,9 @@ SystemMonitorNetworkItem.prototype = {
     // Set expiration
     var self = this;
     this.timer = setTimeout(function () {
-      log("Expired: " + nextMaximumValue);
       self.timer = null;
       self.updateMaximumValue(self.mostMinimumMaximumValue, true /* not expire */);
-    }, 10 * 1000);
+    }, this.expirationTime);
   },
   tryToUpdateMaximumValue: function (currentValue) {
     if (this.maximumValue === null ||
@@ -973,22 +970,25 @@ SystemMonitorNetworkItem.prototype = {
 
     return networkUsage;
   },
-  // Reset maximum value
   previousNetworkLoad: null,
   monitor: function SystemMonitorNetworkItem_monitor(aNetworkLoad) {
+    // Record network load
     if (!this.previousNetworkLoad)
       this.previousNetworkLoad = aNetworkLoad;
     var downBytesDelta = aNetworkLoad.downBytes - this.previousNetworkLoad.downBytes;
     this.previousNetworkLoad = aNetworkLoad;
 
+    // Refresh chart
     this.valueArray.shift();
     this.valueArray.push(this.computeUsageForLoad(downBytesDelta));
     this.tryToUpdateMaximumValue(downBytesDelta);
     this.drawGraph();
 
     // Setup the tooltip text
-    this.tooltip.textContent = ~~(downBytesDelta / 1024) + "KB/s"
-      + "(Max: " + ~~(this.maximumValue / 1024) + "KB/s)";
+    var { TextUtil } = Components.utils.import("resource://system-monitor-modules/lib/TextUtil.js", {});
+    this.tooltip.textContent =
+      TextUtil.formatBytes(downBytesDelta).join("") + "/s"
+      + " (Max: " + TextUtil.formatBytes(this.maximumValue).join("") + "/s)";
   }
 };
 
