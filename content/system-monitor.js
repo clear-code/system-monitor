@@ -1016,22 +1016,32 @@ SystemMonitorNetworkItem.prototype = {
     }
   },
   previousNetworkLoad: null,
+  previousMeasureTime: null,
   monitor: function SystemMonitorNetworkItem_monitor(aNetworkLoad) {
+    // Record measure time
+    var currentTime = Date.now();
+    if (!this.previousMeasureTime)
+      this.previousMeasureTime = currentTime;
+    var elapsedTime = currentTime - this.previousMeasureTime;
+    var elapsedSec = elapsedTime / 1000;
+    this.previousMeasureTime = currentTime;
     // Record network load
     if (!this.previousNetworkLoad)
       this.previousNetworkLoad = aNetworkLoad;
     var downBytesDelta = aNetworkLoad.downBytes - this.previousNetworkLoad.downBytes;
     this.previousNetworkLoad = aNetworkLoad;
 
+    // Compute bytes/s
+    var downBytesPerSec = elapsedTime ? downBytesDelta / elapsedSec : 0;
     // Refresh chart
-    this.tryToUpdateMaximumValue(downBytesDelta);
-    this.addNewValue(downBytesDelta);
+    this.tryToUpdateMaximumValue(downBytesPerSec);
+    this.addNewValue(downBytesPerSec);
     this.drawGraph();
 
     // Setup the tooltip text
     var { TextUtil } = Components.utils.import("resource://system-monitor-modules/lib/TextUtil.js", {});
     this.tooltip.textContent =
-      TextUtil.formatBytes(downBytesDelta).join("") + "/s"
+      TextUtil.formatBytes(downBytesPerSec).join("") + "/s"
       + " (Max: " + TextUtil.formatBytes(this.maximumValue).join("") + "/s)";
   }
 };
