@@ -1,6 +1,6 @@
 <!ENTITY toolbar.cpu-usage.label   "CPU Usage">
 <!ENTITY toolbar.memory-usage.label   "Memory Usage">
-
+<!ENTITY toolbar.network-usage.label   "Network Usage">
 
 <!ENTITY config.title "System Monitor Configuration">
 
