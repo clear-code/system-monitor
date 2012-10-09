@@ -5,6 +5,7 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/ShutdownListener.js');
+var { FileUtil } = Components.utils.import('resource://system-monitor-modules/lib/FileUtil.js', {});
 
 const GLIBTOP_NCPU = 32;
 const pid_t = ctypes.int;
@@ -213,12 +214,41 @@ function getMemory() {
 }
 
 function getNetworkLoad() {
+	var totalNetworkload = {
+		downBytes  : 0,
+		upBytes    : 0,
+		totalBytes : 0
+	};
+
+	for (let [, interfaceName] in Iterator(getNetworkInterfaceList())) {
+		var networkLoadForInterface = getNetworkLoadForDevice(interfaceName);
+		totalNetworkload.downBytes += networkLoadForInterface.downBytes;
+		totalNetworkload.upBytes += networkLoadForInterface.upBytes;
+		totalNetworkload.totalBytes += networkLoadForInterface.totalBytes;
+	}
+
+	return totalNetworkload;
+}
+
+function getNetworkLoadForDevice(interfaceName) {
 	var netload = new glibtop_netload();
-	glibtop_get_netload(netload.address(), "eth0");
+	glibtop_get_netload(netload.address(), interfaceName);
 
 	return {
 		downBytes  : netload.bytes_in,
 		upBytes    : netload.bytes_out,
 		totalBytes : netload.bytes_total
 	};
+}
+
+function getNetworkInterfaceList() {
+	return FileUtil
+		.readFile("/proc/net/dev")
+		.split("\n")
+		.filter(function (line) {
+			return line.indexOf(":") >= 0;
+		}).map(function (line) {
+			return line.match(/^[ \t]*(.*):/)[1];
+		});
+
 }
