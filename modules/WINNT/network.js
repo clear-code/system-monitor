@@ -136,6 +136,8 @@ function getNetworkLoad() {
     for (let i = 1; i <= numberOfEntries; ++i) {
       ifRow.dwIndex = i;
       GetIfEntry(ifRow.address());
+      if (ifRow.dwType === 24)
+        continue;
       // Aggregate loads
       totalNetworkload.downBytes += ifRow.dwInOctets;
       totalNetworkload.upBytes += ifRow.dwOutOctets;
