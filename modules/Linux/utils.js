@@ -236,8 +236,7 @@ function getNetworkLoadForDevice(interfaceName) {
 
 	return {
 		downBytes  : netload.bytes_in,
-		upBytes    : netload.bytes_out,
-		totalBytes : netload.bytes_total
+		upBytes    : netload.bytes_out
 	};
 }
 
