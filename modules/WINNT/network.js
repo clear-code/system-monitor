@@ -88,9 +88,11 @@ const MIB_IFROW = new ctypes.StructType('MIB_IFROW', [
   { bDescr                            : ctypes.ArrayType(BYTE, MAXLEN_IFDESCR) }
 ]);
 
+const IF_TYPE_SOFTWARE_LOOPBACK = 24;
+
 const MIB_IFTABLE = new ctypes.StructType('MIB_IFTABLE', [
   { dwNumEntries : DWORD },
-  { table        : MIB_IFROW.ptr /* MIB_IFROW table[ANY_SIZE]; */ }
+  { table        : ctypes.ArrayType(MIB_IFROW.ptr, 1) /* MIB_IFROW table[ANY_SIZE]; */ }
 ]);
 
 // http://msdn.microsoft.com/en-us/library/windows/desktop/aa365943%28v=vs.85%29.aspx
