@@ -374,17 +374,23 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.start();
   },
 
+  resizeArray: function (array, size) {
+    if (array.length < size) {
+      while (array.length < size) {
+        array.unshift(void 0);
+      }
+    } else {
+      array = this.valueArray.slice(-size);
+    }
+
+    return array;
+  },
+
   initValueArray : function SystemMonitorSimpleGraph_initValueArray() {
     if (this.valueArray === null)
       this.valueArray = [];
     var arraySize = parseInt(this.size / this.unit);
-    if (this.valueArray.length < arraySize) {
-      while (this.valueArray.length < arraySize) {
-        this.valueArray.unshift(undefined);
-      }
-    } else {
-      this.valueArray = this.valueArray.slice(-arraySize);
-    }
+    this.valueArray = this.resizeArray(this.valueArray, arraySize);
   },
 
   getSum : function SystemMonitorSimpleGraph_getSum(aValues) {
@@ -763,6 +769,59 @@ SystemMonitorSimpleGraphItem.prototype = {
   }
 };
 
+function SystemMonitorScalableGraphItem() {}
+
+SystemMonitorScalableGraphItem.prototype = {
+  __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  valueArray : null,
+  rawValueArray : null,
+  set logMode(value) {
+    this._logMode = value;
+    this.rescaleValueArray();
+  },
+  get logMode() {
+    return this._logMode;
+  },
+  _logMode : true,
+  _maximumValue: 1,
+  set maximumValue(value) {
+    this._maximumValue = value;
+    this.rescaleValueArray();
+  },
+  get maximumValue() {
+    return this._maximumValue;
+  },
+  scaleValue: function (value) {
+    if (this.logMode)
+      return value === 0 ? 0 : Math.log(value) / Math.log(this.maximumValue);
+    else
+      return value / this.maximumValue;
+  },
+  // @Override
+  initValueArray: function () {
+    // init this.valueArray
+    SystemMonitorSimpleGraphItem.prototype.initValueArray.call(this);
+
+    if (this.rawValueArray === null)
+      this.rawValueArray = [];
+    var arraySize = parseInt(this.size / this.unit);
+    this.rawValueArray = this.resizeArray(this.rawValueArray, arraySize);
+  },
+  rescaleValueArray: function () {
+    if (!this.valueArray || !this.rawValueArray)
+      return;
+
+    for (let [i, value] in Iterator(this.rawValueArray)) {
+      this.valueArray[i] = this.scaleValue(value);
+    }
+  },
+  addNewValue: function (newValue) {
+    this.rawValueArray.shift();
+    this.rawValueArray.push(newValue);
+    this.valueArray.shift();
+    this.valueArray.push(this.scaleValue(newValue));
+  }
+};
 
 function SystemMonitorCPUItem()
 {
@@ -911,7 +970,7 @@ function SystemMonitorNetworkItem()
   this.mostMinimumMaximumValue = this.maximumValue = 64 * 1024;
 }
 SystemMonitorNetworkItem.prototype = {
-  __proto__      : SystemMonitorSimpleGraphItem.prototype,
+  __proto__      : SystemMonitorScalableGraphItem.prototype,
   id             : "network-usage",
   type           : "network-usages",
   itemId         : "system-monitor-network-usage",
@@ -921,32 +980,14 @@ SystemMonitorNetworkItem.prototype = {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
   mostMinimumMaximumValue: null,
-  maximumValue: null,
   expirationTime: 30 * 1000,
   updateMaximumValue: function (nextMaximumValue, notExpire) {
-    var previousMaximumValue = this.maximumValue;
     this.maximumValue = nextMaximumValue;
-
-    if (previousMaximumValue === nextMaximumValue)
-      return;
-
-    log("adjust!");
-
-    // Adjust past ratio to current maximum value
-    for (let [i, previousRatio] in Iterator(this.valueArray)) {
-      if (previousRatio) {
-        var previousValue = previousMaximumValue * previousRatio;
-        this.valueArray[i] = previousValue / nextMaximumValue;
-        if (this.valueArray[i] > 1.0)
-          this.valueArray[i] = 1.0;
-      }
-    }
-
     if (notExpire)
       return;
 
     if (this.timer) {
-      clearTimer(this.timer);
+      clearTimeout(this.timer);
       this.timer = null;
     }
 
@@ -963,13 +1004,6 @@ SystemMonitorNetworkItem.prototype = {
       this.updateMaximumValue(currentValue);
     }
   },
-  computeUsageForLoad: function (aDownBytesDelta) {
-    var networkUsage = aDownBytesDelta / this.maximumValue;
-    if (networkUsage > 1)
-      networkUsage = 1;
-
-    return networkUsage;
-  },
   previousNetworkLoad: null,
   monitor: function SystemMonitorNetworkItem_monitor(aNetworkLoad) {
     // Record network load
@@ -979,9 +1013,8 @@ SystemMonitorNetworkItem.prototype = {
     this.previousNetworkLoad = aNetworkLoad;
 
     // Refresh chart
-    this.valueArray.shift();
-    this.valueArray.push(this.computeUsageForLoad(downBytesDelta));
     this.tryToUpdateMaximumValue(downBytesDelta);
+    this.addNewValue(downBytesDelta);
     this.drawGraph();
 
     // Setup the tooltip text
