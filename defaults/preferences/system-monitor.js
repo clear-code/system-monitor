@@ -48,7 +48,7 @@ pref("extensions.system-monitor@clear-code.com.network-usage.interval", 3000);
 pref("extensions.system-monitor@clear-code.com.network-usage.color.background", "#000000");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha", "0.7");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.backgroundEndAlpha", "0.95");
-pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground", "#33FF33");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground", "#FFCC99");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundMinAlpha", "0.2");
