@@ -69,6 +69,7 @@ const PSAPI_WORKING_SET_INFORMATION_FIRST = new ctypes.StructType('PSAPI_WORKING
 		{ NumberOfEntries : ULONG_PTR },
 		{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, 1) }
 	]);
+const PSAPI_WORKING_SET_INFORMATION_FIRST_BUFFER = new ctypes.ArrayType(ctypes.char, PSAPI_WORKING_SET_INFORMATION_FIRST.size);
 
 
 const gKernel32 = ctypes.open('kernel32.dll');
@@ -141,36 +142,37 @@ function getMemory() {
 	GetSystemInfo(systemInfo.address());
 
 	// http://msdn.microsoft.com/en-us/library/ms684910%28v=vs.85%29.aspx
-	var self, PSAPI_WORKING_SET_INFORMATION;
+	var self, PSAPI_WORKING_SET_INFORMATION, PSAPI_WORKING_SET_INFORMATION_BUFFER;
 	var tryCount = 0;
 	do {
 		if (tryCount == 0) {
 			PSAPI_WORKING_SET_INFORMATION = PSAPI_WORKING_SET_INFORMATION_FIRST;
+			PSAPI_WORKING_SET_INFORMATION_BUFFER = PSAPI_WORKING_SET_INFORMATION_FIRST_BUFFER;
 		}
 		else if (tryCount == 1) {
-			let infoArrayCount = parseInt(self.contents.NumberOfEntries);
+			let infoArrayCount = parseInt(self.NumberOfEntries);
 			if (is64bit) infoArrayCount = 2;
 			PSAPI_WORKING_SET_INFORMATION = new ctypes.StructType('PSAPI_WORKING_SET_INFORMATION', [
 				{ NumberOfEntries : ULONG_PTR },
 				{ WorkingSetInfo  : ctypes.ArrayType(infoArrayType, infoArrayCount) }
 			]);
+			PSAPI_WORKING_SET_INFORMATION_BUFFER = new ctypes.ArrayType(ctypes.char, PSAPI_WORKING_SET_INFORMATION.size);
 		}
 		else {
 			selfUsed = gLastSelfUsed;
 			break;
 		}
-		if (self) PR_Free(self);
-		self = PR_Calloc(1, PSAPI_WORKING_SET_INFORMATION.size);
-		self = ctypes.cast(self, PSAPI_WORKING_SET_INFORMATION.ptr);
+		self = new PSAPI_WORKING_SET_INFORMATION_BUFFER;
+		self = ctypes.cast(self, PSAPI_WORKING_SET_INFORMATION);
 		tryCount++;
 	}
 	while (QueryWorkingSet(gProcess,
-	                       self,
+	                       self.address(),
 	                       PSAPI_WORKING_SET_INFORMATION.size) == 0);
 
 	if (!selfUsed) {
 		let sharedPages = 0;
-		let pages = self.contents.WorkingSetInfo;
+		let pages = self.WorkingSetInfo;
 		/************************** OPTIMIZATION NOTE *************************
 		 * On Win64 environment, working set information is 64bit. So, contents
 		 * of ctypes.uint32_t array are mixed of "higher 32bit of 64bit flags"
@@ -196,9 +198,9 @@ function getMemory() {
 		gLastSelfUsed = selfUsed;
 	}
 
-	if (self) PR_Free(self);
 	self = undefined;
 	PSAPI_WORKING_SET_INFORMATION = undefined;
+	PSAPI_WORKING_SET_INFORMATION_BUFFER = undefined;
 
 	return {
 		total       : parseInt(info.ullTotalPhys),
