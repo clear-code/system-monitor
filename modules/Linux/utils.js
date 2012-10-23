@@ -220,34 +220,30 @@ function getNetworkLoad() {
 		totalBytes : 0
 	};
 
-	for (let [, interfaceName] in Iterator(getNetworkInterfaceList())) {
-		var networkLoadForInterface = getNetworkLoadForDevice(interfaceName);
-		totalNetworkload.downBytes += networkLoadForInterface.downBytes;
-		totalNetworkload.upBytes += networkLoadForInterface.upBytes;
-		totalNetworkload.totalBytes += networkLoadForInterface.totalBytes;
+	for (let [, networkLoad] in Iterator(getNetworkLoadList())) {
+		totalNetworkload.downBytes += networkLoad.downBytes;
+		totalNetworkload.upBytes += networkLoad.upBytes;
 	}
 
 	return totalNetworkload;
 }
 
-function getNetworkLoadForDevice(interfaceName) {
-	var netload = new glibtop_netload();
-	glibtop_get_netload(netload.address(), interfaceName);
-
-	return {
-		downBytes  : netload.bytes_in,
-		upBytes    : netload.bytes_out
-	};
-}
-
-function getNetworkInterfaceList() {
+function getNetworkLoadList() {
 	return FileUtil
 		.readFile("/proc/net/dev")
 		.split("\n")
 		.filter(function (line) {
 			return line.indexOf(":") >= 0;
 		}).map(function (line) {
-			return line.match(/^[ \t]*(.*):/)[1];
-		});
+			var pairMatch = line.match(/^[ \t]*(.*):[ \t]*(.*)[ \t]*$/);
+			var interfaceName = pairMatch[1];
+			var statisticsLine = pairMatch[2];
+			var statistics = statisticsLine.split(/[ \t]+/);
 
+			return {
+				interfaceName: interfaceName,
+				downBytes: Number(statistics[0]),
+				upBytes: Number(statistics[8])
+			};
+		});
 }
