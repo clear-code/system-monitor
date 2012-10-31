@@ -374,10 +374,10 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.start();
   },
 
-  resizeArray: function (array, size) {
+  resizeArray: function (array, size, defaultValue) {
     if (array.length < size) {
       while (array.length < size) {
-        array.unshift(void 0);
+        array.unshift(defaultValue);
       }
     } else {
       array = this.valueArray.slice(-size);
@@ -787,13 +787,8 @@ SystemMonitorScalableGraphItem.prototype = {
     return this._logMode;
   },
   _logMode : true,
-  _maximumValue: 1,
-  set maximumValue(value) {
-    this._maximumValue = value;
-    this.rescaleValueArray();
-  },
   get maximumValue() {
-    return this._maximumValue;
+    return Math.max.apply(Math, this.rawValueArray);
   },
   scaleValue: function (value) {
     if (this.logMode)
@@ -984,8 +979,6 @@ function createWindow(defaultValue) {
 
 function SystemMonitorNetworkItem()
 {
-  // 64KB/s
-  this.redZone = this.maximumValue = 64 * 1024;
 }
 SystemMonitorNetworkItem.prototype = {
   __proto__      : SystemMonitorScalableGraphItem.prototype,
@@ -998,20 +991,17 @@ SystemMonitorNetworkItem.prototype = {
   get tooltip() {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
-  set redZone(value) {
-    var changed = this.maximumValue == this._redZone &&
-                  this._redZone !== value;
-    this._redZone = value;
-    if (changed)
-      this.maximumValue = value;
+  get maximumValue() {
+    return Math.max.apply(Math, this.rawValueArray.concat(this.redZone));
   },
-  get redZone() {
-    return this._redZone;
-  },
-  _redZone : null,
+  redZone : -1,
   redZoneColor : "#FF0000",
   // @Override
-  onChangePref: function (aPrefName) {
+  resizeArray: function SystemMonitorNetworkItem_resizeArray(array, size) {
+    return SystemMonitorScalableGraphItem.prototype.resizeArray.call(this, array, size, 0);
+  },
+  // @Override
+  onChangePref: function SystemMonitorNetworkItem_onChangePref(aPrefName) {
     var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
     switch (prefLeafName) {
       case "redZone":
@@ -1037,7 +1027,7 @@ SystemMonitorNetworkItem.prototype = {
     }
   },
   // @Override
-  scaleValue: function (value) {
+  scaleValue: function SystemMonitorNetworkItem_scaleValue(value) {
     value = SystemMonitorScalableGraphItem.prototype.scaleValue.apply(this, arguments);
     return value * this.maximumValueMargin;
   },
@@ -1046,6 +1036,14 @@ SystemMonitorNetworkItem.prototype = {
     SystemMonitorScalableGraphItem.prototype.drawGraph.apply(this, arguments);
     this.drawRedZone();
   },
+  // @Override
+  addNewValue : function SystemMonitorNetworkItem_addNewValue() {
+    this.lastMaximumValue = this.maximumValue;
+    SystemMonitorScalableGraphItem.prototype.addNewValue.apply(this, arguments);
+    if (this.maximumValue != this.lastMaximumValue)
+      this.rescaleValueArray();
+  },
+  lastMaximumValue: -1,
   drawRedZone : function SystemMonitorNetworkItem_drawRedZone() {
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
@@ -1068,30 +1066,6 @@ SystemMonitorNetworkItem.prototype = {
 
     context.restore();
   },
-  expirationTime: 30 * 1000,
-  updateMaximumValue: function (nextMaximumValue, notExpire) {
-    this.maximumValue = nextMaximumValue;
-    if (notExpire)
-      return;
-
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    // Set expiration
-    var self = this;
-    this.timer = setTimeout(function () {
-      self.timer = null;
-      self.updateMaximumValue(self.redZone, true /* not expire */);
-    }, this.expirationTime);
-  },
-  tryToUpdateMaximumValue: function (currentValue) {
-    if (this.maximumValue === null ||
-        currentValue > this.maximumValue) {
-      this.updateMaximumValue(currentValue);
-    }
-  },
   previousNetworkLoad: null,
   previousMeasureTime: null,
   monitor: function SystemMonitorNetworkItem_monitor(aNetworkLoad) {
@@ -1111,7 +1085,6 @@ SystemMonitorNetworkItem.prototype = {
     // Compute bytes/s
     var downBytesPerSec = elapsedTime ? downBytesDelta / elapsedSec : 0;
     // Refresh chart
-    this.tryToUpdateMaximumValue(downBytesPerSec);
     this.addNewValue(downBytesPerSec);
     this.drawGraph();
 
