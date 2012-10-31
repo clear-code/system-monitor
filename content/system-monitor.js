@@ -960,23 +960,6 @@ SystemMonitorMemoryItem.prototype = {
   }
 };
 
-function createWindow(defaultValue) {
-  var maxValue = null;
-
-  return {
-    getMaxValue: function () {
-      if (maxValue === null)
-        return defaultValue;
-      return maxValue;
-    },
-    addNewValue: function (value) {
-      if (value > this.getMaxValue())
-        maxValue = value;
-      return this.getMaxValue();
-    }
-  };
-}
-
 function SystemMonitorNetworkItem()
 {
 }
