@@ -776,15 +776,26 @@ SystemMonitorScalableGraphItem.prototype = {
   valueArray : null,
   rawValueArray : null,
   set logMode(value) {
-    var logModeChanged = this._logMode !== value;
+    var changed = this._logMode !== value;
     this._logMode = value;
-    if (logModeChanged)
+    if (changed)
       this.rescaleValueArray();
   },
   get logMode() {
     return this._logMode;
   },
   _logMode : true,
+  set mostMinimumMaximumValue(value) {
+    var changed = this.maximumValue == this._mostMinimumMaximumValue &&
+                  this._mostMinimumMaximumValue !== value;
+    this._mostMinimumMaximumValue = value;
+    if (changed)
+      this.maximumValue = value;
+  },
+  get mostMinimumMaximumValue() {
+    return this._mostMinimumMaximumValue;
+  },
+  _mostMinimumMaximumValue : null,
   _maximumValue: 1,
   set maximumValue(value) {
     this._maximumValue = value;
@@ -827,9 +838,16 @@ SystemMonitorScalableGraphItem.prototype = {
   onChangePref: function (aPrefName) {
     SystemMonitorSimpleGraphItem.prototype.onChangePref.call(this, aPrefName);
     var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
-    if (prefLeafName === "logscale") {
-      this.logMode = this.prefs.getPref(aPrefName);
-      this.drawGraph(true);
+    switch (prefLeafName) {
+      case "logscale":
+        this.logMode = this.prefs.getPref(aPrefName);
+        this.drawGraph(true);
+        break;
+
+      case "scalableMaxValue.min":
+        this.mostMinimumMaximumValue = this.prefs.getPref(aPrefName);
+        this.drawGraph(true);
+        break;
     }
   }
 };
@@ -990,7 +1008,13 @@ SystemMonitorNetworkItem.prototype = {
   get tooltip() {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
-  mostMinimumMaximumValue: null,
+  start : function SystemMonitorNetworkItem_start() {
+    this.__proto__.__proto__.start.apply(this, arguments);
+    if (this.item) {
+      this.onChangePref(this.domain+this.id+".scalableMaxValue.min");
+      this.onChangePref(this.domain+this.id+".logscale");
+    }
+  },
   expirationTime: 30 * 1000,
   updateMaximumValue: function (nextMaximumValue, notExpire) {
     this.maximumValue = nextMaximumValue;
