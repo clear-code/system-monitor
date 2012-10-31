@@ -66,10 +66,15 @@
 <!ENTITY config.network-usage.color.foreground "Foreground:">
 <!ENTITY config.network-usage.color.foregroundStartAlpha.before "Alpha: 0&#37;">
 <!ENTITY config.network-usage.color.foregroundStartAlpha.after  "100&#37;">
+<!ENTITY config.network-usage.color.redZone "Red zone:">
 <!ENTITY config.network-usage.color.reset "Reset">
 
 <!ENTITY config.network-usage.logscale.caption "Logarithmic chart">
 <!ENTITY config.network-usage.logscale.enable "Show network usage as a logarithmic chart">
+
+<!ENTITY config.network-usage.redZone.caption "Red zone">
+<!ENTITY config.network-usage.redZone.before "Show ">
+<!ENTITY config.network-usage.redZone.after "KB/s as the red zone by default">
 
 <!ENTITY config.network-usage.interval.caption "Interval">
 <!ENTITY config.network-usage.interval.before "Update graph every ">

@@ -344,9 +344,15 @@
                 name="extensions.system-monitor@clear-code.com.network-usage.color.selfGlobalAlpha"
                 type="string"
                 onchange="updateAlphaUIFromPref('network-usage.color.selfGlobalAlpha');"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.redZone"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.redZone"
+                type="string"/>
     <preference id="extensions.system-monitor@clear-code.com.network-usage.logscale"
                 name="extensions.system-monitor@clear-code.com.network-usage.logscale"
                 type="bool"/>
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.redZone"
+                name="extensions.system-monitor@clear-code.com.network-usage.redZone"
+                type="int"/>
     <preference id="extensions.system-monitor@clear-code.com.network-usage.interval"
                 name="extensions.system-monitor@clear-code.com.network-usage.interval"
                 type="int"/>
@@ -430,6 +436,22 @@
                     resetPref('extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha');
                   "/>
         </row>
+        <row align="center">
+          <label value="&config.network-usage.color.redZone;"
+                 control="network-usage.color.redZone-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="network-usage.color.redZone-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.network-usage.color.redZone"/>
+            <spacer flex="1"/>
+          </hbox>
+          <button label="&config.network-usage.color.reset;"
+                  class="reset"
+                  oncommand="
+                    resetValue('network-usage.color.redZone-colorpicker', 'color');
+                    resetPref('extensions.system-monitor@clear-code.com.network-usage.color.redZone');
+                  "/>
+        </row>
       </rows>
     </grid>
   </groupbox>
@@ -438,6 +460,23 @@
     <hbox align="center">
       <checkbox label="&config.network-usage.logscale.enable;"
                 preference="extensions.system-monitor@clear-code.com.network-usage.logscale" />
+    </hbox>
+  </groupbox>
+  <groupbox>
+    <caption label="&config.network-usage.redZone.caption;"/>
+    <hbox align="center">
+      <label value="&config.network-usage.redZone.before;"
+             control="network-usage.redZone-textbox"/>
+      <textbox id="network-usage.redZone-textbox"
+               preference="extensions.system-monitor@clear-code.com.network-usage.redZone"
+               style="width: 5em;"
+               type="number"
+               min="1"
+               increment="1"
+               onsyncfrompreference="return Math.round(document.getElementById('extensions.system-monitor@clear-code.com.network-usage.redZone').value / 1024);"
+               onsynctopreference="return parseInt(document.getElementById('network-usage.redZone-textbox').value) * 1024;"/>
+      <label value="&config.network-usage.redZone.after;"
+             control="network-usage.redZone-textbox"/>
     </hbox>
   </groupbox>
   <groupbox>
