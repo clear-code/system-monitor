@@ -52,6 +52,6 @@ pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground", 
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundMinAlpha", "0.2");
-pref("extensions.system-monitor@clear-code.com.network-usage.color.scalableMaxValue.min", "#FF0000");
-pref("extensions.system-monitor@clear-code.com.network-usage.scalableMaxValue.min", 65536); // 64 * 1024 (64kbps)
+pref("extensions.system-monitor@clear-code.com.network-usage.color.redZone", "#FF9900");
+pref("extensions.system-monitor@clear-code.com.network-usage.redZone", 65536); // 64 * 1024 (64kbps)
 pref("extensions.system-monitor@clear-code.com.network-usage.logscale", true);

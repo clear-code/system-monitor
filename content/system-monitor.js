@@ -985,7 +985,7 @@ function createWindow(defaultValue) {
 function SystemMonitorNetworkItem()
 {
   // 64KB/s
-  this.mostMinimumMaximumValue = this.maximumValue = 64 * 1024;
+  this.redZone = this.maximumValue = 64 * 1024;
 }
 SystemMonitorNetworkItem.prototype = {
   __proto__      : SystemMonitorScalableGraphItem.prototype,
@@ -998,29 +998,29 @@ SystemMonitorNetworkItem.prototype = {
   get tooltip() {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
-  set mostMinimumMaximumValue(value) {
-    var changed = this.maximumValue == this._mostMinimumMaximumValue &&
-                  this._mostMinimumMaximumValue !== value;
-    this._mostMinimumMaximumValue = value;
+  set redZone(value) {
+    var changed = this.maximumValue == this._redZone &&
+                  this._redZone !== value;
+    this._redZone = value;
     if (changed)
       this.maximumValue = value;
   },
-  get mostMinimumMaximumValue() {
-    return this._mostMinimumMaximumValue;
+  get redZone() {
+    return this._redZone;
   },
-  _mostMinimumMaximumValue : null,
-  mostMinimumMaximumValueColor : "#FF0000",
+  _redZone : null,
+  redZoneColor : "#FF0000",
   // @Override
   onChangePref: function (aPrefName) {
     var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
     switch (prefLeafName) {
-      case "scalableMaxValue.min":
-        this.mostMinimumMaximumValue = this.prefs.getPref(aPrefName);
+      case "redZone":
+        this.redZone = this.prefs.getPref(aPrefName);
         this.drawGraph(true);
         break;
 
-      case "color.scalableMaxValue.min":
-        this.mostMinimumMaximumValueColor = this.prefs.getPref(aPrefName);
+      case "color.redZone":
+        this.redZoneColor = this.prefs.getPref(aPrefName);
         this.drawGraph(true);
         break;
 
@@ -1031,8 +1031,8 @@ SystemMonitorNetworkItem.prototype = {
   start : function SystemMonitorNetworkItem_start() {
     SystemMonitorScalableGraphItem.prototype.start.apply(this, arguments);
     if (this.item) {
-      this.onChangePref(this.domain+this.id+".color.scalableMaxValue.min");
-      this.onChangePref(this.domain+this.id+".scalableMaxValue.min");
+      this.onChangePref(this.domain+this.id+".color.redZone");
+      this.onChangePref(this.domain+this.id+".redZone");
       this.onChangePref(this.domain+this.id+".logscale");
     }
   },
@@ -1044,13 +1044,13 @@ SystemMonitorNetworkItem.prototype = {
   // @Override
   drawGraph : function SystemMonitorNetworkItem_drawGraph() {
     SystemMonitorScalableGraphItem.prototype.drawGraph.apply(this, arguments);
-    this.drawMostMinimumMaximumValueLine();
+    this.drawRedZone();
   },
-  drawMostMinimumMaximumValueLine : function SystemMonitorNetworkItem_drawMostMinimumMaximumValueLine() {
+  drawRedZone : function SystemMonitorNetworkItem_drawRedZone() {
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     var h = canvas.height;
-    var y = h * (this.mostMinimumMaximumValue / this.maximumValue) * this.maximumValueMargin;
+    var y = h * (this.redZone / this.maximumValue) * this.maximumValueMargin;
 
     context.save();
 
@@ -1058,7 +1058,7 @@ SystemMonitorNetworkItem.prototype = {
     context.scale(1, -1);
 
     context.beginPath();
-    context.strokeStyle = this.mostMinimumMaximumValueColor;
+    context.strokeStyle = this.redZoneColor;
     context.lineWidth = 0.5;
     context.lineCap = "square";
     context.moveTo(0, y);
@@ -1083,7 +1083,7 @@ SystemMonitorNetworkItem.prototype = {
     var self = this;
     this.timer = setTimeout(function () {
       self.timer = null;
-      self.updateMaximumValue(self.mostMinimumMaximumValue, true /* not expire */);
+      self.updateMaximumValue(self.redZone, true /* not expire */);
     }, this.expirationTime);
   },
   tryToUpdateMaximumValue: function (currentValue) {
