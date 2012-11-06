@@ -242,6 +242,9 @@ SystemMonitorSimpleGraphItem.prototype = {
   style : 0,
   multiplexed : false,
   multiplexCount : 1,
+  multiplexType  : (1 << 0), // SHARED
+  MULTIPLEX_SHARED   : (1 << 0),
+  MULTIPLEX_SEPARATE : (1 << 1),
   valueArray : null,
 
   get topic() {
@@ -409,12 +412,15 @@ SystemMonitorSimpleGraphItem.prototype = {
     return total / aValues.length;
   },
 
-  STYLE_BAR       : 1,
-  STYLE_POLYGONAL : 2,
-  STYLE_UNIFIED   : 128,
-  STYLE_STACKED   : 256,
-  STYLE_LAYERED   : 512,
-  STYLE_SEPARATED : 1024,
+  STYLE_BAR                : (1 << 0),
+  STYLE_POLYGONAL          : (1 << 1),
+
+  STYLE_UNIFIED            : (1 << 7),
+  STYLE_STACKED            : (1 << 8),
+  STYLE_MULTICOLOR_STACKED : (1 << 11),
+  STYLE_LAYERED            : (1 << 9),
+  STYLE_SEPARATED          : (1 << 10),
+
   drawGraph : function SystemMonitorSimpleGraph_drawGraph(aDrawAll) {
     var canvas = this.canvas;
     var w = canvas.width;
@@ -428,7 +434,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (this.style & this.STYLE_POLYGONAL) {
       var last = values[values.length-1];
       if (last && typeof last == "object") {
-        this.drawGraphMultiplexedPolygon(values, w, h, this.foreground);
+        this.drawGraphMultiplexedPolygon(values, w, h);
       } else {
         this.drawGraphPolygon(values || 0, h, this.foreground);
       }
@@ -506,7 +512,26 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.save();
     context.globalAlpha = 1;
     var count = this.multiplexCount;
-    if (this.style & this.STYLE_STACKED) {
+    if (this.style & this.STYLE_MULTICOLOR_STACKED) {
+      context.save();
+      let color = this.foregroundDecimalRGB;
+      let gradient = context.createLinearGradient(0, this.canvas.height, 0, 0);
+      gradient.addColorStop(0, "rgba("+color+", "+this.foregroundStartAlpha+")");
+      let total = this.unifyValues(aValues);
+      if (this.multiplexType == this.MULTIPLEX_SEPARATE) total = total / count;
+      let current = 0;
+      for (let i = 0; i < count; i++) {
+        current += aValues[i] / total;
+        let alpha = this.foregroundStartAlpha + (current * (this.foregroundEndAlpha - this.foregroundStartAlpha));
+        gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
+        color = this["foregroundDecimalRGB."+(i+1)] || color;
+        if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
+      }
+      if (current < 1)
+        gradient.addColorStop(1, "rgba("+color+", "+this.foregroundEndAlpha+")");
+      this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
+      context.restore();
+    } else if (this.style & this.STYLE_STACKED) {
       let eachMaxY = aMaxY / count;
       let beginY = 0;
       context.save();
@@ -540,13 +565,17 @@ SystemMonitorSimpleGraphItem.prototype = {
         context.restore();
       }
     } else { // unified (by default)
-      let value = 0;
-      for (let i = 0; i < count; i++) {
-        value += aValues[i];
-      }
+      let value = this.unifyValues(aValues);
       this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * value);
     }
     context.restore();
+  },
+  unifyValues : function SystemMonitorSimpleGraph_unifyValues(aValues) {
+    let value = 0;
+    for (let i = 0, maxi = aValues.length; i < maxi; i++) {
+      value += aValues[i];
+    }
+    return value;
   },
 
   // polygonal graph
@@ -572,35 +601,41 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.restore();
   },
 
-  drawGraphMultiplexedPolygon : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygon(aValues, aMaxX, aMaxY, aStyle) {
+  drawGraphMultiplexedPolygon : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygon(aValues, aMaxX, aMaxY) {
     var context = this.canvas.getContext("2d");
     var count = this.multiplexCount;
-    if (this.style & this.STYLE_STACKED) {
+    var style = this.foreground;
+    if (this.style & this.STYLE_STACKED ||
+        this.style & this.STYLE_MULTICOLOR_STACKED) {
       let lastValues = [];
-      for (let i = 0, maxi = count; i < maxi; i++)
+      let reversedScale = 1;
+      if (this.multiplexType == this.MULTIPLEX_SEPARATE)
+        reversedScale = count;
+      for (let i = 0; i < count; i++)
       {
-        lastValues = [];
         for (let j in aValues) {
           let value = aValues[j];
           lastValues[j] = value ?
-                   (((j in lastValues ? lastValues[j] : 0 ) + value[i]) / count) :
+                   ((j in lastValues ? lastValues[j] : 0 ) + (value[i] / reversedScale)) :
                    0 ;
         }
-        this.drawGraphPolygon(lastValues, aMaxY, aStyle);
+        if (this.style & this.STYLE_MULTICOLOR_STACKED)
+          style = this["foreground." + i] || style;
+        this.drawGraphPolygon(lastValues, aMaxY, style);
       }
     } else if (this.style & this.STYLE_LAYERED) {
-      for (let i = 0, maxi = count; i < maxi; i++)
+      for (let i = 0; i < count; i++)
       {
         let values = [];
         for (let j in aValues) {
           let value = aValues[j];
           values[j] = value && value[i] || 0 ;
         }
-        this.drawGraphPolygon(values, aMaxY, aStyle);
+        this.drawGraphPolygon(values, aMaxY, style);
       }
     } else if (this.style & this.STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
-      for (let i = 0, maxi = count; i < maxi; i++)
+      for (let i = 0; i < count; i++)
       {
         context.save();
         context.translate((width + 1) * i, 0);
@@ -609,11 +644,11 @@ SystemMonitorSimpleGraphItem.prototype = {
           let value = aValues[j];
           values[j] = value && value[i] || 0 ;
         }
-        this.drawGraphPolygon(values, aMaxY, aStyle);
+        this.drawGraphPolygon(values, aMaxY, style);
         context.restore();
       }
     } else { // unified (by default)
-      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY, aStyle);
+      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY, style);
     }
   },
 
@@ -684,26 +719,55 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     var startAlpha = Number(this.prefs.getPref(key+"StartAlpha"));
     var endAlpha   = Math.max(startAlpha, Number(this.prefs.getPref(key+"EndAlpha")));
+    this[aTarget+"StartAlpha"] = startAlpha;
+    this[aTarget+"EndAlpha"]   = endAlpha;
+
+    var canvas = this.canvas;
+    var context = canvas.getContext("2d");
 
     var startColor = base,
-        endColor = base;
+        endColor = base,
+        decimalRGB = base;
     if (base.charAt(0) == "#") {
       let baseCode = base.substr(1);
       startColor = this.RGBToRGBA(baseCode, startAlpha);
       endColor = this.RGBToRGBA(baseCode, endAlpha);
+      decimalRGB = this.hexToDecimal(baseCode);
+    } else if (base.indexOf('rgb') == 0) {
+      decimalRGB = base.replace(/^rgba?\(|\)/g, "");
     }
+    this[aTarget+"DecimalRGB"] = decimalRGB;
 
     this[aTarget] = base;
     this[aTarget+"Gradient"] = [startColor, endColor];
 
-    var canvas = this.canvas;
-    var context = canvas.getContext("2d");
     var gradient = context.createLinearGradient(0, canvas.height, 0, 0);
     gradient.addColorStop(0, startColor);
     gradient.addColorStop(1, endColor);
     this[aTarget+"GradientStyle"] = gradient;
+
+    var number = 1;
+    do {
+      let color = this.prefs.getPref(key + '.' + number);
+      if (color === null) break;
+
+      this[aTarget+"."+number] = color;
+
+      let decimalRGB = color;
+      if (color.charAt(0) == "#") {
+        decimalRGB = this.hexToDecimal(color.substr(1));
+      } else if (color.indexOf('rgb') == 0) {
+        decimalRGB = color.replace(/^rgba?\(|\)/g, "");
+      }
+      this[aTarget+"DecimalRGB."+number] = decimalRGB;
+
+      number++;
+    } while (true);
   },
   RGBToRGBA : function SystemMonitorSimpleGraph_RGBToRGBA(aBase, aAlpha) {
+    return "rgba("+this.hexToDecimal(aBase)+", "+aAlpha+")";
+  },
+  hexToDecimal : function SystemMonitorSimpleGraph_hexToDecimal(aBase) {
     var rgb;
     switch (aBase.length) {
       case 3: rgb = aBase.split(""); break;
@@ -714,7 +778,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     for (let i in rgb) {
       rgb[i] = parseInt(rgb[i], 16);
     }
-    return "rgba("+rgb.join(", ")+", "+aAlpha+")";
+    return rgb.join(", ");
   },
 
   // nsIObserver
@@ -847,6 +911,7 @@ SystemMonitorCPUItem.prototype = {
   get multiplexCount() {
     return this._multiplexCount || (this._multiplexCount = SystemMonitorManager.cpuCount);
   },
+  multiplexType : SystemMonitorSimpleGraphItem.prototype.MULTIPLEX_SEPARATE,
   get tooltip() {
     return document.getElementById("system-monitor-cpu-usage-tooltip-label");
   },
@@ -885,62 +950,13 @@ SystemMonitorMemoryItem.prototype = {
   get tooltip() {
     return document.getElementById("system-monitor-memory-usage-tooltip-label");
   },
-  foreground1              : "#FFEE00",
-  foreground1Gradient      : ["#FFEE00", "#FFEE00"],
-  foreground1GradientStyle : null,
-  foreground1GlobalAlpha   : 1,
-  start : function SystemMonitorMemoryMonitor_start() {
-    SystemMonitorSimpleGraphItem.prototype.start.apply(this, arguments);
-    if (this.item) {
-      this.onChangePref(this.domain+this.id+".color.foreground1GlobalAlpha");
-      this.onChangePref(this.domain+this.id+".color.foreground1");
-    }
-  },
-  drawGraph : function SystemMonitorMemoryMonitor_drawGraph() {
-    SystemMonitorSimpleGraphItem.prototype.drawGraph.apply(this, arguments);
-
-    var canvas = this.canvas;
-    var context = canvas.getContext("2d");
-    var h = canvas.height;
-    var values = this.valueArray;
-    if (this.style & this.STYLE_POLYGONAL) {
-      let graphValues = [];
-      for (let i in values) {
-        graphValues[i] = values[i] && values[i][1] || 0;
-      }
-      this.drawGraphPolygon(graphValues || 0, h, this.foreground1);
-    } else { // bar graph
-      let x = 0;
-      context.save();
-      context.globalAlpha = this.foreground1GlobalAlpha;
-      for each (let value in values) {
-        if (value) {
-          this.drawGraphBar(this.foreground1GradientStyle, x, h, h * (value[0] - value[1]), h * value[0]);
-        }
-        x += this.unit;
-      }
-      context.restore();
-    }
-  },
-  onChangePref : function SystemMonitorMemoryMonitor_onChangePref(aData) {
-    var part = aData.replace(this.domain+this.id+".", "");
-    switch (part) {
-      case "color.foreground1GlobalAlpha":
-        this.foreground1GlobalAlpha = Number(this.prefs.getPref(aData));
-        if (this.listening)
-          this.drawGraph(true);
-        return;
-
-      default:
-        return SystemMonitorSimpleGraphItem.prototype.onChangePref.apply(this, arguments);
-    }
-  },
+  multiplexCount : 2,
+  multiplexType  : SystemMonitorSimpleGraphItem.prototype.MULTIPLEX_SHARED,
   // clISystemMonitor
   monitor : function SystemMonitorMemoryMonitor_monitor(aValue) {
     var hasSelfValue = "self" in aValue && aValue.self > -1;
     this.valueArray.shift();
-    var value = [aValue.used / aValue.total,
-                 0];
+    var value = [aValue.used / aValue.total, 0];
     if (hasSelfValue) {
       value[0] = (aValue.used - aValue.self) / aValue.total;
       value[1] = aValue.self / aValue.total;

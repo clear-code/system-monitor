@@ -20,10 +20,11 @@ pref("extensions.system-monitor@clear-code.com.cpu-usage.color.foregroundMinAlph
 //   1 = bar graph
 //   2 = polygonal graph
 // extra flags for multiplex values:
-//   128 = unified
-//   256 = stacked
-//   512 = layered
-//   1024 = separated
+//   128   = unified
+//   256   = stacked
+//   2048  = multicolor stacked
+//   512   = layered
+//   1024  = separated
 pref("extensions.system-monitor@clear-code.com.cpu-usage.style", 513);
 
 pref("extensions.system-monitor@clear-code.com.memory-usage.initialShow", false);
@@ -36,11 +37,8 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground", "
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundMinAlpha", "0.4");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1", "#FFCC00");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1StartAlpha", "0.6");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1EndAlpha", "1");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1GlobalAlpha", "1");
-pref("extensions.system-monitor@clear-code.com.memory-usage.style", 257);
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground.1", "#FFCC00");
+pref("extensions.system-monitor@clear-code.com.memory-usage.style", 2049);
 
 pref("extensions.system-monitor@clear-code.com.network-usage.initialShow", false);
 pref("extensions.system-monitor@clear-code.com.network-usage.size", 48);
