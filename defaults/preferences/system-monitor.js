@@ -44,7 +44,7 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.style", 129);
 
 pref("extensions.system-monitor@clear-code.com.network-usage.initialShow", false);
 pref("extensions.system-monitor@clear-code.com.network-usage.size", 48);
-pref("extensions.system-monitor@clear-code.com.network-usage.interval", 3000);
+pref("extensions.system-monitor@clear-code.com.network-usage.interval", 1000);
 pref("extensions.system-monitor@clear-code.com.network-usage.color.background", "#000000");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha", "0.7");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.backgroundEndAlpha", "0.95");
@@ -54,4 +54,4 @@ pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundEnd
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundMinAlpha", "0.2");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.redZone", "#FF9900");
 pref("extensions.system-monitor@clear-code.com.network-usage.redZone", 65536); // 64 * 1024 (64kbps)
-pref("extensions.system-monitor@clear-code.com.network-usage.logscale", true);
+pref("extensions.system-monitor@clear-code.com.network-usage.logscale", false);
