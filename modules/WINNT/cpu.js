@@ -5,7 +5,6 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/ShutdownListener.js');
-Components.utils.import('resource://system-monitor-modules/lib/prmem.js');
 
 
 // see http://source.winehq.org/source/include/winternl.h
@@ -21,6 +20,7 @@ const SYSTEM_BASIC_INFORMATION = new ctypes.StructType('SYSTEM_BASIC_INFORMATION
 		{ Reserved2 : ctypes.ArrayType(ctypes.voidptr_t, 4) },
 		{ NumberOfProcessors : ctypes.uint32_t }
 	]);
+const SYSTEM_BASIC_INFORMATION_BUFFER = new ctypes.ArrayType(ctypes.char, SYSTEM_BASIC_INFORMATION.size);
 
 const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION', [
 		{ IdleTime   : LARGE_INTEGER },
@@ -29,7 +29,8 @@ const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION = new ctypes.StructType('SYSTEM_P
 		{ Reserved1  : ctypes.ArrayType(LARGE_INTEGER, 2) },
 		{ Reserved2  : ctypes.unsigned_long }
 	]);
-const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY = ctypes.ArrayType(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, MAX_COUNT);
+const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY = new ctypes.ArrayType(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION, MAX_COUNT);
+const SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY_BUFFER = new ctypes.ArrayType(ctypes.char, SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.size);
 
 const gNtdll = ctypes.open('ntdll.dll');
 addShutdownListener(function() { gNtdll.close(); });
@@ -55,32 +56,30 @@ const NtQuerySystemInformation_SystemProcessorPerformanceInformation = gNtdll.de
 
 
 function getCount() {
-	var info = PR_Calloc(1, SYSTEM_BASIC_INFORMATION.size);
-	info = ctypes.cast(info, SYSTEM_BASIC_INFORMATION.ptr);
+	var info = new SYSTEM_BASIC_INFORMATION_BUFFER;
+	info = ctypes.cast(info, SYSTEM_BASIC_INFORMATION);
 	NtQuerySystemInformation_SystemBasicInformation(
 		SystemBasicInformation,
-		info,
+		info.address(),
 		SYSTEM_BASIC_INFORMATION.size,
 		0
 	);
-	var count = info.contents.NumberOfProcessors;
-	PR_Free(info);
+	var count = info.NumberOfProcessors;
 	return count;
 }
 
 function getCPUTimes() {
-	var infoArray = PR_Calloc(1, SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.size);
-	infoArray = ctypes.cast(infoArray, SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.ptr);
+	var infoArray = new SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY_BUFFER;
+	infoArray = ctypes.cast(infoArray, SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY);
 	NtQuerySystemInformation_SystemProcessorPerformanceInformation(
 		SystemProcessorPerformanceInformation,
-		infoArray,
+		infoArray.address(),
 		SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION_ARRAY.size,
 		0
 	);
 	var times = [];
-	var infos = infoArray.contents;
 	for (let i = 0, maxi = getCount(); i < maxi; i++) {
-		let info = infos[i];
+		let info = infoArray[i];
 		times.push({
 			user   : parseInt(info.UserTime),
 			system : parseInt(info.KernelTime),
@@ -89,7 +88,6 @@ function getCPUTimes() {
 			iowait : 0
 		});
 	}
-	PR_Free(infoArray);
 	return times;
 }
 

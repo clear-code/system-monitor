@@ -153,11 +153,13 @@ var SystemMonitorService = {
           if ("BrowserToolboxCustomizeDone" in window) {
             self.Deferred.next(function() {
               BrowserToolboxCustomizeDone(true);
+              self.initToolbarItems();
             });
           }
           else if ("MailToolboxCustomizeDone" in window) {
             self.Deferred.next(function() {
               MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');
+              self.initToolbarItems();
             });
           }
         });
