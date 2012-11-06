@@ -652,8 +652,6 @@ SystemMonitorSimpleGraphItem.prototype = {
   onChangePref : function SystemMonitorSimpleGraph_onChangePref(aData) {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
-      case "interval":
-        this.unit = Math.ceil(this.prefs.getPref(aData) / 500);
       case "size":
         if (this.listening)
           this.update();
