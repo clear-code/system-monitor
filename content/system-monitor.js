@@ -705,7 +705,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
       default:
         if (part.indexOf("color.") == 0) {
-          this.updateColors(part.match(/^color\.([^A-Z]+)/)[1]);
+          this.updateColors(part.match(/^color\.([^A-Z\.]+)/)[1]);
           if (this.listening)
             this.drawGraph(true);
         }

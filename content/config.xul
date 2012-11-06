@@ -178,13 +178,9 @@
                 name="extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha"
                 type="string"
                 onchange="updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');"/>
-    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground1"
-                name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground1"
+    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground.1"
+                name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground.1"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.memory-usage.color.foreground1GlobalAlpha"
-                name="extensions.system-monitor@clear-code.com.memory-usage.color.foreground1GlobalAlpha"
-                type="string"
-                onchange="updateAlphaUIFromPref('memory-usage.color.foreground1GlobalAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 name="extensions.system-monitor@clear-code.com.memory-usage.interval"
                 type="int"/>
@@ -238,35 +234,20 @@
                   class="reset"
                   oncommand="
                     resetValue('memory-usage.color.foreground-colorpicker', 'color');
+                    resetValue('memory-usage.color.foreground.1-colorpicker', 'color');
                     resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha');
                   "/>
         </row>
         <row align="center">
-          <label value="&config.memory-usage.color.foreground1;"
-                 control="memory-usage.color.foreground1-colorpicker"/>
+          <label value="&config.memory-usage.color.foreground.1;"
+                 control="memory-usage.color.foreground.1-colorpicker"/>
           <hbox align="center">
-            <colorpicker id="memory-usage.color.foreground1-colorpicker"
+            <colorpicker id="memory-usage.color.foreground.1-colorpicker"
                          type="button"
-                         preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground1"/>
-            <label value="&config.memory-usage.color.foreground1GlobalAlpha.before;"
-                   control="memory-usage.color.foreground1GlobalAlpha-scale"/>
-            <scale id="memory-usage.color.foreground1GlobalAlpha-scale"
-                   orient="horizontal"
-                   flex="1"
-                   increment="1"
-                   pageincrement="10"
-                   min="0"
-                   max="100"
-                   onchange="updateAlphaPrefFromUI('memory-usage.color.foreground1GlobalAlpha');"/>
-            <label value="&config.memory-usage.color.foreground1GlobalAlpha.after;"
-                   control="memory-usage.color.foreground1GlobalAlpha-scale"/>
+                         preference="extensions.system-monitor@clear-code.com.memory-usage.color.foreground.1"/>
+            <spacer flex="1"/>
           </hbox>
-          <button label="&config.memory-usage.color.reset;"
-                  class="reset"
-                  oncommand="
-                    resetValue('memory-usage.color.foreground1-colorpicker', 'color');
-                    resetPref('extensions.system-monitor@clear-code.com.memory-usage.color.foreground1GlobalAlpha');
-                  "/>
+          <spacer/>
         </row>
         <row align="center">
           <label value="&config.memory-usage.color.background;"
@@ -337,13 +318,9 @@
                 name="extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha"
                 type="string"
                 onchange="updateAlphaUIFromPref('network-usage.color.foregroundStartAlpha');"/>
-    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.foreground1"
-                name="extensions.system-monitor@clear-code.com.network-usage.color.foreground1"
+    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.foreground.1"
+                name="extensions.system-monitor@clear-code.com.network-usage.color.foreground.1"
                 type="string"/>
-    <preference id="extensions.system-monitor@clear-code.com.network-usage.color.foreground1GlobalAlpha"
-                name="extensions.system-monitor@clear-code.com.network-usage.color.foreground1GlobalAlpha"
-                type="string"
-                onchange="updateAlphaUIFromPref('network-usage.color.foreground1GlobalAlpha');"/>
     <preference id="extensions.system-monitor@clear-code.com.network-usage.color.redZone"
                 name="extensions.system-monitor@clear-code.com.network-usage.color.redZone"
                 type="string"/>
@@ -406,8 +383,27 @@
                   class="reset"
                   oncommand="
                     resetValue('network-usage.color.foreground-colorpicker', 'color');
+                    resetValue('network-usage.color.foreground.1-colorpicker', 'color');
+                    resetValue('network-usage.color.redZone-colorpicker', 'color');
                     resetPref('extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha');
+                    resetPref('extensions.system-monitor@clear-code.com.network-usage.color.redZone');
                   "/>
+        </row>
+        <row align="center">
+          <label value="&config.network-usage.color.foreground.1;"
+                 control="network-usage.color.foreground-colorpicker"/>
+          <hbox align="center">
+            <colorpicker id="network-usage.color.foreground.1-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.network-usage.color.foreground.1"/>
+            <label value="&config.network-usage.color.redZone;"
+                   control="network-usage.color.redZone-colorpicker"/>
+            <colorpicker id="network-usage.color.redZone-colorpicker"
+                         type="button"
+                         preference="extensions.system-monitor@clear-code.com.network-usage.color.redZone"/>
+            <spacer flex="1"/>
+          </hbox>
+          <spacer/>
         </row>
         <row align="center">
           <label value="&config.network-usage.color.background;"
@@ -436,25 +432,10 @@
                     resetPref('extensions.system-monitor@clear-code.com.network-usage.color.backgroundStartAlpha');
                   "/>
         </row>
-        <row align="center">
-          <label value="&config.network-usage.color.redZone;"
-                 control="network-usage.color.redZone-colorpicker"/>
-          <hbox align="center">
-            <colorpicker id="network-usage.color.redZone-colorpicker"
-                         type="button"
-                         preference="extensions.system-monitor@clear-code.com.network-usage.color.redZone"/>
-            <spacer flex="1"/>
-          </hbox>
-          <button label="&config.network-usage.color.reset;"
-                  class="reset"
-                  oncommand="
-                    resetValue('network-usage.color.redZone-colorpicker', 'color');
-                    resetPref('extensions.system-monitor@clear-code.com.network-usage.color.redZone');
-                  "/>
-        </row>
       </rows>
     </grid>
   </groupbox>
+<!--
   <groupbox>
     <caption label="&config.network-usage.logscale.caption;"/>
     <hbox align="center">
@@ -462,6 +443,7 @@
                 preference="extensions.system-monitor@clear-code.com.network-usage.logscale" />
     </hbox>
   </groupbox>
+-->
   <groupbox>
     <caption label="&config.network-usage.redZone.caption;"/>
     <hbox align="center">

@@ -8,7 +8,6 @@ function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
   updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');
   updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');
-  updateAlphaUIFromPref('memory-usage.color.foreground1GlobalAlpha');
 }
 
 function initNetworkUsagePane() {
@@ -37,6 +36,8 @@ function updateStyleUIFromPref(aKey) {
       extraStyle.value = 512;
     else if (value & 1024)
       extraStyle.value = 1024;
+    else if (value & 2048)
+      extraStyle.value = 2048;
   }
 }
 
@@ -55,6 +56,7 @@ function updateStylePrefFromUI(aKey) {
     if (value & 256) value ^= 256;
     if (value & 512) value ^= 512;
     if (value & 1024) value ^= 1024;
+    if (value & 2048) value ^= 2048;
     value |= parseInt(extraStyle.value);
   }
 

@@ -41,12 +41,10 @@
 <!ENTITY config.memory-usage.color.background "背景色：">
 <!ENTITY config.memory-usage.color.backgroundStartAlpha.before "不透明度：0&#37;">
 <!ENTITY config.memory-usage.color.backgroundStartAlpha.after "100&#37;">
-<!ENTITY config.memory-usage.color.foreground "前景色：">
+<!ENTITY config.memory-usage.color.foreground "前景色（全体）：">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.before "不透明度：0&#37;">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.after "100&#37;">
-<!ENTITY config.memory-usage.color.foreground1 "自身：">
-<!ENTITY config.memory-usage.color.foreground1GlobalAlpha.before "不透明度：0&#37;">
-<!ENTITY config.memory-usage.color.foreground1GlobalAlpha.after "100&#37;">
+<!ENTITY config.memory-usage.color.foreground.1 "前景色（自身）：">
 <!ENTITY config.memory-usage.color.reset "リセット">
 
 <!ENTITY config.memory-usage.interval.caption "グラフの更新間隔">
@@ -64,9 +62,10 @@
 <!ENTITY config.network-usage.color.background "背景色：">
 <!ENTITY config.network-usage.color.backgroundStartAlpha.before "不透明度：0&#37;">
 <!ENTITY config.network-usage.color.backgroundStartAlpha.after "100&#37;">
-<!ENTITY config.network-usage.color.foreground "前景色：">
+<!ENTITY config.network-usage.color.foreground "前景色（下り）：">
 <!ENTITY config.network-usage.color.foregroundStartAlpha.before "不透明度：0&#37;">
 <!ENTITY config.network-usage.color.foregroundStartAlpha.after "100&#37;">
+<!ENTITY config.network-usage.color.foreground.1 "前景色（上り）：">
 <!ENTITY config.network-usage.color.redZone "上限：">
 <!ENTITY config.network-usage.color.reset "リセット">
 
@@ -75,7 +74,7 @@
 
 <!ENTITY config.network-usage.redZone.caption "上限">
 <!ENTITY config.network-usage.redZone.before "初期状態で">
-<!ENTITY config.network-usage.redZone.after "KB/sを上限とする">
+<!ENTITY config.network-usage.redZone.after "KiB/sを上限とする">
 
 <!ENTITY config.network-usage.interval.caption "グラフの更新間隔">
 <!ENTITY config.network-usage.interval.before "">

@@ -40,12 +40,10 @@
 <!ENTITY config.memory-usage.color.background "Background:">
 <!ENTITY config.memory-usage.color.backgroundStartAlpha.before "Alpha: 0&#37;">
 <!ENTITY config.memory-usage.color.backgroundStartAlpha.after  "100&#37;">
-<!ENTITY config.memory-usage.color.foreground "Foreground:">
+<!ENTITY config.memory-usage.color.foreground "Foreground (Total):">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.before "Alpha: 0&#37;">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.after  "100&#37;">
-<!ENTITY config.memory-usage.color.foreground1 "Self:">
-<!ENTITY config.memory-usage.color.foreground1GlobalAlpha.before "Alpha: 0&#37;">
-<!ENTITY config.memory-usage.color.foreground1GlobalAlpha.after  "100&#37;">
+<!ENTITY config.memory-usage.color.foreground.1 "Foreground (Self):">
 <!ENTITY config.memory-usage.color.reset "Reset">
 
 <!ENTITY config.memory-usage.interval.caption "Interval">
@@ -63,9 +61,10 @@
 <!ENTITY config.network-usage.color.background "Background:">
 <!ENTITY config.network-usage.color.backgroundStartAlpha.before "Alpha: 0&#37;">
 <!ENTITY config.network-usage.color.backgroundStartAlpha.after  "100&#37;">
-<!ENTITY config.network-usage.color.foreground "Foreground:">
+<!ENTITY config.network-usage.color.foreground "Foreground (Down):">
 <!ENTITY config.network-usage.color.foregroundStartAlpha.before "Alpha: 0&#37;">
 <!ENTITY config.network-usage.color.foregroundStartAlpha.after  "100&#37;">
+<!ENTITY config.network-usage.color.foreground.1 "Foreground (Up):">
 <!ENTITY config.network-usage.color.redZone "Red zone:">
 <!ENTITY config.network-usage.color.reset "Reset">
 
@@ -74,7 +73,7 @@
 
 <!ENTITY config.network-usage.redZone.caption "Red zone">
 <!ENTITY config.network-usage.redZone.before "Show ">
-<!ENTITY config.network-usage.redZone.after "KB/s as the red zone by default">
+<!ENTITY config.network-usage.redZone.after "KiB/s as the red zone by default">
 
 <!ENTITY config.network-usage.interval.caption "Interval">
 <!ENTITY config.network-usage.interval.before "Update graph every ">
