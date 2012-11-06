@@ -50,6 +50,8 @@ pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground", 
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.foregroundMinAlpha", "0.2");
+pref("extensions.system-monitor@clear-code.com.network-usage.color.foreground.1", "#CCFF66");
 pref("extensions.system-monitor@clear-code.com.network-usage.color.redZone", "#FF9900");
 pref("extensions.system-monitor@clear-code.com.network-usage.redZone", 65536); // 64 * 1024 (64kbps)
 pref("extensions.system-monitor@clear-code.com.network-usage.logscale", false);
+pref("extensions.system-monitor@clear-code.com.network-usage.style", 2049);

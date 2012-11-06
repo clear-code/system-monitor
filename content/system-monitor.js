@@ -521,7 +521,8 @@ SystemMonitorSimpleGraphItem.prototype = {
       if (this.multiplexType == this.MULTIPLEX_SEPARATE) total = total / count;
       let current = 0;
       for (let i = 0; i < count; i++) {
-        current += aValues[i] / total;
+        let delta = aValues[i] / total; // this can be NaN when 0/0
+        current += isNaN(delta) ? 0 : delta ;
         let alpha = this.foregroundStartAlpha + (current * (this.foregroundEndAlpha - this.foregroundStartAlpha));
         gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
         color = this["foregroundDecimalRGB."+(i+1)] || color;
@@ -839,8 +840,10 @@ function SystemMonitorScalableGraphItem() {}
 
 SystemMonitorScalableGraphItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  valueArray : null,
-  rawValueArray : null,
+  valueArray        : null,
+  rawValueArray     : null,
+  unifiedValueArray : null,
+  maxValues         : null,
   set logMode(value) {
     var changed = this._logMode !== value;
     this._logMode = value;
@@ -851,14 +854,18 @@ SystemMonitorScalableGraphItem.prototype = {
     return this._logMode;
   },
   _logMode : true,
-  get maximumValue() {
-    return Math.max.apply(Math, this.rawValueArray);
+  get maxValue() {
+    return this.maxValues ? this.maxValues[0] : 0 ;
   },
   scaleValue: function (value) {
-    if (this.logMode)
-      return value === 0 ? 0 : Math.log(value) / Math.log(this.maximumValue);
-    else
-      return value / this.maximumValue;
+    if (Array.isArray(value)) {
+      return value.map(this.scaleValue, this);
+    } else {
+      if (this.logMode)
+        return value === 0 ? 0 : Math.log(value) / Math.log(this.maxValue);
+      else
+        return value / this.maxValue;
+    }
   },
   // @Override
   initValueArray: function () {
@@ -869,6 +876,10 @@ SystemMonitorScalableGraphItem.prototype = {
       this.rawValueArray = [];
     var arraySize = parseInt(this.size / this.unit);
     this.rawValueArray = this.resizeArray(this.rawValueArray, arraySize);
+
+    if (this.unifiedValueArray === null)
+      this.unifiedValueArray = [];
+    this.unifiedValueArray = this.resizeArray(this.unifiedValueArray, arraySize);
   },
   rescaleValueArray: function () {
     if (!this.valueArray || !this.rawValueArray)
@@ -879,10 +890,26 @@ SystemMonitorScalableGraphItem.prototype = {
     }
   },
   addNewValue: function (newValue) {
-    this.rawValueArray.shift();
     this.rawValueArray.push(newValue);
-    this.valueArray.shift();
     this.valueArray.push(this.scaleValue(newValue));
+    var unifiedValue = Array.isArray(newValue) ? this.unifyValues(newValue) : newValue ;
+    this.unifiedValueArray.push(unifiedValue);
+
+    // See: http://d.hatena.ne.jp/kumagi/20121007
+    // update maxvalue array when enqueuing
+    if (this.maxValues === null) this.maxValues = [];
+    while (this.maxValues.length && this.maxValues[this.maxValues.length-1] < unifiedValue) {
+      this.maxValues.pop();
+    }
+    this.maxValues.push(unifiedValue);
+
+    this.rawValueArray.shift();
+    this.valueArray.shift();
+    var expiredValue = this.unifiedValueArray.shift();
+
+    // update maxvalue array when dequeuing
+    if (expiredValue == this.maxValues[0])
+      this.maxValues.shift();
   },
   // @Override
   onChangePref: function (aPrefName) {
@@ -986,14 +1013,16 @@ SystemMonitorNetworkItem.prototype = {
   id             : "network-usage",
   type           : "network-usages",
   itemId         : "system-monitor-network-usage",
-  multiplexed    : false,
-  multiplexCount : 1,
-  maximumValueMargin : 0.9,
+  multiplexed    : true,
+  multiplexCount : 2,
+  multiplexType  : SystemMonitorSimpleGraphItem.prototype.MULTIPLEX_SHARED,
+  maxValueMargin : 0.9,
   get tooltip() {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
-  get maximumValue() {
-    return Math.max.apply(Math, this.rawValueArray.concat(this.redZone));
+  get maxValue() {
+    var maxValue = this.maxValues ? this.maxValues[0] : 0 ;
+    return Math.max(this.redZone, maxValue);
   },
   redZone : -1,
   redZoneColor : "#FF0000",
@@ -1029,8 +1058,12 @@ SystemMonitorNetworkItem.prototype = {
   },
   // @Override
   scaleValue: function SystemMonitorNetworkItem_scaleValue(value) {
-    value = SystemMonitorScalableGraphItem.prototype.scaleValue.apply(this, arguments);
-    return value * this.maximumValueMargin;
+    if (Array.isArray(value)) {
+      return value.map(this.scaleValue, this);
+    } else {
+      value = SystemMonitorScalableGraphItem.prototype.scaleValue.apply(this, arguments);
+      return value * this.maxValueMargin;
+    }
   },
   // @Override
   drawGraph : function SystemMonitorNetworkItem_drawGraph() {
@@ -1039,17 +1072,17 @@ SystemMonitorNetworkItem.prototype = {
   },
   // @Override
   addNewValue : function SystemMonitorNetworkItem_addNewValue() {
-    this.lastMaximumValue = this.maximumValue;
+    this.lastmaxValue = this.maxValue;
     SystemMonitorScalableGraphItem.prototype.addNewValue.apply(this, arguments);
-    if (this.maximumValue != this.lastMaximumValue)
+    if (this.maxValue != this.lastmaxValue)
       this.rescaleValueArray();
   },
-  lastMaximumValue: -1,
+  lastmaxValue: -1,
   drawRedZone : function SystemMonitorNetworkItem_drawRedZone() {
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     var h = canvas.height;
-    var y = h * (this.redZone / this.maximumValue) * this.maximumValueMargin;
+    var y = h * (this.redZone / this.maxValue) * this.maxValueMargin;
 
     context.save();
 
@@ -1081,19 +1114,22 @@ SystemMonitorNetworkItem.prototype = {
     if (!this.previousNetworkLoad)
       this.previousNetworkLoad = aNetworkLoad;
     var downBytesDelta = aNetworkLoad.downBytes - this.previousNetworkLoad.downBytes;
+    var upBytesDelta = aNetworkLoad.upBytes - this.previousNetworkLoad.upBytes;
     this.previousNetworkLoad = aNetworkLoad;
 
     // Compute bytes/s
     var downBytesPerSec = elapsedTime ? downBytesDelta / elapsedSec : 0;
+    var upBytesPerSec = elapsedTime ? upBytesDelta / elapsedSec : 0;
     // Refresh chart
-    this.addNewValue(downBytesPerSec);
+    this.addNewValue([downBytesPerSec, upBytesPerSec]);
     this.drawGraph();
 
     // Setup the tooltip text
     var { TextUtil } = Components.utils.import("resource://system-monitor-modules/lib/TextUtil.js", {});
     this.tooltip.textContent =
-      TextUtil.formatBytes(downBytesPerSec).join("") + "/s"
-      + " (Max: " + TextUtil.formatBytes(this.maximumValue).join("") + "/s)";
+      "Up: " + TextUtil.formatBytes(upBytesPerSec).join("") + "/s, "
+      + "Down: " + TextUtil.formatBytes(downBytesPerSec).join("") + "/s"
+      + " (Max: " + TextUtil.formatBytes(this.maxValue).join("") + "/s)";
   }
 };
 
