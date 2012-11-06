@@ -6,11 +6,11 @@ var TextUtil = {
   formatBytes: function (bytes, base) {
     base = base || 1024;
 
-    var notations = ["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
+    var notations = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
     var number = bytes;
 
     while (number >= base && notations.length > 1) {
-      number /= base;
+      number /= 1024;
       notations.shift();
     }
 
