@@ -426,7 +426,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
     this.clearAll();
     if (this.style & this.STYLE_POLYGONAL) {
-      last = values[values.length-1];
+      var last = values[values.length-1];
       if (last && typeof last == "object") {
         this.drawGraphMultiplexedPolygon(values, w, h, this.foreground);
       } else {
