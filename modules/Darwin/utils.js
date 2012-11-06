@@ -1,4 +1,4 @@
-var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage', 'getMemory'];
+var EXPORTED_SYMBOLS = ['getCount', 'getCPUTimes', 'calculateCPUUsage', 'getMemory', 'getNetworkLoad'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -109,38 +109,155 @@ const task_basic_info = new ctypes.StructType('task_basic_info', [
 const TASK_BASIC_INFO_COUNT = task_basic_info.size / natural_t.size;
 const TASK_BASIC_INFO = is64bit? TASK_BASIC_INFO_64 : TASK_BASIC_INFO_32 ;
 
+// ------------------------------------------------------------
+// sysctl
+// ------------------------------------------------------------
 
-var gLibrary,
+// Types
+const u_char    = ctypes.unsigned_char;
+const char      = ctypes.char;
+const u_short   = ctypes.unsigned_short;
+const u_int32_t = ctypes.uint32_t;
+const u_int64_t = ctypes.uint64_t;
+const __int32_t = ctypes.int32_t;
+const uint      = ctypes.uint32_t;
+const int       = ctypes.int32_t;
+const timeval_t = new ctypes.StructType('timeval_t', [
+  { tv_sec  : __int32_t },         /* seconds */
+  { tv_usec : __int32_t }          /* and microseconds */
+]);
+const IF_DATA_TIMEVAL = timeval_t;
+
+// Constants
+const CTL_NET        = 4;
+const PF_ROUTE       = 17;
+const NET_RT_IFLIST2 = 6;
+const RTM_IFINFO2    = 0x12;
+
+// Structs
+const if_data = new ctypes.StructType('if_data', [
+  /* generic interface information */
+  { ifi_type       : u_char          }, /* ethernet, tokenring, etc */
+  { ifi_typelen    : u_char          }, /* Length of frame type id */
+  { ifi_physical   : u_char          }, /* e.g., AUI, Thinnet, 10base-T, etc */
+  { ifi_addrlen    : u_char          }, /* media address length */
+  { ifi_hdrlen     : u_char          }, /* media header length */
+  { ifi_recvquota  : u_char          }, /* polling quota for receive intrs */
+  { ifi_xmitquota  : u_char          }, /* polling quota for xmit intrs */
+  { ifi_unused1    : u_char          }, /* for future use */
+  { ifi_mtu        : u_int32_t       }, /* maximum transmission unit */
+  { ifi_metric     : u_int32_t       }, /* routing metric (external only) */
+  { ifi_baudrate   : u_int32_t       }, /* linespeed */
+  /* volatile statistics */
+  { ifi_ipackets   : u_int32_t       }, /* packets received on interface */
+  { ifi_ierrors    : u_int32_t       }, /* input errors on interface */
+  { ifi_opackets   : u_int32_t       }, /* packets sent on interface */
+  { ifi_oerrors    : u_int32_t       }, /* output errors on interface */
+  { ifi_collisions : u_int32_t       }, /* collisions on csma interfaces */
+  { ifi_ibytes     : u_int32_t       }, /* total number of octets received */
+  { ifi_obytes     : u_int32_t       }, /* total number of octets sent */
+  { ifi_imcasts    : u_int32_t       }, /* packets received via multicast */
+  { ifi_omcasts    : u_int32_t       }, /* packets sent via multicast */
+  { ifi_iqdrops    : u_int32_t       }, /* dropped on input, this interface */
+  { ifi_noproto    : u_int32_t       }, /* destined for unsupported protocol */
+  { ifi_recvtiming : u_int32_t       }, /* usec spent receiving when timing */
+  { ifi_xmittiming : u_int32_t       }, /* usec spent xmitting when timing */
+  { ifi_lastchange : IF_DATA_TIMEVAL }, /* time of last administrative change */
+  { ifi_unused2    : u_int32_t       }, /* used to be the default_proto */
+  { ifi_hwassist   : u_int32_t       }, /* HW offload capabilities */
+  { ifi_reserved1  : u_int32_t       }, /* for future use */
+  { ifi_reserved2  : u_int32_t       }  /* for future use */
+]);
+
+const if_msghdr = new ctypes.StructType('if_msghdr', [
+  { ifm_msglen  : u_short }, /* to skip over non-understood messages */
+  { ifm_version : u_char  }, /* future binary compatability */
+  { ifm_type    : u_char  }, /* message type */
+  { ifm_addrs   : int     }, /* like rtm_addrs */
+  { ifm_flags   : int     }, /* value of if_flags */
+  { ifm_index   : u_short }, /* index for associated ifp */
+  { ifm_data    : if_data }  /* statistics and other data about if */
+]);
+
+const if_data64 = new ctypes.StructType('if_data64', [
+  /* generic interface information */
+  { ifi_type       : u_char          }, /* ethernet, tokenring, etc */
+  { ifi_typelen    : u_char          }, /* Length of frame type id */
+  { ifi_physical   : u_char          }, /* e.g., AUI, Thinnet, 10base-T, etc */
+  { ifi_addrlen    : u_char          }, /* media address length */
+  { ifi_hdrlen     : u_char          }, /* media header length */
+  { ifi_recvquota  : u_char          }, /* polling quota for receive intrs */
+  { ifi_xmitquota  : u_char          }, /* polling quota for xmit intrs */
+  { ifi_unused1    : u_char          }, /* for future use */
+  { ifi_mtu        : u_int32_t       }, /* maximum transmission unit */
+  { ifi_metric     : u_int32_t       }, /* routing metric (external only) */
+  { ifi_baudrate   : u_int64_t       }, /* linespeed */
+  /* volatile statistics */
+  { ifi_ipackets   : u_int64_t       }, /* packets received on interface */
+  { ifi_ierrors    : u_int64_t       }, /* input errors on interface */
+  { ifi_opackets   : u_int64_t       }, /* packets sent on interface */
+  { ifi_oerrors    : u_int64_t       }, /* output errors on interface */
+  { ifi_collisions : u_int64_t       }, /* collisions on csma interfaces */
+  { ifi_ibytes     : u_int64_t       }, /* total number of octets received */
+  { ifi_obytes     : u_int64_t       }, /* total number of octets sent */
+  { ifi_imcasts    : u_int64_t       }, /* packets received via multicast */
+  { ifi_omcasts    : u_int64_t       }, /* packets sent via multicast */
+  { ifi_iqdrops    : u_int64_t       }, /* dropped on input, this interface */
+  { ifi_noproto    : u_int64_t       }, /* destined for unsupported protocol */
+  { ifi_recvtiming : u_int32_t       }, /* usec spent receiving when timing */
+  { ifi_xmittiming : u_int32_t       }, /* usec spent xmitting when timing */
+  { ifi_lastchange : IF_DATA_TIMEVAL }  /* time of last administrative change */
+]);
+
+const if_msghdr2 = new ctypes.StructType('if_msghdr2', [
+  { ifm_msglen     : u_short   }, /* to skip over non-understood messages */
+  { ifm_version    : u_char    }, /* future binary compatability */
+  { ifm_type       : u_char    }, /* message type */
+  { ifm_addrs      : int       }, /* like rtm_addrs */
+  { ifm_flags      : int       }, /* value of if_flags */
+  { ifm_index      : u_short   }, /* index for associated ifp */
+  { ifm_snd_len    : int       }, /* instantaneous length of send queue */
+  { ifm_snd_maxlen : int       }, /* maximum length of send queue */
+  { ifm_snd_drops  : int       }, /* number of drops in send queue */
+  { ifm_timer      : int       }, /* time until if_watchdog called */
+  { ifm_data       : if_data64 }  /* statistics and other data about if */
+]);
+
+var libMach,
+	libc,
+	// functions
 	mach_host_self,
 	host_processor_info,
 	mach_task_self,
 	vm_deallocate,
 	host_info,
 	host_statistics,
-	task_info;
+	task_info,
+	sysctl;
 
 function openLibrary(aPath) {
+	var library = null;
 	try {
-		gLibrary = ctypes.open(aPath);
-		declareFunctions();
-		addShutdownListener(function() { gLibrary.close(); });
+		library = ctypes.open(aPath);
+		addShutdownListener(function() { library.close(); });
 	}
 	catch(e) {
-		if (gLibrary) {
-			gLibrary.close();
-			gLibrary = null;
+		if (library) {
+			library.close();
+			library = null;
 		}
 	}
+	return library;
 }
 
 function declareFunctions() {
-	mach_host_self = gLibrary.declare(
+	mach_host_self = libMach.declare(
 			'mach_host_self',
 			ctypes.default_abi,
 			mach_port_t
 		);
 
-	host_processor_info = gLibrary.declare(
+	host_processor_info = libMach.declare(
 			'host_processor_info',
 			ctypes.default_abi,
 			kern_return_t,
@@ -150,12 +267,12 @@ function declareFunctions() {
 			processor_info_array_t.ptr.ptr,
 			mach_msg_type_number_t.ptr
 		);
-	mach_task_self = gLibrary.declare(
+	mach_task_self = libMach.declare(
 			'mach_task_self',
 			ctypes.default_abi,
 			mach_port_t
 		);
-	vm_deallocate = gLibrary.declare(
+	vm_deallocate = libMach.declare(
 			'vm_deallocate',
 			ctypes.default_abi,
 			kern_return_t,
@@ -164,7 +281,7 @@ function declareFunctions() {
 			vm_size_t
 		);
 
-	host_info = gLibrary.declare(
+	host_info = libMach.declare(
 			'host_info',
 			ctypes.default_abi,
 			kern_return_t,
@@ -173,7 +290,7 @@ function declareFunctions() {
 			host_basic_info.ptr,
 			mach_msg_type_number_t.ptr
 		);
-	host_statistics = gLibrary.declare(
+	host_statistics = libMach.declare(
 			'host_statistics',
 			ctypes.default_abi,
 			kern_return_t,
@@ -182,7 +299,7 @@ function declareFunctions() {
 			vm_statistics.ptr,
 			mach_msg_type_number_t.ptr
 		);
-	task_info= gLibrary.declare(
+	task_info= libMach.declare(
 			'task_info',
 			ctypes.default_abi,
 			kern_return_t,
@@ -191,15 +308,30 @@ function declareFunctions() {
 			task_info_t.ptr,
 			mach_msg_type_number_t.ptr
 		);
+
+	// sysctl(int *name, u_int namelen, void *oldp, size_t *oldlenp, void *newp, size_t newlen);
+	sysctl = libc.declare(
+		'sysctl',
+		ctypes.default_abi,
+		int,               /* -> int  */
+		int.ptr,           /* name    */
+		uint,              /* namelen */
+		char.ptr,          /* oldp    */
+		ctypes.size_t.ptr, /* oldlenp */
+		char.ptr,          /* newp    */
+		ctypes.size_t      /* newlen  */
+	);
 }
 
 try {
-	openLibrary('/System/Library/Frameworks/System.framework/System');
+	libMach = openLibrary('/System/Library/Frameworks/System.framework/System');
 }
 catch(e) {
-	openLibrary('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
+	libMach = openLibrary('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation');
 }
+libc = openLibrary('libc.dylib');
 
+declareFunctions();
 
 function getCount() {
 	var count = new natural_t();
@@ -326,4 +458,110 @@ function getMemory() {
 		virtualUsed : -1,
 		self        : parseInt(self.resident_size)
 	};
+}
+
+function getNetworkLoad() {
+	try {
+		return getNetworkLoadImplementation();
+	} catch (x) {
+		throw x;
+	}
+}
+
+// Get network loads from sysctl
+// Current limitation: Though sysctl returns network loads in 64 bit integers,
+// we only use lower 32 bits since JavaScript supports intergers up to 53 bit
+function getNetworkLoadImplementation() {
+	var totalNetworkload = {
+		downBytes  : 0,
+		upBytes    : 0,
+		totalBytes : 0
+	};
+
+	/* Arrange the sysctl command that requests a network load */
+	var mibArgsCount = 6;
+	var mibArgsArray = int.array(mibArgsCount)([
+		CTL_NET,
+		PF_ROUTE,
+		0,
+		0,
+		NET_RT_IFLIST2,
+		0
+	]);
+
+	var bufferSize = ctypes.size_t(0);
+	var zero = ctypes.size_t(0);
+	var null_ptr = ctypes.voidptr_t.ptr(null);
+
+	/* Get required buffer size */
+	sysctl(mibArgsArray,                                  /* int.ptr              */
+					mibArgsCount,         /* uint                 */
+					null,                 /* ctypes.voidptr_t.ptr */
+					bufferSize.address(), /* ctypes.size_t.ptr    */
+					null,                 /* ctypes.voidptr_t.ptr */
+					0);                   /* ctypes.size_t        */
+
+	/* Allocate buffer and get sysctl response */
+	var buffer = char.array(bufferSize.value)();
+	sysctl(mibArgsArray,                                                     /* int.ptr               */
+					mibArgsCount,                            /* uint                  */
+					ctypes.cast(buffer.address(), char.ptr), /* ctypes.voidptr_t.ptr  */
+					bufferSize.address(),                    /* ctypes.size_t.ptr     */
+					null,                                    /* ctypes.voidptr_t.ptr  */
+					0);                                      /* ctypes.size_t         */
+
+	/* Iterate sysctl results (one result for an interface) */
+	var limit = char.ptr(addINT64(buffer.address(), bufferSize));
+	var next  = char.ptr(null);
+	next = ctypes.cast(buffer.address(), char.ptr);
+	for (; next < limit; ) {
+		var ifm_ptr = ctypes.cast(next, if_msghdr.ptr);
+		if (ifm_ptr.contents.ifm_type == RTM_IFINFO2) {
+			var if2m_ptr = ctypes.cast(ifm_ptr, if_msghdr2.ptr);
+			/* Get download bytes and upload bytes */
+			/* TODO: Do not trash higher bits */
+			totalNetworkload.downBytes = ctypes.UInt64.lo(if2m_ptr.contents.ifm_data.ifi_ibytes);
+			totalNetworkload.upBytes = ctypes.UInt64.lo(if2m_ptr.contents.ifm_data.ifi_obytes);
+		}
+		next = char.ptr(addINT64(next, ctypes.uint64_t(ifm_ptr.contents.ifm_msglen)));
+	}
+
+	return totalNetworkload;
+}
+
+// Construct UInt64 from ctypes numeric values
+// TODO: Do not use string manipulation
+function extractUInt64(ctypeValue) {
+	if (typeof ctypeValue !== "number") {
+		var ctypeString = ctypeValue.toString();
+		var matched = ctypeValue.toString().match(/UInt[0-9]+\("([0-9a-fx]+)"\)+$/);
+		if (matched)
+			ctypeValue = matched[1];
+	}
+	return new ctypes.UInt64(ctypeValue);
+}
+
+// Bigint addition
+function addINT64(a, b) {
+	a = extractUInt64(a);
+	b = extractUInt64(b);
+
+	const MAX_UINT = Math.pow(2, 32);
+
+	var alo = ctypes.UInt64.lo(a);
+	var ahi = ctypes.UInt64.hi(a);
+	var blo = ctypes.UInt64.lo(b);
+	var bhi = ctypes.UInt64.hi(b);
+
+	var lo = alo + blo;
+	var hi = 0;
+
+	if (lo >= MAX_UINT) {
+		hi = lo - MAX_UINT;
+		lo -= MAX_UINT;
+	}
+
+	hi += (ahi + bhi);
+
+	return ctypes.UInt64.join(hi, lo);
 }
