@@ -376,10 +376,10 @@ SystemMonitorSimpleGraphItem.prototype = {
     this.start();
   },
 
-  resizeArray: function (array, size) {
+  resizeArray: function (array, size, defaultValue) {
     if (array.length < size) {
       while (array.length < size) {
-        array.unshift(void 0);
+        array.unshift(defaultValue);
       }
     } else {
       array = this.valueArray.slice(-size);
@@ -682,6 +682,8 @@ SystemMonitorSimpleGraphItem.prototype = {
   updateColors : function SystemMonitorSimpleGraph_updateColors(aTarget) {
     var key = this.domain+this.id+".color."+aTarget;
     var base = this.prefs.getPref(key);
+    if (!base) return;
+
     var startAlpha = Number(this.prefs.getPref(key+"StartAlpha"));
     var endAlpha   = Math.max(startAlpha, Number(this.prefs.getPref(key+"EndAlpha")));
 
@@ -778,22 +780,17 @@ SystemMonitorScalableGraphItem.prototype = {
   valueArray : null,
   rawValueArray : null,
   set logMode(value) {
-    var logModeChanged = this._logMode !== value;
+    var changed = this._logMode !== value;
     this._logMode = value;
-    if (logModeChanged)
+    if (changed)
       this.rescaleValueArray();
   },
   get logMode() {
     return this._logMode;
   },
   _logMode : true,
-  _maximumValue: 1,
-  set maximumValue(value) {
-    this._maximumValue = value;
-    this.rescaleValueArray();
-  },
   get maximumValue() {
-    return this._maximumValue;
+    return Math.max.apply(Math, this.rawValueArray);
   },
   scaleValue: function (value) {
     if (this.logMode)
@@ -827,11 +824,15 @@ SystemMonitorScalableGraphItem.prototype = {
   },
   // @Override
   onChangePref: function (aPrefName) {
-    SystemMonitorSimpleGraphItem.prototype.onChangePref.call(this, aPrefName);
     var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
-    if (prefLeafName === "logscale") {
-      this.logMode = this.prefs.getPref(aPrefName);
-      this.drawGraph(true);
+    switch (prefLeafName) {
+      case "logscale":
+        this.logMode = this.prefs.getPref(aPrefName);
+        this.drawGraph(true);
+        break;
+
+      default:
+        return SystemMonitorSimpleGraphItem.prototype.onChangePref.apply(this, arguments);
     }
   }
 };
@@ -891,14 +892,14 @@ SystemMonitorMemoryItem.prototype = {
   selfGradientStyle : null,
   selfGlobalAlpha   : 1,
   start : function SystemMonitorMemoryMonitor_start() {
-    this.__proto__.__proto__.start.apply(this, arguments);
+    SystemMonitorSimpleGraphItem.prototype.start.apply(this, arguments);
     if (this.item) {
       this.onChangePref(this.domain+this.id+".color.selfGlobalAlpha");
       this.onChangePref(this.domain+this.id+".color.self");
     }
   },
   drawGraph : function SystemMonitorMemoryMonitor_drawGraph() {
-    this.__proto__.__proto__.drawGraph.apply(this, arguments);
+    SystemMonitorSimpleGraphItem.prototype.drawGraph.apply(this, arguments);
 
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
@@ -931,8 +932,9 @@ SystemMonitorMemoryItem.prototype = {
         if (this.listening)
           this.drawGraph(true);
         return;
+
       default:
-        return this.__proto__.__proto__.onChangePref.apply(this, arguments);
+        return SystemMonitorSimpleGraphItem.prototype.onChangePref.apply(this, arguments);
     }
   },
   // clISystemMonitor
@@ -960,27 +962,8 @@ SystemMonitorMemoryItem.prototype = {
   }
 };
 
-function createWindow(defaultValue) {
-  var maxValue = null;
-
-  return {
-    getMaxValue: function () {
-      if (maxValue === null)
-        return defaultValue;
-      return maxValue;
-    },
-    addNewValue: function (value) {
-      if (value > this.getMaxValue())
-        maxValue = value;
-      return this.getMaxValue();
-    }
-  };
-}
-
 function SystemMonitorNetworkItem()
 {
-  // 64KB/s
-  this.mostMinimumMaximumValue = this.maximumValue = 64 * 1024;
 }
 SystemMonitorNetworkItem.prototype = {
   __proto__      : SystemMonitorScalableGraphItem.prototype,
@@ -989,33 +972,84 @@ SystemMonitorNetworkItem.prototype = {
   itemId         : "system-monitor-network-usage",
   multiplexed    : false,
   multiplexCount : 1,
+  maximumValueMargin : 0.9,
   get tooltip() {
     return document.getElementById("system-monitor-network-usage-tooltip-label");
   },
-  mostMinimumMaximumValue: null,
-  expirationTime: 30 * 1000,
-  updateMaximumValue: function (nextMaximumValue, notExpire) {
-    this.maximumValue = nextMaximumValue;
-    if (notExpire)
-      return;
-
-    if (this.timer) {
-      clearTimeout(this.timer);
-      this.timer = null;
-    }
-
-    // Set expiration
-    var self = this;
-    this.timer = setTimeout(function () {
-      self.timer = null;
-      self.updateMaximumValue(self.mostMinimumMaximumValue, true /* not expire */);
-    }, this.expirationTime);
+  get maximumValue() {
+    return Math.max.apply(Math, this.rawValueArray.concat(this.redZone));
   },
-  tryToUpdateMaximumValue: function (currentValue) {
-    if (this.maximumValue === null ||
-        currentValue > this.maximumValue) {
-      this.updateMaximumValue(currentValue);
+  redZone : -1,
+  redZoneColor : "#FF0000",
+  // @Override
+  resizeArray: function SystemMonitorNetworkItem_resizeArray(array, size) {
+    return SystemMonitorScalableGraphItem.prototype.resizeArray.call(this, array, size, 0);
+  },
+  // @Override
+  onChangePref: function SystemMonitorNetworkItem_onChangePref(aPrefName) {
+    var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
+    switch (prefLeafName) {
+      case "redZone":
+        this.redZone = this.prefs.getPref(aPrefName);
+        this.drawGraph(true);
+        break;
+
+      case "color.redZone":
+        this.redZoneColor = this.prefs.getPref(aPrefName);
+        this.drawGraph(true);
+        break;
+
+      default:
+        return SystemMonitorScalableGraphItem.prototype.onChangePref.apply(this, arguments);
     }
+  },
+  start : function SystemMonitorNetworkItem_start() {
+    SystemMonitorScalableGraphItem.prototype.start.apply(this, arguments);
+    if (this.item) {
+      this.onChangePref(this.domain+this.id+".color.redZone");
+      this.onChangePref(this.domain+this.id+".redZone");
+      this.onChangePref(this.domain+this.id+".logscale");
+    }
+  },
+  // @Override
+  scaleValue: function SystemMonitorNetworkItem_scaleValue(value) {
+    value = SystemMonitorScalableGraphItem.prototype.scaleValue.apply(this, arguments);
+    return value * this.maximumValueMargin;
+  },
+  // @Override
+  drawGraph : function SystemMonitorNetworkItem_drawGraph() {
+    SystemMonitorScalableGraphItem.prototype.drawGraph.apply(this, arguments);
+    this.drawRedZone();
+  },
+  // @Override
+  addNewValue : function SystemMonitorNetworkItem_addNewValue() {
+    this.lastMaximumValue = this.maximumValue;
+    SystemMonitorScalableGraphItem.prototype.addNewValue.apply(this, arguments);
+    if (this.maximumValue != this.lastMaximumValue)
+      this.rescaleValueArray();
+  },
+  lastMaximumValue: -1,
+  drawRedZone : function SystemMonitorNetworkItem_drawRedZone() {
+    var canvas = this.canvas;
+    var context = canvas.getContext("2d");
+    var h = canvas.height;
+    var y = h * (this.redZone / this.maximumValue) * this.maximumValueMargin;
+
+    context.save();
+
+    context.translate(0, h);
+    context.scale(1, -1);
+
+    context.beginPath();
+    context.strokeStyle = this.redZoneColor;
+    context.lineWidth = 0.5;
+    context.lineCap = "square";
+    context.moveTo(0, y);
+    context.lineTo(canvas.width, y);
+    context.closePath();
+    context.stroke();
+
+    context.restore();
   },
   previousNetworkLoad: null,
   previousMeasureTime: null,
@@ -1036,7 +1070,6 @@ SystemMonitorNetworkItem.prototype = {
     // Compute bytes/s
     var downBytesPerSec = elapsedTime ? downBytesDelta / elapsedSec : 0;
     // Refresh chart
-    this.tryToUpdateMaximumValue(downBytesPerSec);
     this.addNewValue(downBytesPerSec);
     this.drawGraph();
 
