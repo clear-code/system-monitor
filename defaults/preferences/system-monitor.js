@@ -36,11 +36,11 @@ pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground", "
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundStartAlpha", "0.4");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundEndAlpha", "1");
 pref("extensions.system-monitor@clear-code.com.memory-usage.color.foregroundMinAlpha", "0.4");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.self", "#FFCC00");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfStartAlpha", "0.6");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfEndAlpha", "1");
-pref("extensions.system-monitor@clear-code.com.memory-usage.color.selfGlobalAlpha", "1");
-pref("extensions.system-monitor@clear-code.com.memory-usage.style", 129);
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1", "#FFCC00");
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1StartAlpha", "0.6");
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1EndAlpha", "1");
+pref("extensions.system-monitor@clear-code.com.memory-usage.color.foreground1GlobalAlpha", "1");
+pref("extensions.system-monitor@clear-code.com.memory-usage.style", 257);
 
 pref("extensions.system-monitor@clear-code.com.network-usage.initialShow", false);
 pref("extensions.system-monitor@clear-code.com.network-usage.size", 48);

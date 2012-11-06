@@ -885,15 +885,15 @@ SystemMonitorMemoryItem.prototype = {
   get tooltip() {
     return document.getElementById("system-monitor-memory-usage-tooltip-label");
   },
-  self              : "#FFEE00",
-  selfGradient      : ["#FFEE00", "#FFEE00"],
-  selfGradientStyle : null,
-  selfGlobalAlpha   : 1,
+  foreground1              : "#FFEE00",
+  foreground1Gradient      : ["#FFEE00", "#FFEE00"],
+  foreground1GradientStyle : null,
+  foreground1GlobalAlpha   : 1,
   start : function SystemMonitorMemoryMonitor_start() {
     SystemMonitorSimpleGraphItem.prototype.start.apply(this, arguments);
     if (this.item) {
-      this.onChangePref(this.domain+this.id+".color.selfGlobalAlpha");
-      this.onChangePref(this.domain+this.id+".color.self");
+      this.onChangePref(this.domain+this.id+".color.foreground1GlobalAlpha");
+      this.onChangePref(this.domain+this.id+".color.foreground1");
     }
   },
   drawGraph : function SystemMonitorMemoryMonitor_drawGraph() {
@@ -908,14 +908,14 @@ SystemMonitorMemoryItem.prototype = {
       for (let i in values) {
         graphValues[i] = values[i] && values[i][1] || 0;
       }
-      this.drawGraphPolygon(graphValues || 0, h, this.self);
+      this.drawGraphPolygon(graphValues || 0, h, this.foreground1);
     } else { // bar graph
       let x = 0;
       context.save();
-      context.globalAlpha = this.selfGlobalAlpha;
+      context.globalAlpha = this.foreground1GlobalAlpha;
       for each (let value in values) {
         if (value) {
-          this.drawGraphBar(this.selfGradientStyle, x, h, h * (value[0] - value[1]), h * value[0]);
+          this.drawGraphBar(this.foreground1GradientStyle, x, h, h * (value[0] - value[1]), h * value[0]);
         }
         x += this.unit;
       }
@@ -925,8 +925,8 @@ SystemMonitorMemoryItem.prototype = {
   onChangePref : function SystemMonitorMemoryMonitor_onChangePref(aData) {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
-      case "color.selfGlobalAlpha":
-        this.selfGlobalAlpha = Number(this.prefs.getPref(aData));
+      case "color.foreground1GlobalAlpha":
+        this.foreground1GlobalAlpha = Number(this.prefs.getPref(aData));
         if (this.listening)
           this.drawGraph(true);
         return;
@@ -941,8 +941,10 @@ SystemMonitorMemoryItem.prototype = {
     this.valueArray.shift();
     var value = [aValue.used / aValue.total,
                  0];
-    if (hasSelfValue)
+    if (hasSelfValue) {
+      value[0] = (aValue.used - aValue.self) / aValue.total;
       value[1] = aValue.self / aValue.total;
+    }
     this.valueArray.push(value);
 
     this.drawGraph();

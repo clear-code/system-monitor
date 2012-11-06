@@ -8,7 +8,7 @@ function initMemoryUsagePane() {
   updateStyleUIFromPref('memory-usage');
   updateAlphaUIFromPref('memory-usage.color.backgroundStartAlpha');
   updateAlphaUIFromPref('memory-usage.color.foregroundStartAlpha');
-  updateAlphaUIFromPref('memory-usage.color.selfGlobalAlpha');
+  updateAlphaUIFromPref('memory-usage.color.foreground1GlobalAlpha');
 }
 
 function initNetworkUsagePane() {

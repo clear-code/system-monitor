@@ -44,9 +44,9 @@
 <!ENTITY config.memory-usage.color.foreground "前景色：">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.before "不透明度：0&#37;">
 <!ENTITY config.memory-usage.color.foregroundStartAlpha.after "100&#37;">
-<!ENTITY config.memory-usage.color.self "自身：">
-<!ENTITY config.memory-usage.color.selfGlobalAlpha.before "不透明度：0&#37;">
-<!ENTITY config.memory-usage.color.selfGlobalAlpha.after "100&#37;">
+<!ENTITY config.memory-usage.color.foreground1 "自身：">
+<!ENTITY config.memory-usage.color.foreground1GlobalAlpha.before "不透明度：0&#37;">
+<!ENTITY config.memory-usage.color.foreground1GlobalAlpha.after "100&#37;">
 <!ENTITY config.memory-usage.color.reset "リセット">
 
 <!ENTITY config.memory-usage.interval.caption "グラフの更新間隔">
