@@ -992,13 +992,14 @@ SystemMonitorMemoryItem.prototype = {
 
     this.drawGraph();
 
-    var params = [parseInt(aValue.total / 1024 / 1024),
-                  parseInt(aValue.used / 1024 / 1024),
+    var { TextUtil } = Components.utils.import("resource://system-monitor-modules/lib/TextUtil.js", {});
+    var params = [TextUtil.formatBytes(aValue.total, 10240).join(" "),
+                  TextUtil.formatBytes(aValue.used, 10240).join(" "),
                   parseInt(aValue.used / aValue.total * 100)];
     this.tooltip.textContent = hasSelfValue ?
       this.bundle.getFormattedString("memory_usage_self_tooltip",
         params.concat([
-          parseInt(aValue.self / 1024 / 1024),
+          TextUtil.formatBytes(aValue.self, 10240).join(" "),
           parseInt(aValue.self / aValue.total * 100)
         ])) :
       this.bundle.getFormattedString("memory_usage_tooltip", params) ;
@@ -1023,6 +1024,9 @@ SystemMonitorNetworkItem.prototype = {
   get maxValue() {
     var maxValue = this.maxValues ? this.maxValues[0] : 0 ;
     return Math.max(this.redZone, maxValue);
+  },
+  get actualMaxValue() {
+    return this.maxValues ? this.maxValues[0] : 0 ;
   },
   redZone : -1,
   redZoneColor : "#FF0000",
@@ -1126,10 +1130,12 @@ SystemMonitorNetworkItem.prototype = {
 
     // Setup the tooltip text
     var { TextUtil } = Components.utils.import("resource://system-monitor-modules/lib/TextUtil.js", {});
-    this.tooltip.textContent =
-      "Up: " + TextUtil.formatBytes(upBytesPerSec).join("") + "/s, "
-      + "Down: " + TextUtil.formatBytes(downBytesPerSec).join("") + "/s"
-      + " (Max: " + TextUtil.formatBytes(this.maxValue).join("") + "/s)";
+    this.tooltip.textContent = this.bundle.getFormattedString(
+                                 "network_usage_tooltip",
+                                 [TextUtil.formatBytes(upBytesPerSec).join(" "),
+                                  TextUtil.formatBytes(downBytesPerSec).join(" "),
+                                  TextUtil.formatBytes(this.actualMaxValue).join(" ")]
+                               );
   }
 };
 
