@@ -52,6 +52,8 @@ function SystemMonitorItem(aDocument)
   this.document = aDocument;
 }
 SystemMonitorItem.prototype = {
+  master : SystemMonitorItem,
+
   domain : SystemMonitorManager.DOMAIN,
   item   : null,
   itemId : null,
@@ -69,8 +71,10 @@ function SystemMonitorSimpleGraphItem(aDocument)
 {
   this.document = aDocument;
 }
+SystemMonitorSimpleGraphItem.__proto__ = SystemMonitorItem;
 SystemMonitorSimpleGraphItem.prototype = {
   __proto__ : SystemMonitorItem.prototype,
+  master    : SystemMonitorSimpleGraphItem,
 
   id       : "",
   type     : "",
@@ -133,7 +137,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   start : function SystemMonitorSimpleGraph_start() {
     var item = this.item;
-    if (!item || this.listening)
+    if (!item || this.observing)
         return;
 
     this.size = prefs.getPref(this.domain+this.id+".size");
@@ -158,7 +162,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       prefs.addPrefListener(this);
       this.startObserve();
 
-      this.listening = true;
+      this.observing = true;
     }
     catch(e) {
       dump("system-monitor: addMonitor() failed\n"+
@@ -172,7 +176,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   stop : function SystemMonitorSimpleGraph_stop() {
     var item = this.item;
-    if (!item || !this.listening)
+    if (!item || !this.observing)
         return;
 
     try {
@@ -192,20 +196,20 @@ SystemMonitorSimpleGraphItem.prototype = {
     catch(e) {
     }
 
-    this.listening = false;
+    this.observing = false;
   },
 
   startObserve : function SystemMonitorSimpleGraph_startObserve() {
-    if (this.observing) return;
-    this.observing = true;
+    if (this.listening) return;
+    this.listening = true;
     this.document.addEventListener(resizableToolbarItem.EVENT_TYPE_RESIZE_BEGIN, this, false);
     this.document.addEventListener(resizableToolbarItem.EVENT_TYPE_RESIZE_END, this, false);
     this.document.addEventListener(resizableToolbarItem.EVENT_TYPE_RESET, this, false);
   },
 
   stopObserve : function SystemMonitorSimpleGraph_stopObserve() {
-    if (!this.observing) return;
-    this.observing = false;
+    if (!this.listening) return;
+    this.listening = false;
     this.document.removeEventListener(resizableToolbarItem.EVENT_TYPE_RESIZE_BEGIN, this, false);
     this.document.removeEventListener(resizableToolbarItem.EVENT_TYPE_RESIZE_END, this, false);
     this.document.removeEventListener(resizableToolbarItem.EVENT_TYPE_RESET, this, false);
@@ -526,7 +530,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     var part = aData.replace(this.domain+this.id+".", "");
     switch (part) {
       case "size":
-        if (this.listening)
+        if (this.observing)
           this.update();
         break;
 
@@ -536,14 +540,14 @@ SystemMonitorSimpleGraphItem.prototype = {
 
       case "style":
         this.style = prefs.getPref(this.domain+this.id+".style");
-        if (this.listening)
+        if (this.observing)
           this.drawGraph(true);
         break;
 
       default:
         if (part.indexOf("color.") == 0) {
           this.updateColors(part.match(/^color\.([^A-Z\.]+)/)[1]);
-          if (this.listening)
+          if (this.observing)
             this.drawGraph(true);
         }
         break;
@@ -677,8 +681,11 @@ function SystemMonitorScalableGraphItem(aDocument)
 {
   this.document = aDocument;
 }
+SystemMonitorScalableGraphItem.__proto__ = SystemMonitorSimpleGraphItem;
 SystemMonitorScalableGraphItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  master    : SystemMonitorScalableGraphItem,
+
   valueArray        : null,
   rawValueArray     : null,
   unifiedValueArray : null,
@@ -769,8 +776,11 @@ function SystemMonitorCPUItem(aDocument)
 {
   this.document = aDocument;
 }
+SystemMonitorCPUItem.__proto__ = SystemMonitorSimpleGraphItem;
 SystemMonitorCPUItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  master    : SystemMonitorCPUItem,
+
   id       : "cpu-usage",
   type     : "cpu-usages",
   itemId   : "system-monitor-cpu-usage",
@@ -810,8 +820,11 @@ function SystemMonitorMemoryItem(aDocument)
 {
   this.document = aDocument;
 }
+SystemMonitorMemoryItem.__proto__ = SystemMonitorSimpleGraphItem;
 SystemMonitorMemoryItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
+  master    : SystemMonitorMemoryItem,
+
   id       : "memory-usage",
   type     : "memory-usage",
   itemId   : "system-monitor-memory-usage",
@@ -850,8 +863,11 @@ function SystemMonitorNetworkItem(aDocument)
 {
   this.document = aDocument;
 }
+SystemMonitorNetworkItem.__proto__ = SystemMonitorScalableGraphItem;
 SystemMonitorNetworkItem.prototype = {
-  __proto__      : SystemMonitorScalableGraphItem.prototype,
+  __proto__ : SystemMonitorScalableGraphItem.prototype,
+  master    : SystemMonitorNetworkItem,
+
   id             : "network-usage",
   type           : "network-usages",
   itemId         : "system-monitor-network-usage",
