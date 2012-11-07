@@ -72,9 +72,10 @@ function defineSharedProperties(aConstructor, aProperties) {
   });
 }
 
-function defineObserver(aConstructor) {
-  aConstructor.observer = {
-    observe : function(aSubject, aTopic, aData) { aConstructor.observe(aSubject, aTopic, aData); }
+function defineObserver(aFunctionalObserver) {
+  aFunctionalObserver.observer = {
+    domain  : aFunctionalObserver.domain,
+    observe : function(aSubject, aTopic, aData) { aFunctionalObserver.observe(aSubject, aTopic, aData); }
   };
 }
 
@@ -208,12 +209,12 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     this.initValueArray();
 
     Services.obs.addObserver(this.observer, this.topic, false);
-    prefs.addPrefListener(this);
+    prefs.addPrefListener(this.observer);
   },
 
   stop : function SystemMonitorSimpleGraph_klass_stop() {
     Services.obs.removeObserver(this.observer, this.topic);
-    prefs.removePrefListener(this);
+    prefs.removePrefListener(this.observer);
   },
 
   initValueArray : function SystemMonitorSimpleGraph_klass_initValueArray() {
