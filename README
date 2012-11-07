@@ -21,8 +21,8 @@ definitions).
         $ tar xvf xulrunner-*.tar.bz2
         $ mkdir ~/opt
         $ mv xulrunner-sdk ~/opt/
- 3. Clone the git repository of System Monitor and checkout the version
-    you want to build.
+ 3. Clone the git repository of System Monitor (and checkout a released version
+    you want to build if needed).
         $ git clone git@github.com:clear-code/system-monitor.git
         $ git tag -l
         $ git checkout refs/tags/X.X.X
@@ -59,8 +59,8 @@ pre-built binaries.
       * zip
     * Microsoft Visual C++ 2008 Express Edition
       http://www.microsoft.com/express/Downloads/#Visual_Studio_2008_Express_Downloads
- 2. Clone the git repository of System Monitor and checkout the version
-    you want to build.
+ 2. Clone the git repository of System Monitor (and checkout a released version
+    you want to build if needed).
  3. Download and extract Gecko SDK:
       http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/X.X.X
         /sdk/xulrunner-X.X.X.en-US.win32.sdk.zip
@@ -104,8 +104,8 @@ default pre-built binaries.
       * libidl
         $ sudo port selfupdate
         $ sudo port install pkgconfig +libidl
- 2. Clone the git repository of System Monitor and checkout the version
-    you want to build.
+ 2. Clone the git repository of System Monitor (and checkout a released version
+    you want to build if needed).
  3. Download and extract Gecko SDK:
       http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/X.X.X
         /sdk/xulrunner-X.X.X.en-US.mac-i386.sdk.tar.bz2
