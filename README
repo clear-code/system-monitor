@@ -130,3 +130,11 @@ default pre-built binaries.
         $ ./automake.sh
         $ ./configure --with-libxul-sdk=/opt/xulrunner-sdk CXXFLAGS="-arch i386"
         $ make xpi
+
+# How to change the version number?
+
+The version number is defined in a configuration file "configure.ac".
+After you modify it, you need to do re-configure like:
+
+        $ ./autogen.sh
+        $ ./configure --with-libxul-sdk=/path/to/xulrunner-sdk
