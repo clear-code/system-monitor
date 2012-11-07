@@ -46,6 +46,7 @@ XPCOMUtils.defineLazyGetter(this, "resizableToolbarItem", function () {
 	return resizableToolbarItem;
 });
 
+var DOMAIN = SystemMonitorManager.DOMAIN;
 
 function SystemMonitorItem(aDocument)
 {
@@ -55,7 +56,6 @@ SystemMonitorItem.instances = [];
 SystemMonitorItem.prototype = {
   master : SystemMonitorItem,
 
-  domain : SystemMonitorManager.DOMAIN,
   item   : null,
   itemId : null,
   id     : null,
@@ -146,13 +146,13 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (!item || this.observing)
         return;
 
-    this.size = prefs.getPref(this.domain+this.id+".size");
-    this.interval = prefs.getPref(this.domain+this.id+".interval");
+    this.size = prefs.getPref(DOMAIN+this.id+".size");
+    this.interval = prefs.getPref(DOMAIN+this.id+".interval");
 
-    this.onChangePref(this.domain+this.id+".color.background");
-    this.onChangePref(this.domain+this.id+".color.foreground");
-    this.onChangePref(this.domain+this.id+".color.foregroundMinAlpha");
-    this.onChangePref(this.domain+this.id+".style");
+    this.onChangePref(DOMAIN+this.id+".color.background");
+    this.onChangePref(DOMAIN+this.id+".color.foreground");
+    this.onChangePref(DOMAIN+this.id+".color.foregroundMinAlpha");
+    this.onChangePref(DOMAIN+this.id+".style");
 
     this.image.src = "";
 
@@ -533,7 +533,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
   // preferences listener
   onChangePref : function SystemMonitorSimpleGraph_onChangePref(aData) {
-    var part = aData.replace(this.domain+this.id+".", "");
+    var part = aData.replace(DOMAIN+this.id+".", "");
     switch (part) {
       case "size":
         if (this.observing)
@@ -545,7 +545,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         break;
 
       case "style":
-        this.style = prefs.getPref(this.domain+this.id+".style");
+        this.style = prefs.getPref(DOMAIN+this.id+".style");
         if (this.observing)
           this.drawGraph(true);
         break;
@@ -561,7 +561,7 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   updateColors : function SystemMonitorSimpleGraph_updateColors(aTarget) {
-    var key = this.domain+this.id+".color."+aTarget;
+    var key = DOMAIN+this.id+".color."+aTarget;
     var base = prefs.getPref(key);
     if (!base) return;
 
@@ -664,7 +664,7 @@ SystemMonitorSimpleGraphItem.prototype = {
 
       case resizableToolbarItem.EVENT_TYPE_RESIZE_END:
         prefs.setPref(
-          this.domain+this.id+".size",
+          DOMAIN+this.id+".size",
           this.canvas.parentNode.boxObject.width
         );
         this.start();
@@ -673,8 +673,8 @@ SystemMonitorSimpleGraphItem.prototype = {
       case resizableToolbarItem.EVENT_TYPE_RESET:
         if (target == item) {
           prefs.setPref(
-            this.domain+this.id+".size",
-            prefs.getDefaultPref(this.domain+this.id+".size")
+            DOMAIN+this.id+".size",
+            prefs.getDefaultPref(DOMAIN+this.id+".size")
           );
           this.start();
         }
@@ -765,7 +765,7 @@ SystemMonitorScalableGraphItem.prototype = {
   },
   // @Override
   onChangePref: function SystemMonitorScalableGraphItem_onChangePref(aPrefName) {
-    var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
+    var prefLeafName = aPrefName.replace(DOMAIN + this.id + ".", "");
     switch (prefLeafName) {
       case "logscale":
         this.logMode = prefs.getPref(aPrefName);
@@ -899,7 +899,7 @@ SystemMonitorNetworkItem.prototype = {
   },
   // @Override
   onChangePref: function SystemMonitorNetworkItem_onChangePref(aPrefName) {
-    var prefLeafName = aPrefName.replace(this.domain + this.id + ".", "");
+    var prefLeafName = aPrefName.replace(DOMAIN + this.id + ".", "");
     switch (prefLeafName) {
       case "redZone":
         this.redZone = prefs.getPref(aPrefName);
@@ -918,9 +918,9 @@ SystemMonitorNetworkItem.prototype = {
   start : function SystemMonitorNetworkItem_start() {
     SystemMonitorScalableGraphItem.prototype.start.apply(this, arguments);
     if (this.item) {
-      this.onChangePref(this.domain+this.id+".color.redZone");
-      this.onChangePref(this.domain+this.id+".redZone");
-      this.onChangePref(this.domain+this.id+".logscale");
+      this.onChangePref(DOMAIN+this.id+".color.redZone");
+      this.onChangePref(DOMAIN+this.id+".redZone");
+      this.onChangePref(DOMAIN+this.id+".logscale");
     }
   },
   // @Override
