@@ -248,6 +248,7 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     switch (part) {
       case "size":
         this.size = prefs.getPref(aData);
+        this.initValueArray();
         this.instances.forEach(function(aInstance) {
           if (aInstance.observing)
             aInstance.update();
