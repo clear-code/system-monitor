@@ -1,6 +1,6 @@
 // function log(s) { dump(s + "\n"); }
 
-var EXPORTED_SYMBOLS = [
+const EXPORTED_SYMBOLS = [
 //      "SystemMonitorItem",
 //      "SystemMonitorSimpleGraphItem",
 //      "SystemMonitorScalableGraphItem",
@@ -9,8 +9,8 @@ var EXPORTED_SYMBOLS = [
       "SystemMonitorNetworkItem"
     ];
 
-var packageName = "system-monitor";
-var modulesRoot = packageName + "-modules";
+const packageName = "system-monitor";
+const modulesRoot = packageName + "-modules";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -46,7 +46,7 @@ XPCOMUtils.defineLazyGetter(this, "resizableToolbarItem", function () {
 	return resizableToolbarItem;
 });
 
-var DOMAIN = SystemMonitorManager.DOMAIN;
+const DOMAIN = SystemMonitorManager.DOMAIN;
 
 function SystemMonitorItem(aDocument)
 {
@@ -69,6 +69,18 @@ SystemMonitorItem.prototype = {
   }
 };
 
+
+const MULTIPLEX_SHARED   = (1 << 0);
+const MULTIPLEX_SEPARATE = (1 << 1);
+
+const STYLE_BAR                = (1 << 0);
+const STYLE_POLYGONAL          = (1 << 1);
+
+const STYLE_UNIFIED            = (1 << 7);
+const STYLE_STACKED            = (1 << 8);
+const STYLE_MULTICOLOR_STACKED = (1 << 11);
+const STYLE_LAYERED            = (1 << 9);
+const STYLE_SEPARATED          = (1 << 10);
 
 function SystemMonitorSimpleGraphItem(aDocument)
 {
@@ -96,12 +108,10 @@ SystemMonitorSimpleGraphItem.prototype = {
   background              : "#000000",
   backgroundGradient      : ["#000000", "#000000"],
   backgroundGradientStyle : null,
-  style : 0,
+  style : STYLE_BAR | STYLE_UNIFIED,
   multiplexed : false,
   multiplexCount : 1,
-  multiplexType  : (1 << 0), // SHARED
-  MULTIPLEX_SHARED   : (1 << 0),
-  MULTIPLEX_SEPARATE : (1 << 1),
+  multiplexType  : MULTIPLEX_SHARED,
   valueArray : null,
 
   get topic() {
@@ -259,26 +269,17 @@ SystemMonitorSimpleGraphItem.prototype = {
     return total / aValues.length;
   },
 
-  STYLE_BAR                : (1 << 0),
-  STYLE_POLYGONAL          : (1 << 1),
-
-  STYLE_UNIFIED            : (1 << 7),
-  STYLE_STACKED            : (1 << 8),
-  STYLE_MULTICOLOR_STACKED : (1 << 11),
-  STYLE_LAYERED            : (1 << 9),
-  STYLE_SEPARATED          : (1 << 10),
-
   drawGraph : function SystemMonitorSimpleGraph_drawGraph(aDrawAll) {
     var canvas = this.canvas;
     var w = canvas.width;
     var h = canvas.height;
 
     var values = this.valueArray;
-    if (this.style & this.STYLE_SEPARATED)
+    if (this.style & STYLE_SEPARATED)
       values = values.slice(-parseInt(values.length / this.multiplexCount));
 
     this.clearAll();
-    if (this.style & this.STYLE_POLYGONAL) {
+    if (this.style & STYLE_POLYGONAL) {
       let last = values[values.length-1];
       if (last && typeof last == "object") {
         this.drawGraphMultiplexedPolygon(values, w, h);
@@ -298,7 +299,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         x += this.unit;
       }
     }
-    if (this.style & this.STYLE_SEPARATED)
+    if (this.style & STYLE_SEPARATED)
       this.drawSeparators(w, h);
   },
 
@@ -359,13 +360,13 @@ SystemMonitorSimpleGraphItem.prototype = {
     context.save();
     context.globalAlpha = 1;
     var count = this.multiplexCount;
-    if (this.style & this.STYLE_MULTICOLOR_STACKED) {
+    if (this.style & STYLE_MULTICOLOR_STACKED) {
       context.save();
       let color = this.foregroundDecimalRGB;
       let gradient = context.createLinearGradient(0, this.canvas.height, 0, 0);
       gradient.addColorStop(0, "rgba("+color+", "+this.foregroundStartAlpha+")");
       let total = this.unifyValues(aValues);
-      if (this.multiplexType == this.MULTIPLEX_SEPARATE) total = total / count;
+      if (this.multiplexType == MULTIPLEX_SEPARATE) total = total / count;
       let current = 0;
       for (let i = 0; i < count; i++) {
         let delta = aValues[i] / total; // this can be NaN when 0/0
@@ -379,7 +380,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         gradient.addColorStop(1, "rgba("+color+", "+this.foregroundEndAlpha+")");
       this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
       context.restore();
-    } else if (this.style & this.STYLE_STACKED) {
+    } else if (this.style & STYLE_STACKED) {
       let eachMaxY = aMaxY / count;
       let beginY = 0;
       context.save();
@@ -389,7 +390,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         beginY = endY;
       }
       context.restore();
-    } else if (this.style & this.STYLE_LAYERED) {
+    } else if (this.style & STYLE_LAYERED) {
       let minAlpha = this.foregroundMinAlpha;
       let beginY = 0;
       aValues = aValues.slice(0, count);
@@ -402,7 +403,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         beginY = endY + 0.5;
       }
       context.globalAlpha = 1;
-    } else if (this.style & this.STYLE_SEPARATED) {
+    } else if (this.style & STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
       for (let i = 0; i < count; i++) {
         let value = aValues[i];
@@ -453,11 +454,11 @@ SystemMonitorSimpleGraphItem.prototype = {
     var context = this.canvas.getContext("2d");
     var count = this.multiplexCount;
     var style = this.foreground;
-    if (this.style & this.STYLE_STACKED ||
-        this.style & this.STYLE_MULTICOLOR_STACKED) {
+    if (this.style & STYLE_STACKED ||
+        this.style & STYLE_MULTICOLOR_STACKED) {
       let lastValues = [];
       let reversedScale = 1;
-      if (this.multiplexType == this.MULTIPLEX_SEPARATE)
+      if (this.multiplexType == MULTIPLEX_SEPARATE)
         reversedScale = count;
       for (let i = 0; i < count; i++)
       {
@@ -467,11 +468,11 @@ SystemMonitorSimpleGraphItem.prototype = {
                    ((j in lastValues ? lastValues[j] : 0 ) + (value[i] / reversedScale)) :
                    0 ;
         }
-        if (this.style & this.STYLE_MULTICOLOR_STACKED)
+        if (this.style & STYLE_MULTICOLOR_STACKED)
           style = this["foreground." + i] || style;
         this.drawGraphPolygon(lastValues, aMaxY, style);
       }
-    } else if (this.style & this.STYLE_LAYERED) {
+    } else if (this.style & STYLE_LAYERED) {
       for (let i = 0; i < count; i++)
       {
         let values = [];
@@ -481,7 +482,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         }
         this.drawGraphPolygon(values, aMaxY, style);
       }
-    } else if (this.style & this.STYLE_SEPARATED) {
+    } else if (this.style & STYLE_SEPARATED) {
       let width = Math.round(aMaxX / count) - 1;
       for (let i = 0; i < count; i++)
       {
@@ -794,7 +795,7 @@ SystemMonitorCPUItem.prototype = {
   get multiplexCount() {
     return this._multiplexCount || (this._multiplexCount = SystemMonitorManager.cpuCount);
   },
-  multiplexType : SystemMonitorSimpleGraphItem.prototype.MULTIPLEX_SEPARATE,
+  multiplexType : MULTIPLEX_SEPARATE,
   get tooltip() {
     return this.document.getElementById("system-monitor-cpu-usage-tooltip-label");
   },
@@ -804,7 +805,7 @@ SystemMonitorCPUItem.prototype = {
     this.valueArray.push(aValues);
     this.drawGraph();
 
-    if (aValues.length > 1 && this.style & this.STYLE_UNIFIED)
+    if (aValues.length > 1 && this.style & STYLE_UNIFIED)
       aValues = [this.getSum(aValues)];
 
     var parts = [];
@@ -838,7 +839,7 @@ SystemMonitorMemoryItem.prototype = {
     return this.document.getElementById("system-monitor-memory-usage-tooltip-label");
   },
   multiplexCount : 2,
-  multiplexType  : SystemMonitorSimpleGraphItem.prototype.MULTIPLEX_SHARED,
+  multiplexType  : MULTIPLEX_SHARED,
   // clISystemMonitor
   monitor : function SystemMonitorMemoryMonitor_monitor(aValue) {
     var hasSelfValue = "self" in aValue && aValue.self > -1;
@@ -879,7 +880,7 @@ SystemMonitorNetworkItem.prototype = {
   itemId         : "system-monitor-network-usage",
   multiplexed    : true,
   multiplexCount : 2,
-  multiplexType  : SystemMonitorSimpleGraphItem.prototype.MULTIPLEX_SHARED,
+  multiplexType  : MULTIPLEX_SHARED,
   maxValueMargin : 0.9,
   get tooltip() {
     return this.document.getElementById("system-monitor-network-usage-tooltip-label");
