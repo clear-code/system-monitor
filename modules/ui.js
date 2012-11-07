@@ -51,6 +51,7 @@ function SystemMonitorItem(aDocument)
 {
   this.document = aDocument;
 }
+SystemMonitorItem.instances = [];
 SystemMonitorItem.prototype = {
   master : SystemMonitorItem,
 
@@ -60,9 +61,11 @@ SystemMonitorItem.prototype = {
   id     : null,
 
   init : function SystemMonitorItem_init() {
+    this.master.instances.push(this);
   },
 
   destroy : function SystemMonitorItem_destroy() {
+    this.master.instances.splice(this.master.instances.indexOf(this), 1);
   }
 };
 
@@ -72,6 +75,7 @@ function SystemMonitorSimpleGraphItem(aDocument)
   this.document = aDocument;
 }
 SystemMonitorSimpleGraphItem.__proto__ = SystemMonitorItem;
+SystemMonitorSimpleGraphItem.instances = [];
 SystemMonitorSimpleGraphItem.prototype = {
   __proto__ : SystemMonitorItem.prototype,
   master    : SystemMonitorSimpleGraphItem,
@@ -127,11 +131,13 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   init : function SystemMonitorSimpleGraph_init() {
+    SystemMonitorItem.prototype.init.apply(this, arguments);
     resizableToolbarItem.allowResize(this.item);
     this.start();
   },
 
   destroy : function SystemMonitorSimpleGraph_destroy() {
+    SystemMonitorItem.prototype.destroy.apply(this, arguments);
     this.stop();
   },
 
