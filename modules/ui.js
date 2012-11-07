@@ -247,6 +247,7 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     var part = aData.replace(DOMAIN+this.id+".", "");
     switch (part) {
       case "size":
+        this.size = prefs.getPref(aData);
         this.instances.forEach(function(aInstance) {
           if (aInstance.observing)
             aInstance.update();
