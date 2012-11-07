@@ -122,7 +122,7 @@ var SystemMonitorService = {
     var autoInsertedItems = [];
     for each (let item in this.items) {
       if (this.prefs.getPref(this.domain+item.id+".initialShow"))
-        return;
+        continue;
 
       if (currentset.indexOf(item.itemId) < 0) {
         if (currentset.indexOf("spring") < 0 &&
