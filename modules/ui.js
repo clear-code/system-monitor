@@ -1,3 +1,5 @@
+// var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+// function dump(s) { Application.console.log(s); }
 // function log(s) { dump(s + "\n"); }
 
 const EXPORTED_SYMBOLS = [
@@ -48,17 +50,27 @@ XPCOMUtils.defineLazyGetter(this, "resizableToolbarItem", function () {
 
 const DOMAIN = SystemMonitorManager.DOMAIN;
 
+
+function defineSharedProperties(aConstructor, aProperties) {
+  aProperties = aProperties.split(/[\s,\|]+/);
+  aProperties.forEach(function(aProperty) {
+    if (!aProperty) return;
+    aConstructor.prototype.__defineGetter__(aProperty, function() { return this.master[aProperty]; });
+    aConstructor.prototype.__defineSetter__(aProperty, function(aValue) { return this.master[aProperty] = aValue; });
+  });
+}
+
 function SystemMonitorItem(aDocument)
 {
   this.document = aDocument;
 }
 SystemMonitorItem.instances = [];
+SystemMonitorItem.id        = "";
+SystemMonitorItem.itemId    = "";
 SystemMonitorItem.prototype = {
   master : SystemMonitorItem,
 
   item   : null,
-  itemId : null,
-  id     : null,
 
   init : function SystemMonitorItem_init() {
     this.master.instances.push(this);
@@ -68,6 +80,8 @@ SystemMonitorItem.prototype = {
     this.master.instances.splice(this.master.instances.indexOf(this), 1);
   }
 };
+defineSharedProperties(SystemMonitorItem,
+                       'id itemId');
 
 
 const MULTIPLEX_SHARED   = (1 << 0);
@@ -88,31 +102,30 @@ function SystemMonitorSimpleGraphItem(aDocument)
 }
 SystemMonitorSimpleGraphItem.__proto__ = SystemMonitorItem;
 SystemMonitorSimpleGraphItem.instances = [];
+SystemMonitorSimpleGraphItem.id        = "";
+SystemMonitorSimpleGraphItem.itemId    = "";
+SystemMonitorSimpleGraphItem.type      = "";
+SystemMonitorSimpleGraphItem.interval  = 1000;
+SystemMonitorSimpleGraphItem.size      = 48;
+SystemMonitorSimpleGraphItem.unit      = 2;
+SystemMonitorSimpleGraphItem.foreground         = "#33FF33";
+SystemMonitorSimpleGraphItem.foregroundGradient = ["#33FF33", "#33FF33"];
+SystemMonitorSimpleGraphItem.foregroundMinAlpha = 0.2;
+SystemMonitorSimpleGraphItem.background         = "#000000";
+SystemMonitorSimpleGraphItem.backgroundGradient = ["#000000", "#000000"];
+SystemMonitorSimpleGraphItem.style              = STYLE_BAR | STYLE_UNIFIED;
+SystemMonitorSimpleGraphItem.multiplexed    = false;
+SystemMonitorSimpleGraphItem.multiplexCount = 1;
+SystemMonitorSimpleGraphItem.multiplexType  = MULTIPLEX_SHARED;
+SystemMonitorSimpleGraphItem.valueArray     = null;
 SystemMonitorSimpleGraphItem.prototype = {
   __proto__ : SystemMonitorItem.prototype,
   master    : SystemMonitorSimpleGraphItem,
 
-  id       : "",
-  type     : "",
-  itemId   : "",
-
   listening : false,
   observing : false,
-  interval : 1000,
-  size : 48,
-  unit : 2,
-  foreground              : "#33FF33",
-  foregroundGradient      : ["#33FF33", "#33FF33"],
   foregroundGradientStyle : null,
-  foregroundMinAlpha      : 0.2,
-  background              : "#000000",
-  backgroundGradient      : ["#000000", "#000000"],
   backgroundGradientStyle : null,
-  style : STYLE_BAR | STYLE_UNIFIED,
-  multiplexed : false,
-  multiplexCount : 1,
-  multiplexType  : MULTIPLEX_SHARED,
-  valueArray : null,
 
   get topic() {
     return SystemMonitorManager.TOPIC_BASE + this.type;
@@ -683,20 +696,25 @@ SystemMonitorSimpleGraphItem.prototype = {
     }
   }
 };
+defineSharedProperties(SystemMonitorSimpleGraphItem,
+                       'type interval size unit ' +
+                       'foreground foregroundGradient foregroundMinAlpha ' +
+                       'background backgroundGradient ' +
+                       'style multiplexed multiplexCount multiplexType valueArray');
 
 function SystemMonitorScalableGraphItem(aDocument)
 {
   this.document = aDocument;
 }
 SystemMonitorScalableGraphItem.__proto__ = SystemMonitorSimpleGraphItem;
+SystemMonitorScalableGraphItem.instances = [];
+SystemMonitorScalableGraphItem.rawValueArray     = null;
+SystemMonitorScalableGraphItem.unifiedValueArray = null;
+SystemMonitorScalableGraphItem.maxValues         = null;
 SystemMonitorScalableGraphItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
   master    : SystemMonitorScalableGraphItem,
 
-  valueArray        : null,
-  rawValueArray     : null,
-  unifiedValueArray : null,
-  maxValues         : null,
   set logMode(value) {
     var changed = this._logMode !== value;
     this._logMode = value;
@@ -778,24 +796,25 @@ SystemMonitorScalableGraphItem.prototype = {
     }
   }
 };
+defineSharedProperties(SystemMonitorScalableGraphItem,
+                       'rawValueArray unifiedValueArray maxValues');
 
 function SystemMonitorCPUItem(aDocument)
 {
   this.document = aDocument;
 }
 SystemMonitorCPUItem.__proto__ = SystemMonitorSimpleGraphItem;
+SystemMonitorCPUItem.instances = [];
+SystemMonitorCPUItem.id     = "cpu-usage";
+SystemMonitorCPUItem.type   = "cpu-usages";
+SystemMonitorCPUItem.itemId = "system-monitor-cpu-usage";
+SystemMonitorCPUItem.multiplexed    = true;
+SystemMonitorCPUItem.multiplexCount = SystemMonitorManager.cpuCount;
+SystemMonitorCPUItem.multiplexType  = MULTIPLEX_SEPARATE;
 SystemMonitorCPUItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
   master    : SystemMonitorCPUItem,
 
-  id       : "cpu-usage",
-  type     : "cpu-usages",
-  itemId   : "system-monitor-cpu-usage",
-  multiplexed : true,
-  get multiplexCount() {
-    return this._multiplexCount || (this._multiplexCount = SystemMonitorManager.cpuCount);
-  },
-  multiplexType : MULTIPLEX_SEPARATE,
   get tooltip() {
     return this.document.getElementById("system-monitor-cpu-usage-tooltip-label");
   },
@@ -828,18 +847,20 @@ function SystemMonitorMemoryItem(aDocument)
   this.document = aDocument;
 }
 SystemMonitorMemoryItem.__proto__ = SystemMonitorSimpleGraphItem;
+SystemMonitorMemoryItem.instances = [];
+SystemMonitorMemoryItem.id     = "memory-usage";
+SystemMonitorMemoryItem.type   = "memory-usage";
+SystemMonitorMemoryItem.itemId = "system-monitor-memory-usage";
+SystemMonitorMemoryItem.multiplexCount = 2;
+SystemMonitorMemoryItem.multiplexType  = MULTIPLEX_SHARED;
 SystemMonitorMemoryItem.prototype = {
   __proto__ : SystemMonitorSimpleGraphItem.prototype,
   master    : SystemMonitorMemoryItem,
 
-  id       : "memory-usage",
-  type     : "memory-usage",
-  itemId   : "system-monitor-memory-usage",
   get tooltip() {
     return this.document.getElementById("system-monitor-memory-usage-tooltip-label");
   },
-  multiplexCount : 2,
-  multiplexType  : MULTIPLEX_SHARED,
+
   // clISystemMonitor
   monitor : function SystemMonitorMemoryMonitor_monitor(aValue) {
     var hasSelfValue = "self" in aValue && aValue.self > -1;
@@ -871,17 +892,22 @@ function SystemMonitorNetworkItem(aDocument)
   this.document = aDocument;
 }
 SystemMonitorNetworkItem.__proto__ = SystemMonitorScalableGraphItem;
+SystemMonitorNetworkItem.instances = [];
+SystemMonitorNetworkItem.id     = "network-usage";
+SystemMonitorNetworkItem.type   = "network-usages";
+SystemMonitorNetworkItem.itemId = "system-monitor-network-usage";
+SystemMonitorNetworkItem.multiplexed    = true;
+SystemMonitorNetworkItem.multiplexCount = 2;
+SystemMonitorNetworkItem.multiplexType  = MULTIPLEX_SHARED;
+SystemMonitorNetworkItem.maxValueMargin = 0.9;
+SystemMonitorNetworkItem.redZone      = -1;
+SystemMonitorNetworkItem.redZoneColor = "#FF0000";
+SystemMonitorNetworkItem.previousNetworkLoad = null;
+SystemMonitorNetworkItem.previousMeasureTime = null;
 SystemMonitorNetworkItem.prototype = {
   __proto__ : SystemMonitorScalableGraphItem.prototype,
   master    : SystemMonitorNetworkItem,
 
-  id             : "network-usage",
-  type           : "network-usages",
-  itemId         : "system-monitor-network-usage",
-  multiplexed    : true,
-  multiplexCount : 2,
-  multiplexType  : MULTIPLEX_SHARED,
-  maxValueMargin : 0.9,
   get tooltip() {
     return this.document.getElementById("system-monitor-network-usage-tooltip-label");
   },
@@ -892,8 +918,6 @@ SystemMonitorNetworkItem.prototype = {
   get actualMaxValue() {
     return this.maxValues ? this.maxValues[0] : 0 ;
   },
-  redZone : -1,
-  redZoneColor : "#FF0000",
   // @Override
   resizeArray: function SystemMonitorNetworkItem_resizeArray(array, size) {
     return SystemMonitorScalableGraphItem.prototype.resizeArray.call(this, array, size, 0);
@@ -940,12 +964,11 @@ SystemMonitorNetworkItem.prototype = {
   },
   // @Override
   addNewValue : function SystemMonitorNetworkItem_addNewValue() {
-    this.lastmaxValue = this.maxValue;
+    var lastmaxValue = this.maxValue;
     SystemMonitorScalableGraphItem.prototype.addNewValue.apply(this, arguments);
-    if (this.maxValue != this.lastmaxValue)
+    if (this.maxValue != lastmaxValue)
       this.rescaleValueArray();
   },
-  lastmaxValue: -1,
   drawRedZone : function SystemMonitorNetworkItem_drawRedZone() {
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
@@ -968,8 +991,6 @@ SystemMonitorNetworkItem.prototype = {
 
     context.restore();
   },
-  previousNetworkLoad: null,
-  previousMeasureTime: null,
   monitor: function SystemMonitorNetworkItem_monitor(aNetworkLoad) {
     // Record measure time
     var currentTime = Date.now();
@@ -1001,3 +1022,5 @@ SystemMonitorNetworkItem.prototype = {
                                );
   }
 };
+defineSharedProperties(SystemMonitorNetworkItem,
+                       'maxValueMargin redZone redZoneColor previousNetworkLoad previousMeasureTime');
