@@ -3,43 +3,48 @@
 This software includes some binary components for Firefox 3.6 and older
 versions. You need to build binaries for each platform.
 
-For Firefox 4.0 or later, you don't need to do it because System Monitor
-works with JavaScript components implemented based on js-ctypes. Binaries
-are required only by old Firefox (3.6 and older).
+For Firefox 4.0 or later, you don't need to build binary components because
+System Monitor works with JavaScript components implemented based on js-ctypes.
+However, you still need to use XULRunner SDK to rebuild .xpt files (interface
+definitions).
 
-## Ubuntu 10.04LTS Lucid Lynx (Firefox 3.6)
+## Ubuntu 12.04LTS
 
- 1. Install required softwares.
-        $ sudo aptitude install automake libtool xulrunner-1.9.2-dev libgtop2-dev zip
- 2. Download and extract sources of System Monitor.
-        $ wget http://git.clear-code.com/xul/extensions/system-monitor/snapshot/system-monitor-X.X.X.tar.bz2
-        $ tar xvf system-monitor-X.X.X.tar.bz2
- 3. Build it.
+ 1. Install required packages.
+        $ sudo aptitude install git automake libtool libgtop2-dev zip
+ 2. Install XULRunner SDK. For example, in this case it is installed into
+    "$HOME/opt/xulrunner-sdk".
+        $ mkdir ~/tmp
+        $ cd ~/tmp
+        $ wget http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases
+                 /X.X.X/sdk/xulrunner-X.X.X.en-US.linux-XXXX.sdk.tar.bz2
+        $ tar xvf xulrunner-*.tar.bz2
+        $ mkdir ~/opt
+        $ mv xulrunner-sdk ~/opt/
+ 3. Clone the git repository of System Monitor and checkout the version
+    you want to build.
+        $ git clone git@github.com:clear-code/system-monitor.git
+        $ git tag -l
+        $ git checkout refs/tags/X.X.X
+ 4. Build it.
         $ cd system-monitor-X.X.X
-        $ ./automake.sh
-        $ ./configure
+        $ ./autogen.sh
+        $ ./configure --with-libxul-sdk=~/opt/xulrunner-sdk
         $ make
 
-You have to use newer xulrunner-2.0 if you want to rebuild interface definitions
-for Gecko 2.0. 
+To rebuild .xpt files, do:
 
         $ make clean
-        $ ./configure --with-libxul-sdk=/opt/xulrunner-2.0-sdk
+        $ ./configure --with-libxul-sdk=/path/to/xulrunner-sdk
         $ make
         $ mv -f components/*.xpt components/gecko2/
 
-If there is no need to rebuild binaries, you can make an XPI package from
-default pre-built binaries.
+If there is no need to rebuild binaries, you can make an XPI package with
+pre-built binaries.
 
-        $ ./automake.sh
-        $ ./configure
+        $ ./autogen.sh
+        $ ./configure --with-libxul-sdk=/path/to/xulrunner-sdk
         $ make xpi
-
-## Ubuntu 9.04 Jaunty Jackalope and Ubuntu 9.10 Karmic Koala (Firefox 3.5)
-
-You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
-
-    $ sudo aptitude install automake libtool xulrunner-1.9.1-dev libgtop2-dev zip
 
 ## Windows
 
@@ -54,12 +59,11 @@ You have to install xulrnner-1.9.1-dev, instead of xulrunner-1.9.2-dev.
       * zip
     * Microsoft Visual C++ 2008 Express Edition
       http://www.microsoft.com/express/Downloads/#Visual_Studio_2008_Express_Downloads
- 2. Download and extract sources of System Monitor.
- 3. Download and extract Gecko SDK.
-    For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
-    Otherwise, use 1.9.2.
-    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.1.13/sdk/xulrunner-1.9.1.13.en-US.win32.sdk.zip
-    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.15/sdk/xulrunner-1.9.2.15.en-US.win32.sdk.zip
+ 2. Clone the git repository of System Monitor and checkout the version
+    you want to build.
+ 3. Download and extract Gecko SDK:
+      http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/X.X.X
+        /sdk/xulrunner-X.X.X.en-US.win32.sdk.zip
     Then, a folder "xulrunner-sdk" will appear, so move it to "c:\xulrunner".
     (Note: Don't put as "c:\xulrunner\xulrunner-sdk"!)
  4. Start "Cygwin Bash Shell", and run start building process.
@@ -100,12 +104,11 @@ default pre-built binaries.
       * libidl
         $ sudo port selfupdate
         $ sudo port install pkgconfig +libidl
- 2. Download and extract sources of System Monitor.
- 3. Download and extract Gecko SDK.
-    For Firefox 3.5/Thunderbird 3.0, you have to use Gecko 1.9.1.
-    Otherwise, use 1.9.2.
-    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.1.13/sdk/xulrunner-1.9.1.13.en-US.mac-i386.sdk.tar.bz2
-    * http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/1.9.2.15/sdk/xulrunner-1.9.2.15.en-US.mac-i386.sdk.tar.bz2
+ 2. Clone the git repository of System Monitor and checkout the version
+    you want to build.
+ 3. Download and extract Gecko SDK:
+      http://releases.mozilla.org/pub/mozilla.org/xulrunner/releases/X.X.X
+        /sdk/xulrunner-X.X.X.en-US.mac-i386.sdk.tar.bz2
     Then, a folder "xulrunner-sdk" will appear, so move it to "/opt/xulrunner-sdk".
  4. Build it.
         $ cd ~/system-monitor-X.X.X
