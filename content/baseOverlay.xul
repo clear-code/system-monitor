@@ -3,7 +3,6 @@
 <overlay id="system-monitor"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-  <script type="application/x-javascript" src="chrome://system-monitor/content/prefs.js"/>
   <script type="application/x-javascript" src="chrome://system-monitor/content/system-monitor.js"/>
 
   <stringbundle id="system-monitor-bundle" src="chrome://system-monitor/locale/system-monitor.properties"/>

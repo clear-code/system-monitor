@@ -7,7 +7,7 @@ var TextUtil = {
     base = base || 1024;
 
     var notations = ["", "Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
-    var number = bytes;
+    var number = bytes || 0;
 
     while (number >= base && notations.length > 1) {
       number /= 1024;
