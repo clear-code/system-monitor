@@ -563,64 +563,93 @@ SystemMonitorSimpleGraphItem.prototype = {
     var context = this.canvas.getContext("2d");
     context.save();
     context.globalAlpha = 1;
-    var count = this.multiplexCount;
     if (this.style & STYLE_STACKED) {
-      context.save();
-      let colors     = this.foregroundColorsDecimalRGB;
-      let color      = colors[0];
-      let startAlpha = this.foregroundStartAlpha;
-      let endAlpha   = this.foregroundEndAlpha;
-      let gradient = context.createLinearGradient(0, this.canvas.height, 0, 0);
-      gradient.addColorStop(0, "rgba("+color+", "+startAlpha+")");
-      let total = unifyValues(aValues);
-      if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
-      let current = 0;
-      for (let i = 0; i < count; i++) {
-        let delta = aValues[i] / total; // this can be NaN when 0/0
-      if (this.multiplexType == MULTIPLEX_SEPARATE) delta /= count;
-        current += isNaN(delta) ? 0 : delta ;
-        let nextColor = colors[i+1] || color;
-        if (nextColor == color) {
-          gradient.addColorStop(current, "rgba("+color+", "+endAlpha+")");
-          if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+startAlpha+")");
-        } else {
-          let alpha = startAlpha + (current * (endAlpha - startAlpha));
-          gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
-          color = nextColor;
-          if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
-        }
-      }
-      if (current < 1)
-        gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
-      this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
-      context.restore();
+      this.drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY);
     } else if (this.style & STYLE_LAYERED) {
-      let minAlpha = this.foregroundMinAlpha;
-      let beginY = 0;
-      aValues = aValues.slice(0, count);
-      aValues.sort();
-      for (let i = 0; i < count; i++) {
-        let value = aValues[i];
-        let endY = aMaxY * value;
-        context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
-        this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
-        beginY = endY + 0.5;
-      }
-      context.globalAlpha = 1;
+      this.drawGraphMultiplexedBarLayered(aValues, aX, aMaxX, aMaxY);
     } else if (this.style & STYLE_SEPARATED) {
-      let width = Math.round(aMaxX / count) - 1;
-      for (let i = 0; i < count; i++) {
-        let value = aValues[i];
-        let endY = aMaxY * value;
-        context.save();
-        context.translate((width + 1) * i, 0);
-        this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
-        context.restore();
-      }
+      this.drawGraphMultiplexedBarSeparated(aValues, aX, aMaxX, aMaxY);
     } else { // unified (by default)
       let value = unifyValues(aValues);
       this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * value);
     }
+    context.restore();
+  },
+  drawGraphMultiplexedBarStacked : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
+
+    var count      = this.multiplexCount;
+    var colors     = this.foregroundColorsDecimalRGB;
+    var color      = colors[0];
+    var startAlpha = this.foregroundStartAlpha;
+    var endAlpha   = this.foregroundEndAlpha;
+
+    var gradient = context.createLinearGradient(0, this.canvas.height, 0, 0);
+    gradient.addColorStop(0, "rgba("+color+", "+startAlpha+")");
+
+    var total = unifyValues(aValues);
+    if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
+
+    var current = 0;
+    for (let i = 0; i < count; i++) {
+      let delta = aValues[i] / total; // this can be NaN when 0/0
+      if (this.multiplexType == MULTIPLEX_SEPARATE) delta /= count;
+      current += isNaN(delta) ? 0 : delta ;
+
+      let nextColor = colors[i+1] || color;
+      if (nextColor == color) {
+        gradient.addColorStop(current, "rgba("+color+", "+endAlpha+")");
+        if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+startAlpha+")");
+      } else {
+        let alpha = startAlpha + (current * (endAlpha - startAlpha));
+        gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
+        color = nextColor;
+        if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
+      }
+    }
+
+    if (current < 1)
+      gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
+
+    this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
+
+    context.restore();
+  },
+  drawGraphMultiplexedBarLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarLayered(aValues, aX, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
+
+    var count    = this.multiplexCount;
+    var minAlpha = this.foregroundMinAlpha;
+    var beginY = 0;
+    aValues = aValues.slice(0, count);
+    aValues.sort();
+    for (let i = 0; i < count; i++) {
+      let value = aValues[i];
+      let endY = aMaxY * value;
+      context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
+      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
+      beginY = endY + 0.5;
+    }
+
+    context.restore();
+  },
+  drawGraphMultiplexedBarSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarSeparated(aValues, aX, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
+
+    var count    = this.multiplexCount;
+    var width = Math.round(aMaxX / count) - 1;
+    for (let i = 0; i < count; i++) {
+      let value = aValues[i];
+      let endY = aMaxY * value;
+      context.save();
+      context.translate((width + 1) * i, 0);
+      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
+      context.restore();
+    }
+
     context.restore();
   },
 
@@ -648,52 +677,74 @@ SystemMonitorSimpleGraphItem.prototype = {
   },
 
   drawGraphMultiplexedPolygon : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygon(aValues, aMaxX, aMaxY) {
-    var context = this.canvas.getContext("2d");
-    var count = this.multiplexCount;
-    var style = this.foreground;
     if (this.style & STYLE_STACKED) {
-      let colors = this.foregroundColors;
-      let lastValues = [];
-      let reversedScale = 1;
-      if (this.multiplexType == MULTIPLEX_SEPARATE)
-        reversedScale = count;
-      for (let i = 0; i < count; i++)
-      {
-        for (let j in aValues) {
-          let value = aValues[j];
-          lastValues[j] = value ?
-                   ((j in lastValues ? lastValues[j] : 0 ) + (value[i] / reversedScale)) :
-                   0 ;
-        }
-        style = colors[i] || style;
-        this.drawGraphPolygon(lastValues, aMaxY, style);
-      }
+      this.drawGraphMultiplexedPolygonStacked(aValues, aMaxX, aMaxY);
     } else if (this.style & STYLE_LAYERED) {
-      for (let i = 0; i < count; i++)
-      {
-        let values = [];
-        for (let j in aValues) {
-          let value = aValues[j];
-          values[j] = value && value[i] || 0 ;
-        }
-        this.drawGraphPolygon(values, aMaxY, style);
-      }
+      this.drawGraphMultiplexedPolygonLayered(aValues, aMaxX, aMaxY);
     } else if (this.style & STYLE_SEPARATED) {
-      let width = Math.round(aMaxX / count) - 1;
-      for (let i = 0; i < count; i++)
-      {
-        context.save();
-        context.translate((width + 1) * i, 0);
-        let values = [];
-        for (let j in aValues) {
-          let value = aValues[j];
-          values[j] = value && value[i] || 0 ;
-        }
-        this.drawGraphPolygon(values, aMaxY, style);
-        context.restore();
-      }
+      this.drawGraphMultiplexedPolygonSeparated(aValues, aMaxX, aMaxY);
     } else { // unified (by default)
-      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY, style);
+      this.drawGraphPolygon(aValues.map(this.getSum), aMaxY, this.foreground);
+    }
+  },
+  drawGraphMultiplexedPolygonStacked : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonStacked(aValues, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
+
+    var count  = this.multiplexCount;
+    var color  = this.foreground;
+    var colors = this.foregroundColors;
+    var lastValues = [];
+    var reversedScale = 1;
+    if (this.multiplexType == MULTIPLEX_SEPARATE)
+      reversedScale = count;
+
+    for (let i = 0; i < count; i++) {
+      for (let j in aValues) {
+        let value = aValues[j];
+        lastValues[j] = value ?
+                 ((j in lastValues ? lastValues[j] : 0 ) + (value[i] / reversedScale)) :
+                 0 ;
+      }
+      color = colors[i] || color;
+      this.drawGraphPolygon(lastValues, aMaxY, color);
+    }
+
+    context.restore();
+  },
+  drawGraphMultiplexedPolygonLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonLayered(aValues, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+    context.save();
+
+    var count  = this.multiplexCount;
+    var color  = this.foreground;
+    for (let i = 0; i < count; i++) {
+      let values = [];
+      for (let j in aValues) {
+        let value = aValues[j];
+        values[j] = value && value[i] || 0 ;
+      }
+      this.drawGraphPolygon(values, aMaxY, color);
+    }
+
+    context.restore();
+  },
+  drawGraphMultiplexedPolygonSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonSeparated(aValues, aMaxX, aMaxY) {
+    var context = this.canvas.getContext("2d");
+
+    var count  = this.multiplexCount;
+    var color  = this.foreground;
+    var width = Math.round(aMaxX / count) - 1;
+    for (let i = 0; i < count; i++) {
+      context.save();
+      context.translate((width + 1) * i, 0);
+      let values = [];
+      for (let j in aValues) {
+        let value = aValues[j];
+        values[j] = value && value[i] || 0 ;
+      }
+      this.drawGraphPolygon(values, aMaxY, color);
+      context.restore();
     }
   },
 
