@@ -593,7 +593,6 @@ SystemMonitorSimpleGraphItem.prototype = {
     var current = 0;
     for (let i = 0; i < count; i++) {
       let delta = aValues[i] / total; // this can be NaN when 0/0
-      if (this.multiplexType == MULTIPLEX_SEPARATE) delta /= count;
       current += isNaN(delta) ? 0 : delta ;
 
       let nextColor = colors[i+1] || color;
@@ -608,8 +607,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       }
     }
 
-    if (current < 1)
-      gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
+    gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
 
     if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
     this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
