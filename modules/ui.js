@@ -571,6 +571,7 @@ SystemMonitorSimpleGraphItem.prototype = {
       this.drawGraphMultiplexedBarSeparated(aValues, aX, aMaxX, aMaxY);
     } else { // unified (by default)
       let value = unifyValues(aValues);
+      if (this.multiplexType == MULTIPLEX_SEPARATE) value /= this.multiplexCount;
       this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * value);
     }
     context.restore();
@@ -589,8 +590,6 @@ SystemMonitorSimpleGraphItem.prototype = {
     gradient.addColorStop(0, "rgba("+color+", "+startAlpha+")");
 
     var total = unifyValues(aValues);
-    if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
-
     var current = 0;
     for (let i = 0; i < count; i++) {
       let delta = aValues[i] / total; // this can be NaN when 0/0
@@ -612,6 +611,7 @@ SystemMonitorSimpleGraphItem.prototype = {
     if (current < 1)
       gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
 
+    if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
     this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
 
     context.restore();
