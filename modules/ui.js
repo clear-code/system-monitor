@@ -60,6 +60,15 @@ function defineProperties(aTarget, aProperties) {
   });
 }
 
+function toPropertyDescriptors(aProperties) {
+  var descriptors = {};
+  Object.keys(aProperties).forEach(function(aProperty) {
+    var description = Object.getOwnPropertyDescriptor(aProperties, aProperty);
+    descriptors[aProperty] = description;
+  });
+  return descriptors;
+}
+
 function defineSharedProperties(aConstructor, aProperties) {
   aProperties.split(/[\s,\|]+/).forEach(function(aProperty) {
     if (!aProperty) return;
@@ -161,7 +170,7 @@ function SystemMonitorSimpleGraphItem(aDocument)
 {
   this.document = aDocument;
 }
-SystemMonitorSimpleGraphItem.__proto__ = SystemMonitorItem;
+defineProperties(SystemMonitorSimpleGraphItem, SystemMonitorItem);
 defineProperties(SystemMonitorSimpleGraphItem, {
   instances : [],
 
@@ -318,9 +327,8 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     } while (true);
   }
 });
-SystemMonitorSimpleGraphItem.prototype = {
-  __proto__ : SystemMonitorItem.prototype,
-  klass     : SystemMonitorSimpleGraphItem,
+SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototype, toPropertyDescriptors({
+  klass : SystemMonitorSimpleGraphItem,
 
   listening : false,
   observing : false,
@@ -845,7 +853,7 @@ SystemMonitorSimpleGraphItem.prototype = {
         break;
     }
   }
-};
+}));
 defineSharedProperties(SystemMonitorSimpleGraphItem,
                        'type topic interval size unit ' +
                        'foreground foregroundGradient foregroundMinAlpha ' +
@@ -859,7 +867,7 @@ function SystemMonitorScalableGraphItem(aDocument)
 {
   this.document = aDocument;
 }
-SystemMonitorScalableGraphItem.__proto__ = SystemMonitorSimpleGraphItem;
+defineProperties(SystemMonitorScalableGraphItem, SystemMonitorSimpleGraphItem);
 defineProperties(SystemMonitorScalableGraphItem, {
   instances : [],
 
@@ -941,9 +949,9 @@ defineProperties(SystemMonitorScalableGraphItem, {
       this.maxValues.shift();
   }
 });
-SystemMonitorScalableGraphItem.prototype = {
-  __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  klass     : SystemMonitorScalableGraphItem,
+SystemMonitorScalableGraphItem.prototype = Object.create(SystemMonitorSimpleGraphItem.prototype, toPropertyDescriptors({
+  klass : SystemMonitorScalableGraphItem,
+
   // @Override
   onChangePref: function SystemMonitorScalableGraphItem_onChangePref(aPrefName) {
     var prefLeafName = aPrefName.replace(DOMAIN + this.id + ".", "");
@@ -957,7 +965,7 @@ SystemMonitorScalableGraphItem.prototype = {
         return SystemMonitorSimpleGraphItem.prototype.onChangePref.apply(this, arguments);
     }
   }
-};
+}));
 defineSharedProperties(SystemMonitorScalableGraphItem,
                        'logMode maxValue rawValueArray unifiedValueArray maxValues');
 defineObserver(SystemMonitorScalableGraphItem);
@@ -968,7 +976,7 @@ function SystemMonitorCPUItem(aDocument)
 {
   this.document = aDocument;
 }
-SystemMonitorCPUItem.__proto__ = SystemMonitorSimpleGraphItem;
+defineProperties(SystemMonitorCPUItem, SystemMonitorSimpleGraphItem);
 defineProperties(SystemMonitorCPUItem, {
   instances : [],
 
@@ -980,9 +988,8 @@ defineProperties(SystemMonitorCPUItem, {
   multiplexCount : SystemMonitorManager.cpuCount,
   multiplexType  : MULTIPLEX_SEPARATE,
 });
-SystemMonitorCPUItem.prototype = {
-  __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  klass     : SystemMonitorCPUItem,
+SystemMonitorCPUItem.prototype = Object.create(SystemMonitorSimpleGraphItem.prototype, toPropertyDescriptors({
+  klass : SystemMonitorCPUItem,
 
   get tooltip() {
     return this.document.getElementById("system-monitor-cpu-usage-tooltip-label");
@@ -1008,7 +1015,7 @@ SystemMonitorCPUItem.prototype = {
                                  [parts]
                                );
   }
-};
+}));
 defineObserver(SystemMonitorCPUItem);
 
 
@@ -1016,7 +1023,7 @@ function SystemMonitorMemoryItem(aDocument)
 {
   this.document = aDocument;
 }
-SystemMonitorMemoryItem.__proto__ = SystemMonitorSimpleGraphItem;
+defineProperties(SystemMonitorMemoryItem, SystemMonitorSimpleGraphItem);
 defineProperties(SystemMonitorMemoryItem, {
   instances : [],
 
@@ -1040,9 +1047,8 @@ defineProperties(SystemMonitorMemoryItem, {
     this.valueArray.push(value);
   }
 });
-SystemMonitorMemoryItem.prototype = {
-  __proto__ : SystemMonitorSimpleGraphItem.prototype,
-  klass     : SystemMonitorMemoryItem,
+SystemMonitorMemoryItem.prototype = Object.create(SystemMonitorSimpleGraphItem.prototype, toPropertyDescriptors({
+  klass : SystemMonitorMemoryItem,
 
   get tooltip() {
     return this.document.getElementById("system-monitor-memory-usage-tooltip-label");
@@ -1064,7 +1070,7 @@ SystemMonitorMemoryItem.prototype = {
         ])) :
       bundle.getFormattedString("memory_usage_tooltip", params) ;
   }
-};
+}));
 defineObserver(SystemMonitorMemoryItem);
 
 
@@ -1072,7 +1078,7 @@ function SystemMonitorNetworkItem(aDocument)
 {
   this.document = aDocument;
 }
-SystemMonitorNetworkItem.__proto__ = SystemMonitorScalableGraphItem;
+defineProperties(SystemMonitorNetworkItem, SystemMonitorScalableGraphItem);
 defineProperties(SystemMonitorNetworkItem, {
   instances : [],
 
@@ -1167,9 +1173,8 @@ defineProperties(SystemMonitorNetworkItem, {
     this.addNewValue([downBytesPerSec, upBytesPerSec]);
   }
 });
-SystemMonitorNetworkItem.prototype = {
-  __proto__ : SystemMonitorScalableGraphItem.prototype,
-  klass     : SystemMonitorNetworkItem,
+SystemMonitorNetworkItem.prototype = Object.create(SystemMonitorScalableGraphItem.prototype, toPropertyDescriptors({
+  klass : SystemMonitorNetworkItem,
 
   get tooltip() {
     return this.document.getElementById("system-monitor-network-usage-tooltip-label");
@@ -1231,7 +1236,7 @@ SystemMonitorNetworkItem.prototype = {
                                   TextUtil.formatBytes(this.actualMaxValue).join(" ")]
                                );
   }
-};
+}));
 defineSharedProperties(SystemMonitorNetworkItem,
                        'actualMaxValue maxValueMargin redZone redZoneColor previousNetworkLoad previousMeasureTime');
 defineObserver(SystemMonitorNetworkItem);
