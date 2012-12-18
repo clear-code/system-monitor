@@ -224,6 +224,7 @@ function getNetworkLoad() {
 		totalNetworkload.downBytes += networkLoad.downBytes;
 		totalNetworkload.upBytes += networkLoad.upBytes;
 	}
+	totalNetworkload.totalBytes = totalNetworkload.downBytes + totalNetworkload.upBytes;
 
 	return totalNetworkload;
 }

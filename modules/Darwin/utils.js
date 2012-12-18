@@ -526,6 +526,7 @@ function getNetworkLoadImplementation() {
 		next = char.ptr(addINT64(next, ctypes.uint64_t(ifm_ptr.contents.ifm_msglen)));
 	}
 
+	totalNetworkload.totalBytes = totalNetworkload.downBytes + totalNetworkload.upBytes;
 	return totalNetworkload;
 }
 

@@ -119,8 +119,9 @@ const GetIfEntry = gIphlpapi.declare(
 // Export
 function getNetworkLoad() {
   var totalNetworkload = {
-    downBytes : 0,
-    upBytes   : 0
+    downBytes:  0,
+    upBytes:    0,
+    totalBytes: 0
   };
 
   var dwSize = new ULONG(0);
@@ -148,5 +149,6 @@ function getNetworkLoad() {
 
   PR_Free(ifTablePtr);
 
+  totalNetworkload.totalBytes = totalNetworkload.downBytes + totalNetworkload.upBytes;
   return totalNetworkload;
 }
