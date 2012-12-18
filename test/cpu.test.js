@@ -1,11 +1,9 @@
 var description = 'CPU component tests'
 
-var { clCPU } = utils.import('../modules/clSystem.js', {});
-
 var cpu;
 
 function setUp() {
-  cpu = new clCPU();
+  cpu = system.cpu;
 }
 
 function tearDown() {
@@ -18,36 +16,63 @@ function testCreate() {
   assert.isDefined(cpu);
 }
 
-testUsage.description = "get-usage test";
-testUsage.priority = 'must';
-function testUsage() {
+test_count.priority = 'must';
+function test_count() {
+  assert.isNumber(cpu.count);
+  assert.equals(parseInt(cpu.count), cpu.count);
+}
+
+test_getUsage.priority = 'must';
+function test_getUsage() {
   assert.isFunction(cpu.getUsage);
   assert.isNumber(cpu.getUsage());
 }
 
-testGetCurrentTime.description = "user property test";
-testGetCurrentTime.priority = 'must';
-function testGetCurrentTime() {
-  var time = cpu.getCurrentTime();
-  assert.isDefined(time);
+test_getUsages.priority = 'must';
+function test_getUsages() {
+  assert.isFunction(cpu.getUsages);
+  assert.isArray(cpu.getUsages());
+  cpu.getUsages().forEach(function(aUsage, aIndex) {
+    assert.isNumber(aUsage, 'usages[' + aIndex + '] is not a number!');
+  });
 }
 
-testCurrentTimeProperties.priority = 'must';
-testCurrentTimeProperties.parameters = {
-  user:    { name: 'user',    type: 'float' },
-  nice:    { name: 'nice',    type: 'float' },
-  system:  { name: 'system',  type: 'float' },
-  idle:    { name: 'idle',    type: 'float' },
-  io_wait: { name: 'io_wait', type: 'float' }
-};
-function testCurrentTimeProperties(aParameter) {
-  var time = cpu.getCurrentTime();
-  var value = time[aParameter.name];
-  assert.isDefined(value);
-  if (aParameter.type == 'float') {
-    assert.isNumber(value);
-    let floatVersion = parseFloat(value);
-    assert.equals(floatVersion, value);
-  }
+var CPU_TIME_PROPERTIES = ['user', 'nice', 'system', 'idle', 'io_wait'].sort();
+function assertCPUTime(value, message) {
+  assert.isDefined(value, message);
+  assert.isObject(value, message);
+
+  var actualProperties = [];
+  var actual = {};
+  var expected = {};
+  Object.keys(value).sort().map(function(property) {
+    var propertyValue = value[property];
+    actual[property] = {
+      value: propertyValue,
+      type:  typeof propertyValue
+    };
+    expected[property] = {
+      value: parseFloat(propertyValue),
+      type:  'number'
+    };
+    actualProperties.push(property);
+  });
+  assert.equals(CPU_TIME_PROPERTIES, actualProperties, message);
+  assert.equals(expected, actual, message);
 }
 
+test_getCurrentTime.priority = 'must';
+function test_getCurrentTime() {
+  assert.isFunction(cpu.getCurrentTime);
+  assertCPUTime(cpu.getCurrentTime());
+}
+
+test_getCurrentTimes.priority = 'must';
+function test_getCurrentTimes() {
+  assert.isFunction(cpu.getCurrentTimes);
+  var values = cpu.getCurrentTimes();
+  assert.isArray(values);
+  values.forEach(function(aValue, aIndex) {
+    assertCPUTime(aValue, 'values[' + aIndex + ']');
+  });
+}
