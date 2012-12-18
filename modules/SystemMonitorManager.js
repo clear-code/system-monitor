@@ -108,7 +108,7 @@ var SystemMonitorManager = {
     });
 
     this.addListener({
-      type : "network-usages",
+      type : "network-usage",
       id   : "network-usage"
     });
   },
