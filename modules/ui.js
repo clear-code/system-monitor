@@ -1083,7 +1083,7 @@ defineProperties(SystemMonitorNetworkItem, {
   instances : [],
 
   id     : "network-usage",
-  type   : "network-usages",
+  type   : "network-usage",
   itemId : "system-monitor-network-usage",
 
   multiplexed    : true,
