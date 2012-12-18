@@ -18,17 +18,15 @@ function testDefined() {
 testAddRemoveMonitor.description = 'monitoring test';
 testAddRemoveMonitor.priority = 'must';
 testAddRemoveMonitor.parameters = {
-	'cpu-time':      { target: 'cpu-time',      expected: TypeOf(Object) },
-	'cpu-times':     { target: 'cpu-times',     expected: TypeOf(Array) },
-	'cpu-usage':     { target: 'cpu-usage',     expected: TypeOf(Number) },
-	'cpu-usages':    { target: 'cpu-usages',    expected: TypeOf(Array) },
-	'memory-usage':  { target: 'memory-usage',  expected: TypeOf(Object) },
-	'network-usage': { target: 'network-usage', expected: TypeOf(Object) }
+	'cpu-time':      { target: 'cpu-time',      expected: TypeOf('object') },
+	'cpu-times':     { target: 'cpu-times',     expected: TypeOf('array') },
+	'cpu-usage':     { target: 'cpu-usage',     expected: TypeOf('number') },
+	'cpu-usages':    { target: 'cpu-usages',    expected: TypeOf('array') },
+	'memory-usage':  { target: 'memory-usage',  expected: TypeOf('object') },
+	'network-usage': { target: 'network-usage', expected: TypeOf('object') }
 };
 function testAddRemoveMonitor(aParameter) {
-  testDefined();
-
-  var functionListenerMock = new FunctionMock(aParameter.target+' function');
+  var functionListenerMock = new FunctionMock(aParameter.target + ' function');
   functionListenerMock.expect(aParameter.expected);
   assert.isTrue(system.addMonitor(aParameter.target, functionListenerMock, 30));
 
@@ -51,14 +49,14 @@ function testAutoStop() {
 
   var monitor = content.wrappedJSObject.monitor = new FunctionMock('added on a context in a content window');
   monitor.expect(TypeOf(Ci.clICPUTime));
-  content.setTimeout('system.addMonitor('cpu-time', monitor, 500);', 0);
+  content.setTimeout('system.addMonitor("cpu-time", monitor, 500);', 0);
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   utils.wait(600);
 
   monitor = new FunctionMock('added on a context in a chrome window');
   monitor.expect(TypeOf(Ci.clICPUTime));
-  assert.isTrue(content.system.addMonitor('cpu-time', monitor, 500));
+  assert.isTrue(content.system.addMonitor("cpu-time", monitor, 500));
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   utils.wait(600);
