@@ -358,16 +358,34 @@ clSystem.prototype = {
 		this.ownerUtils = getDOMWindowUtils(aWindow);
 		this.ownerID = this.ownerUtils && this.ownerUtils.outerWindowID;
 
-		return Components.utils.evalInSandbox(<![CDATA[
-				(function(aSystem) {
-					return {
-						addMonitor : Function.bind.call(aSystem.addMonitor, aSystem),
-						removeMonitor : Function.bind.call(aSystem.removeMonitor, aSystem),
-						toString : Function.bind.call(aSystem.toString, aSystem),
-						get cpu() aSystem.cpu
-					};
-				})
-			]]>.toString(), Components.utils.Sandbox(aWindow))(this);
+		function property(value) {
+			return {
+				enumerable: true,
+				configurable: true,
+				writable: true,
+				value: value
+			};
+		}
+
+		function getter(getterFunction) {
+			return {
+				enumerable: true,
+				configurable: true,
+				get: getterFunction
+			};
+		}
+
+		var self = this;
+		var contentSystem = Components.utils.createObjectIn(aWindow);
+		Object.defineProperties(contentSystem, {
+			addMonitor    : property(this.addMonitor.bind(this)),
+			removeMonitor : property(this.addMonitor.bind(this)),
+			toString      : property(this.toString.bind(this)),
+			cpu           : getter(function () { return self.cpu; })
+		});
+		Components.utils.makeObjectPropsNormal(contentSystem);
+
+		return contentSystem;
 	}
 };
 
@@ -528,15 +546,28 @@ MonitorData.prototype = {
 			return;
 		}
 
-		var value = this.getMonitoringObject();
+		var monitorArgumentValue = this.getMonitoringObject();
+		if (typeof monitorArgumentValue === "object") {
+			// Since monitorArgumentValue is created in
+			// priviledged context, Gecko do not expose its
+			// properties to unpriviledged context, unless we
+			// explicitly specify a __exposedProps__.
+			var exposedPropertiesSpecifier = {};
+			for (var propertyName in monitorArgumentValue) {
+				exposedPropertiesSpecifier[propertyName] = "r";
+			}
+			Object.defineProperty(monitorArgumentValue, "__exposedProps__", {
+				value: exposedPropertiesSpecifier
+			});
+		}
 
 		try {
 			if (this.monitor instanceof Ci.clISystemMonitor ||
 			    typeof this.monitor.monitor == 'function') {
-				this.monitor.monitor(value);
+				this.monitor.monitor(monitorArgumentValue);
 			}
 			else if (typeof this.monitor == 'function') {
-				this.monitor.call(null, value);
+				this.monitor.call(null, monitorArgumentValue);
 			}
 		}
 		catch(e) {
