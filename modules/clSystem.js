@@ -10,7 +10,7 @@ const STRING_BUNDLE_URL = 'chrome://'+PACKAGE_NAME+'/locale/system-monitor.prope
 const PERMISSION_DENIED_TOPIC = 'system-monitor:permission-denied';
 const PERMISSION_UNKNOWN_TOPIC = 'system-monitor:unknown-permission';
 
-const EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory'];
+const EXPORTED_SYMBOLS = ['clSystem', 'clCPU'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -233,8 +233,6 @@ clSystem.prototype = {
 	contractID : '@clear-code.com/system;2',
 	classID : Components.ID('{12ae3fc0-4883-11e0-9207-0800200c9a66}'),
 	QueryInterface : XPCOMUtils.generateQI([
-		Ci.clISystem,
-		Ci.clISystemInternal,
 		Ci.nsIObserver,
 		Ci.nsIDOMGlobalPropertyInitializer
 	]),
@@ -399,87 +397,31 @@ var gCPU;
 function clCPU() {
 	if (gCPU)
 		return gCPU;
-
-	this.mPreviousTimes = gCachedNativeAPI.cpu.getCPUTimes();
 	return gCPU = this;
 }
 clCPU.prototype = {
-	classDescription : 'clCPU',
-	contractID : '@clear-code.com/system/cpu;2',
-	classID : Components.ID('{ae145a80-4883-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([
-		Ci.clICPU
-	]),
-
 	toString : function() {
 		return '[object CPU]';
 	},
 
-	getCurrentTimeInternal : function() {
+	getCurrentTime : function() {
 		return gCachedNativeAPI.cpu.getCurrentTimeInternal();
 	},
-	getCurrentTime : function() {
-		return new clCPUTime(this.getCurrentTimeInternal());
-	},
 
-	getCurrentTimesInternal : function() {
-		return gCachedNativeAPI.cpu.getCurrentTimesInternal();
-	},
 	getCurrentTimes : function() {
-		return this.getCurrentTimesInternal().map(function (time) new clCPUTime(time));
+		return gCachedNativeAPI.cpu.getCurrentTimesInternal();
 	},
 
 	getUsage : function() {
-		var time = this.getCurrentTimeInternal();
+		var time = this.getCurrentTime();
 		return time.user + time.system;
 	},
 
 	getUsages : function() {
-		return this.getCurrentTimesInternal().map(function (time) time.user + time.system);
+		return this.getCurrentTimes().map(function (time) time.user + time.system);
 	},
 
 	get count() gCachedNativeAPI.cpu.getCount()
-};
-
-function clCPUTime(aCPUTime) {
-	this.user    = aCPUTime.user;
-	this.nice    = aCPUTime.nice;
-	this.system  = aCPUTime.system;
-	this.idle    = aCPUTime.idle;
-	this.io_wait = aCPUTime.iowait;
-}
-clCPUTime.prototype = {
-	classDescription : 'clCPUTime',
-	contractID : '@clear-code.com/system/time;2',
-	classID : Components.ID('{eb5ea940-4883-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([
-		Ci.clICPUTime
-	]),
-
-	toString : function() {
-		return '[object CPUTime]';
-	}
-};
-
-function clMemory() {
-	var memory = gCachedNativeAPI.memory.getMemory();
-	this.total       = memory.total;
-	this.used        = memory.used;
-	this.free        = memory.free;
-	this.virtualUsed = memory.virtualUsed;
-	this.self        = memory.self;
-}
-clMemory.prototype = {
-	classDescription : 'clMemory',
-	contractID : '@clear-code.com/system/memory;2',
-	classID : Components.ID('{06c631d0-4884-11e0-9207-0800200c9a66}'),
-	QueryInterface : XPCOMUtils.generateQI([
-		Ci.clIMemory
-	]),
-
-	toString : function() {
-		return '[object Memory]';
-	}
 };
 
 function MonitorData(aTopic, aMonitor, aInterval, aOwner, aSystem) {
@@ -525,31 +467,31 @@ MonitorData.prototype = {
 	getMonitoringObject : function() {
 		switch (this.topic) {
 			case 'cpu-usage':
-				return this.system.cpu.getUsage();
+				return this.system.cpu.getUsage(); // this is just a primitive!
 			case 'cpu-usages':
 				return this.system.cpu.getUsages();
 
 			case 'cpu-time':
-				return this.system.cpu.getCurrentTime();
+				return this.export(this.system.cpu.getCurrentTime());
 			case 'cpu-times':
-				return this.system.cpu.getCurrentTimes();
+				return this.system.cpu.getCurrentTimes().map(this.export, this);
 
 			case 'memory-usage':
-				return new clMemory();
+				return this.export(gCachedNativeAPI.memory.getMemory());
 
 			case 'network-usage':
-				return this.exportToOwner(gCachedNativeAPI.network.getNetworkLoad());
+				return this.export(gCachedNativeAPI.network.getNetworkLoad());
 
 			default:
 				this.destroy();
 				throw Components.results.NS_ERROR_FAILURE;
 		}
 	},
-	exportToOwner : function(aChromeObject) {
+	export : function(aChromeObject, aType) {
 		if (!this.owner)
 			return aChromeObject;
 
-		var contentObject = Components.utils.createObjectIn(this.owner);
+		var contentObject = Components.utils.createObjectIn(this.owner) ;
 		var descriptions = {};
 		Object.keys(aChromeObject).forEach(function(key) {
 			var value = aChromeObject[key];
