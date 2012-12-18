@@ -554,16 +554,16 @@ MonitorData.prototype = {
 		}
 
 		var monitorArgumentValue = this.getMonitoringObject();
-		if (typeof monitorArgumentValue === "object") {
+		if (typeof monitorArgumentValue === 'object') {
 			// Since monitorArgumentValue is created in
 			// priviledged context, Gecko do not expose its
 			// properties to unpriviledged context, unless we
 			// explicitly specify a __exposedProps__.
 			var exposedPropertiesSpecifier = {};
 			for (var propertyName in monitorArgumentValue) {
-				exposedPropertiesSpecifier[propertyName] = "r";
+				exposedPropertiesSpecifier[propertyName] = 'r';
 			}
-			Object.defineProperty(monitorArgumentValue, "__exposedProps__", {
+			Object.defineProperty(monitorArgumentValue, '__exposedProps__', {
 				value: exposedPropertiesSpecifier
 			});
 		}
