@@ -81,11 +81,11 @@ function getCPUTimes() {
 	for (let i = 0, maxi = getCount(); i < maxi; i++) {
 		let info = infoArray[i];
 		times.push({
-			user   : parseInt(info.UserTime),
-			system : parseInt(info.KernelTime),
-			nice   : 0,
-			idle   : parseInt(info.IdleTime),
-			iowait : 0
+			user:    parseInt(info.UserTime),
+			system:  parseInt(info.KernelTime),
+			nice:    0,
+			idle:    parseInt(info.IdleTime),
+			io_wait: 0
 		});
 	}
 	return times;
@@ -112,20 +112,20 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 
 	if (total == 0) {
 		return {
-			user   : 0,
-			system : 0,
-			nice   : 0,
-			idle   : 0,
-			iowait : 0
+			user:    0,
+			system:  0,
+			nice:    0,
+			idle:    0,
+			io_wait: 0
 		};
 	}
 	else {
 		return {
-			user   : 0,
-			system : kernel / total,
-			nice   : 0,
-			idle   : idle / total,
-			iowait : 0
+			user:    0,
+			system:  kernel / total,
+			nice:    0,
+			idle:    idle / total,
+			io_wait: 0
 		};
 	}
 }

@@ -154,11 +154,11 @@ function getCPUTimes() {
 	var times = [];
 	for (var i = 0; i < GLIBTOP_NCPU && cpu.xcpu_total[i] != 0; i++) {
 		times.push({
-			user   : parseInt(cpu.xcpu_user[i]),
-			system : parseInt(cpu.xcpu_sys[i]),
-			nice   : parseInt(cpu.xcpu_nice[i]),
-			idle   : parseInt(cpu.xcpu_idle[i]),
-			iowait : parseInt(cpu.xcpu_iowait[i]) +
+			user:    parseInt(cpu.xcpu_user[i]),
+			system:  parseInt(cpu.xcpu_sys[i]),
+			nice:    parseInt(cpu.xcpu_nice[i]),
+			idle:    parseInt(cpu.xcpu_idle[i]),
+			io_wait: parseInt(cpu.xcpu_iowait[i]) +
 			         parseInt(cpu.xcpu_irq[i]) +
 			         parseInt(cpu.xcpu_softirq[i])
 		});
@@ -171,25 +171,25 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 	var system = aCurrent.system - aPrevious.system;
 	var nice   = aCurrent.nice - aPrevious.nice;
 	var idle   = aCurrent.idle - aPrevious.idle;
-	var iowait = aCurrent.iowait - aPrevious.iowait;
+	var io_wait = aCurrent.io_wait - aPrevious.io_wait;
 
-	var total  = user + system + nice + idle + iowait;
+	var total  = user + system + nice + idle + io_wait;
 	if (total == 0) {
 		return {
-			user   : 0,
-			system : 0,
-			nice   : 0,
-			idle   : 0,
-			iowait : 0
+			user:    0,
+			system:  0,
+			nice:    0,
+			idle:    0,
+			io_wait: 0
 		};
 	}
 	else {
 		return {
-			user   : user / total,
-			system : system / total,
-			nice   : nice / total,
-			idle   : idle / total,
-			iowait : iowait / total
+			user:    user / total,
+			system:  system / total,
+			nice:    nice / total,
+			idle:    idle / total,
+			io_wait: io_wait / total
 		};
 	}
 }

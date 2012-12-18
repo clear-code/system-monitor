@@ -376,11 +376,11 @@ function getCPUTimes() {
 	for (var i = 0, count = count.value; i < count; i++) {
 		let info = infoArray.contents[i];
 		times.push({
-			user   : parseInt(info.cpu_ticks[CPU_STATE_USER]),
-			system : parseInt(info.cpu_ticks[CPU_STATE_SYSTEM]),
-			nice   : parseInt(info.cpu_ticks[CPU_STATE_NICE]),
-			idle   : parseInt(info.cpu_ticks[CPU_STATE_IDLE]),
-			iowait : 0
+			user:    parseInt(info.cpu_ticks[CPU_STATE_USER]),
+			system:  parseInt(info.cpu_ticks[CPU_STATE_SYSTEM]),
+			nice:    parseInt(info.cpu_ticks[CPU_STATE_NICE]),
+			idle:    parseInt(info.cpu_ticks[CPU_STATE_IDLE]),
+			io_wait: 0
 		});
 	}
 
@@ -400,20 +400,20 @@ function calculateCPUUsage(aPrevious, aCurrent) {
 	var total  = user + system + nice + idle;
 	if (total == 0) {
 		return {
-			user   : 0,
-			system : 0,
-			nice   : 0,
-			idle   : 0,
-			iowait : 0
+			user:    0,
+			system:  0,
+			nice:    0,
+			idle:    0,
+			io_wait: 0
 		};
 	}
 	else {
 		return {
-			user   : user / total,
-			system : system / total,
-			nice   : nice / total,
-			idle   : idle / total,
-			iowait : 0
+			user:    user / total,
+			system:  system / total,
+			nice:    nice / total,
+			idle:    idle / total,
+			io_wait: 0
 		};
 	}
 }
