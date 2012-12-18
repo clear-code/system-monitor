@@ -288,10 +288,16 @@ clSystem.prototype = {
 	},
 	_ensureAllowed : function(aOwner) {
 		var self = this;
-		var uri  = Services.io.newURI(aOwner.location.href, null, null)
+		var uri  = Services.io.newURI(aOwner.location.href, null, null);
+		try {
+			// throws exception for special URLs (e.g., about:blank)
+			var siteName = uri.host;
+		} catch (x) {
+			siteName = uri.spec;
+		}
 		return confirmWithPopup({
 					browser : getOwnerFrameElement(aOwner),
-					label   : bundle.getFormattedString('permission_confirm_text', [uri.host]),
+					label   : bundle.getFormattedString('permission_confirm_text', [siteName]),
 					value   : PERMISSION_CONFIRM_ID,
 					image   : PERMISSION_CONFIRM_ICON,
 					buttons : [
