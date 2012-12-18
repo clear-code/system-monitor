@@ -513,7 +513,7 @@ MonitorData.prototype = {
 		delete this.system;
 	},
 	equals : function(aTopic, aMonitor) {
-		return this.topic == aTopic || this.monitor == aMonitor;
+		return this.topic === aTopic && this.monitor === aMonitor;
 	},
 	isOwnerDestroyed : function() {
 		if (!this.ownerID)
