@@ -8,7 +8,7 @@ function tearDown() {
 
 testCreate.priority = 'must';
 function testCreate() {
-  gMemory = Cc["@clear-code.com/system/memory;1"].getService(Ci.clIMemory);
+  gMemory = Cc["@clear-code.com/system/memory;2"].getService(Ci.clIMemory);
   assert.isDefined(gMemory);
 }
 

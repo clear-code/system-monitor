@@ -22,7 +22,7 @@ function testDefined() {
 testGetService.description = "get service test";
 testGetService.priority = 'must';
 function testGetService() {
-  let systemService = Cc["@clear-code.com/system;1"].getService(Ci.clISystem);
+  let systemService = Cc["@clear-code.com/system;2"].getService(Ci.clISystem);
   assert.isDefined(systemService);
 }
 

@@ -12,16 +12,16 @@ function tearDown() {
 testCreate.description = "create instance test";
 testCreate.priority = 'must';
 function testCreate() {
-  gCPU = Cc["@clear-code.com/system/cpu;1"].getService(Ci.clICPU);
+  gCPU = Cc["@clear-code.com/system/cpu;2"].getService(Ci.clICPU);
   assert.isDefined(gCPU);
 }
 
-testUsage.description = "usage property test";
+testUsage.description = "get-usage test";
 testUsage.priority = 'must';
 function testUsage() {
   testCreate();
-  assert.isDefined(gCPU.usage);
-  assert.isNumber(gCPU.usage);
+  assert.isDefined(gCPU.getUsage());
+  assert.isNumber(gCPU.getUsage());
 }
 
 testGetCurrentTime.description = "user property test";
