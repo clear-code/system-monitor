@@ -10,7 +10,7 @@ const STRING_BUNDLE_URL = 'chrome://'+PACKAGE_NAME+'/locale/system-monitor.prope
 const PERMISSION_DENIED_TOPIC = 'system-monitor:permission-denied';
 const PERMISSION_UNKNOWN_TOPIC = 'system-monitor:unknown-permission';
 
-const EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory', 'clNetwork'];
+const EXPORTED_SYMBOLS = ['clSystem', 'clCPU', 'clCPUTime', 'clMemory'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -528,14 +528,15 @@ MonitorData.prototype = {
 				return this.system.cpu.getUsage();
 			case 'cpu-usages':
 				return this.system.cpu.getUsages();
+
 			case 'cpu-time':
 				return this.system.cpu.getCurrentTime();
 			case 'cpu-times':
 				return this.system.cpu.getCurrentTimes();
+
 			case 'memory-usage':
 				return new clMemory();
 
-			case 'network-usages':
 			case 'network-usage':
 				return gCachedNativeAPI.network.getNetworkLoad();
 
