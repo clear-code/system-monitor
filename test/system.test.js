@@ -6,50 +6,42 @@ function setUp() {
 function tearDown() {
 }
 
-testDefined.description = "defined test";
+testDefined.description = 'defined test';
 testDefined.priority = 'must';
 function testDefined() {
   assert.isDefined(system);
-  // assert.isInstanceOf(Ci.clISystem, system);
-
   assert.isDefined(system.cpu);
-  assert.isInstanceOf(Ci.clICPU, system.cpu);
-
   assert.isFunction(system.addMonitor);
   assert.isFunction(system.removeMonitor);
 }
 
-testGetService.description = "get service test";
-testGetService.priority = 'must';
-function testGetService() {
-  let systemService = Cc["@clear-code.com/system;2"].getService(Ci.clISystem);
-  assert.isDefined(systemService);
-}
-
-testAddRemoveMonitor.description = "monitoring test";
+testAddRemoveMonitor.description = 'monitoring test';
 testAddRemoveMonitor.priority = 'must';
 testAddRemoveMonitor.parameters = {
-	'cpu-time' : { target : 'cpu-time', expected : TypeOf(Ci.clICPUTime) },
-	'cpu-usage' : { target : 'cpu-usage', expected : TypeOf(Number) },
-	'memory-usage' : { target : 'memory-usage', expected : TypeOf(Ci.clIMemory) }
+	'cpu-time':      { target: 'cpu-time',      expected: TypeOf(Object) },
+	'cpu-times':     { target: 'cpu-times',     expected: TypeOf(Array) },
+	'cpu-usage':     { target: 'cpu-usage',     expected: TypeOf(Number) },
+	'cpu-usages':    { target: 'cpu-usages',    expected: TypeOf(Array) },
+	'memory-usage':  { target: 'memory-usage',  expected: TypeOf(Object) },
+	'network-usage': { target: 'network-usage', expected: TypeOf(Object) }
 };
 function testAddRemoveMonitor(aParameter) {
   testDefined();
 
   var functionListenerMock = new FunctionMock(aParameter.target+' function');
   functionListenerMock.expect(aParameter.expected);
-  assert.isTrue(system.addMonitor(aParameter.target, functionListenerMock, 300));
+  assert.isTrue(system.addMonitor(aParameter.target, functionListenerMock, 30));
 
-  var objectListenerMock = new Mock(aParameter.target+' object');
+  var objectListenerMock = new Mock(aParameter.target + ' object');
   objectListenerMock.expect('monitor', aParameter.expected);
-  assert.isTrue(system.addMonitor(aParameter.target, objectListenerMock, 300));
+  assert.isTrue(system.addMonitor(aParameter.target, objectListenerMock, 30));
 
-  utils.wait(500);
+  utils.wait(50);
 
   assert.isTrue(system.removeMonitor(aParameter.target, functionListenerMock));
   assert.isTrue(system.removeMonitor(aParameter.target, objectListenerMock));
 
-  utils.wait(500);
+  utils.wait(50);
 }
 
 testAutoStop.priority = 'must';
@@ -59,17 +51,15 @@ function testAutoStop() {
 
   var monitor = content.wrappedJSObject.monitor = new FunctionMock('added on a context in a content window');
   monitor.expect(TypeOf(Ci.clICPUTime));
-  content.setTimeout('system.addMonitor("cpu-time", monitor, 500);', 0);
+  content.setTimeout('system.addMonitor('cpu-time', monitor, 500);', 0);
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   utils.wait(600);
 
   monitor = new FunctionMock('added on a context in a chrome window');
   monitor.expect(TypeOf(Ci.clICPUTime));
-  assert.isTrue(content.system.addMonitor("cpu-time", monitor, 500));
+  assert.isTrue(content.system.addMonitor('cpu-time', monitor, 500));
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   utils.wait(600);
 }
-
-

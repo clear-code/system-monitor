@@ -10,7 +10,7 @@ function tearDown() {
   cpu = undefined;
 }
 
-testCreate.description = "create instance test";
+testCreate.description = 'create instance test';
 testCreate.priority = 'must';
 function testCreate() {
   assert.isDefined(cpu);
