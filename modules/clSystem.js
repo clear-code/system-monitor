@@ -538,12 +538,31 @@ MonitorData.prototype = {
 				return new clMemory();
 
 			case 'network-usage':
-				return gCachedNativeAPI.network.getNetworkLoad();
+				return this.exportToOwner(gCachedNativeAPI.network.getNetworkLoad());
 
 			default:
 				this.destroy();
 				throw Components.results.NS_ERROR_FAILURE;
 		}
+	},
+	exportToOwner : function(aChromeObject) {
+		if (!this.owner)
+			return aChromeObject;
+
+		var contentObject = Components.utils.createObjectIn(this.owner);
+		var descriptions = {};
+		Object.keys(aChromeObject).forEach(function(key) {
+			var value = aChromeObject[key];
+			descriptions[key] = {
+				enumerable:   true,
+				configurable: true,
+				writable:     true,
+				value:        value
+			};
+		});
+		Object.defineProperties(contentObject, descriptions);
+		Components.utils.makeObjectPropsNormal(contentObject);
+		return contentObject;
 	},
 
 	// nsITimerCallback
@@ -554,19 +573,6 @@ MonitorData.prototype = {
 		}
 
 		var monitorArgumentValue = this.getMonitoringObject();
-		if (typeof monitorArgumentValue === 'object') {
-			// Since monitorArgumentValue is created in
-			// priviledged context, Gecko do not expose its
-			// properties to unpriviledged context, unless we
-			// explicitly specify a __exposedProps__.
-			var exposedPropertiesSpecifier = {};
-			for (var propertyName in monitorArgumentValue) {
-				exposedPropertiesSpecifier[propertyName] = 'r';
-			}
-			Object.defineProperty(monitorArgumentValue, '__exposedProps__', {
-				value: exposedPropertiesSpecifier
-			});
-		}
 
 		try {
 			if (this.monitor instanceof Ci.clISystemMonitor ||
