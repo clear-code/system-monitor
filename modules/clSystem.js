@@ -517,12 +517,13 @@ MonitorData.prototype = {
 		var monitorArgumentValue = this.getMonitoringObject();
 
 		try {
-			if (this.monitor instanceof Ci.clISystemMonitor ||
+			if (typeof this.monitor == 'function') {
+				this.monitor.call(null, monitorArgumentValue);
+			}
+			else if (typeof this.monitor == 'object' &&
+			    this.monitor &&
 			    typeof this.monitor.monitor == 'function') {
 				this.monitor.monitor(monitorArgumentValue);
-			}
-			else if (typeof this.monitor == 'function') {
-				this.monitor.call(null, monitorArgumentValue);
 			}
 		}
 		catch(e) {

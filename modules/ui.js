@@ -244,7 +244,6 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     }
   },
 
-  // clISystemMonitor
   monitor : function SystemMonitorSimpleGraph_klass_monitor(aValue) {
     this.valueArray.shift();
     this.valueArray.push(aValue);
@@ -778,7 +777,6 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
 
-  // clISystemMonitor
   monitor : function SystemMonitorSimpleGraph_monitor(aValue) {
     this.drawGraph();
   },
@@ -995,7 +993,6 @@ SystemMonitorCPUItem.prototype = Object.create(SystemMonitorSimpleGraphItem.prot
     return this.document.getElementById("system-monitor-cpu-usage-tooltip-label");
   },
 
-  // clISystemMonitor
   monitor : function SystemMonitorCPUMonitor_monitor(aValues) {
     this.drawGraph();
 
@@ -1035,7 +1032,6 @@ defineProperties(SystemMonitorMemoryItem, {
   multiplexCount : 2,
   multiplexType  : MULTIPLEX_SHARED,
 
-  // clISystemMonitor
   monitor : function SystemMonitorMemoryItem_klass_monitor(aValue) {
     var hasSelfValue = "self" in aValue && aValue.self > -1;
     this.valueArray.shift();
@@ -1054,7 +1050,6 @@ SystemMonitorMemoryItem.prototype = Object.create(SystemMonitorSimpleGraphItem.p
     return this.document.getElementById("system-monitor-memory-usage-tooltip-label");
   },
 
-  // clISystemMonitor
   monitor : function SystemMonitorMemoryMonitor_monitor(aValue) {
     this.drawGraph();
 
@@ -1150,7 +1145,6 @@ defineProperties(SystemMonitorNetworkItem, {
     }
   },
 
-  // clISystemMonitor
   monitor : function SystemMonitorNetworkItem_klass_monitor(aNetworkLoad) {
     // Record measure time
     var currentTime = Date.now();

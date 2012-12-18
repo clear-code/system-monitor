@@ -48,14 +48,14 @@ function testAutoStop() {
   assert.isDefined(content.system);
 
   var monitor = content.wrappedJSObject.monitor = new FunctionMock('added on a context in a content window');
-  monitor.expect(TypeOf(Ci.clICPUTime));
+  monitor.expect(TypeOf('object'));
   content.setTimeout('system.addMonitor("cpu-time", monitor, 500);', 0);
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
   utils.wait(600);
 
   monitor = new FunctionMock('added on a context in a chrome window');
-  monitor.expect(TypeOf(Ci.clICPUTime));
+  monitor.expect(TypeOf('object'));
   assert.isTrue(content.system.addMonitor("cpu-time", monitor, 500));
   utils.wait(600);
   utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
