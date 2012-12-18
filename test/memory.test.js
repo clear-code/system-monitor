@@ -1,27 +1,29 @@
-var gMemory;
+var memory;
+
+var { clMemory } = utils.import('../modules/clSystem.js', {});
 
 function setUp() {
+  memory = new clMemory();
 }
 
 function tearDown() {
+  memory = undefined;
 }
 
 testCreate.priority = 'must';
 function testCreate() {
-  gMemory = Cc["@clear-code.com/system/memory;2"].getService(Ci.clIMemory);
-  assert.isDefined(gMemory);
+  assert.isDefined(memory);
 }
 
-test_properties.priority = 'must';
-test_properties.parameters = {
-  total  : { name : 'total',  type : 'int' },
-  used   : { name : 'used',   type : 'int' },
-  free   : { name : 'free',   type : 'int' },
-  virtualUsed : { name : 'virtualUsed', type : 'int' }
+testProperties.priority = 'must';
+testProperties.parameters = {
+  total:       { name: 'total',       type: 'int' },
+  used:        { name: 'used',        type: 'int' },
+  free:        { name: 'free',        type: 'int' },
+  virtualUsed: { name: 'virtualUsed', type: 'int' }
 };
-function test_properties(aParameter) {
-  testCreate()
-  var value = gMemory[aParameter.name];
+function testProperties(aParameter) {
+  var value = memory[aParameter.name];
   assert.isDefined(value);
   if (aParameter.type == 'int') {
     assert.isNumber(value);

@@ -1,55 +1,53 @@
 var description = 'CPU component tests'
 
-var gCPU;
-var gCPUTime;
+var { clCPU } = utils.import('../modules/clSystem.js', {});
+
+var cpu;
 
 function setUp() {
+  cpu = new clCPU();
 }
 
 function tearDown() {
+  cpu = undefined;
 }
 
 testCreate.description = "create instance test";
 testCreate.priority = 'must';
 function testCreate() {
-  gCPU = Cc["@clear-code.com/system/cpu;2"].getService(Ci.clICPU);
-  assert.isDefined(gCPU);
+  assert.isDefined(cpu);
 }
 
 testUsage.description = "get-usage test";
 testUsage.priority = 'must';
 function testUsage() {
-  testCreate();
-  assert.isDefined(gCPU.getUsage());
-  assert.isNumber(gCPU.getUsage());
+  assert.isFunction(cpu.getUsage);
+  assert.isNumber(cpu.getUsage());
 }
 
 testGetCurrentTime.description = "user property test";
 testGetCurrentTime.priority = 'must';
 function testGetCurrentTime() {
-  testCreate();
-  gCPUTime = gCPU.getCurrentTime();
-  assert.isDefined(gCPUTime);
+  var time = cpu.getCurrentTime();
+  assert.isDefined(time);
 }
 
-testUser.description = "user property test";
-testUser.priority = 'must';
-function testUser() {
-  testGetCurrentTime();
-  assert.isNumber(gCPUTime.user);
-}
-
-testSystem.description = "system property test";
-testSystem.priority = 'must';
-function testSystem() {
-  testGetCurrentTime();
-  assert.isNumber(gCPUTime.system);
-}
-
-testIdle.description = "idle property test";
-testIdle.priority = 'must';
-function testIdle() {
-  testGetCurrentTime();
-  assert.isNumber(gCPUTime.idle);
+testCurrentTimeProperties.priority = 'must';
+testCurrentTimeProperties.parameters = {
+  user:    { name: 'user',    type: 'float' },
+  nice:    { name: 'nice',    type: 'float' },
+  system:  { name: 'system',  type: 'float' },
+  idle:    { name: 'idle',    type: 'float' },
+  io_wait: { name: 'io_wait', type: 'float' }
+};
+function testCurrentTimeProperties(aParameter) {
+  var time = cpu.getCurrentTime();
+  var value = time[aParameter.name];
+  assert.isDefined(value);
+  if (aParameter.type == 'float') {
+    assert.isNumber(value);
+    let floatVersion = parseFloat(value);
+    assert.equals(floatVersion, value);
+  }
 }
 
