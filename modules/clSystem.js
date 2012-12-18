@@ -385,7 +385,7 @@ clSystem.prototype = {
 		var contentSystem = Components.utils.createObjectIn(aWindow);
 		Object.defineProperties(contentSystem, {
 			addMonitor    : property(this.addMonitor.bind(this)),
-			removeMonitor : property(this.addMonitor.bind(this)),
+			removeMonitor : property(this.removeMonitor.bind(this)),
 			toString      : property(this.toString.bind(this)),
 			cpu           : getter(function () { return self.cpu; })
 		});
