@@ -4,7 +4,7 @@
  * @version      1
  *
  * @license
- *   The MIT License, Copyright (c) 2011 ClearCode Inc.
+ *   The MIT License, Copyright (c) 2011-2012 ClearCode Inc.
  *   http://www.clear-code.com/repos/svn/js-codemodules/license.txt
  * @url http://www.clear-code.com/repos/svn/js-codemodules/resizableToolbarItem.js
  */
@@ -57,30 +57,29 @@ var resizableToolbarItem;
 		EVENT_TYPE_RESIZE_END   : 'nsDOMResizableToolbarItemEndResize',
 		EVENT_TYPE_RESET        : 'nsDOMResizableToolbarItemReset',
 
-		STYLE : <![CDATA[
-			.%SPLITTER_CLASS% {
-				appearance: none !important;
-				-moz-appearance: none !important;
-				background: transparent !important;
-				border: 0 none !important;
-				min-width: 8px !important;
-				margin: 0 -4px 0 -3px !important;
-				max-width: 8px !important;
-			}
+		STYLE :
+			'.%SPLITTER_CLASS% {\n' +
+			'  appearance: none !important;\n' +
+			'  -moz-appearance: none !important;\n' +
+			'  background: transparent !important;\n' +
+			'  border: 0 none !important;\n' +
+			'  min-width: 8px !important;\n' +
+			'  margin: 0 -4px 0 -3px !important;\n' +
+			'  max-width: 8px !important;\n' +
+			'}\n' +
 
-			[orient="vertical"] > .%SPLITTER_CLASS% {
-				display: none !important;
-			}
+			'[orient="vertical"] > .%SPLITTER_CLASS% {\n' +
+			'  display: none !important;\n' +
+			'}\n' +
 
-			.%SPLITTER_CLASS%-spacer {
-				visibility: hidden !important;
-			}
+			'.%SPLITTER_CLASS%-spacer {\n' +
+			'  visibility: hidden !important;\n' +
+			'}\n' +
 
-			.%RESIZABLE_CLASS% + .%RESIZABLE_CLASS%,
-			toolbarpaletteitem .%RESIZABLE_CLASS% {
-				margin-left: 1px;
-			}
-		]]>.toString(),
+			'.%RESIZABLE_CLASS% + .%RESIZABLE_CLASS%,\n' +
+			'toolbarpaletteitem .%RESIZABLE_CLASS% {\n' +
+			'  margin-left: 1px;\n' +
+			'}\n',
 
 		get sheet() {
 			if (!this._sheet) {
