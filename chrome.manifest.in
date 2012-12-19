@@ -1,11 +1,11 @@
-content @PACKAGE_NAME@ jar:chrome/@PACKAGE_NAME@.jar!/content/
+content @PACKAGE_NAME@ content/
 overlay chrome://browser/content/browser.xul chrome://@PACKAGE_NAME@/content/browserOverlay.xul
 overlay chrome://messenger/content/messenger.xul chrome://@PACKAGE_NAME@/content/messengerOverlay.xul
 
-locale @PACKAGE_NAME@ en-US jar:chrome/@PACKAGE_NAME@.jar!/locale/en-US/
-locale @PACKAGE_NAME@ ja jar:chrome/@PACKAGE_NAME@.jar!/locale/ja/
+locale @PACKAGE_NAME@ en-US locale/en-US/
+locale @PACKAGE_NAME@ ja locale/ja/
 
-skin @PACKAGE_NAME@ classic/1.0 jar:chrome/@PACKAGE_NAME@.jar!/skin/classic/
+skin @PACKAGE_NAME@ classic/1.0 skin/classic/
 
 style chrome://browser/content/browser.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css
 style chrome://messenger/content/messenger.xul chrome://@PACKAGE_NAME@/skin/@PACKAGE_NAME@.css

@@ -5,8 +5,7 @@ PACKAGE_VERSION=$2
 
 BASENAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 
-JAR_TARGET_FILES="content locale skin"
-XPI_TARGET_FILES="install.rdf chrome.manifest chrome components/*.js defaults modules"
+XPI_TARGET_FILES="install.rdf chrome.manifest content locale skin components/*.js defaults modules"
 
 
 case $(uname) in
@@ -32,15 +31,12 @@ fill() {
 }
 
 cleanup() {
-  rm -rf chrome
   rm -rf xpi_temp
   rm -f ${BASENAME}.xpi
   rm -f ${BASENAME}-noupdate.xpi
 }
 
 makexpi() {
-  mkdir -p chrome
-  zip -q -r -9 chrome/${PACKAGE_NAME}.jar ${JAR_TARGET_FILES} -x *.git/*
   zip -q -r -9 ${BASENAME}.xpi ${XPI_TARGET_FILES} -x *.git/*
 
   cp -f ${BASENAME}.xpi ${BASENAME}-noupdate.xpi
