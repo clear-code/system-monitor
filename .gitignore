@@ -1,4 +1,5 @@
 *.xpi
-Makefile
 chrome.manifest
 install.rdf
+chrome
+xpi_temp
