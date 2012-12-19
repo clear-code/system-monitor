@@ -1,9 +1,9 @@
 # -*- Mode: Makefile; tab-width: 8; indent-tabs-mode: t; -*-
-SUBDIRS = components
 
-ACLOCAL_AMFLAGS = -I m4macros $$ACLOCAL_OPTIONS
+PACKAGE_NAME = @PACKAGE_NAME@
+PACKAGE_VERSION = @PACKAGE_VERSION@
 
-noinst_DATA = deploy xpi
+noinst_DATA = xpi
 
 JAR_TARGET_FILES = 					\
 	content					\
@@ -17,12 +17,6 @@ XPI_TARGET_FILES = 					\
 	defaults				\
 	modules				\
 	chrome.manifest
-
-if PLATFORM_WINNT
-BINARY_SOURCE_DIR = components/SystemMonitor/Release
-else
-BINARY_SOURCE_DIR = components/.libs
-endif
 
 xpi:
 	(rm -rf chrome && \

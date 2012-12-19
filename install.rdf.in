@@ -6,7 +6,6 @@
                  em:id="@PACKAGE_NAME@@clear-code.com"
                  em:name="System Monitor"
                  em:version="@PACKAGE_VERSION@"
-                 em:unpack="true"
                  em:iconURL="chrome://@PACKAGE_NAME@/content/icon.png"
                  em:optionsURL="chrome://@PACKAGE_NAME@/content/config.xul">
   <em:updateURL>http://www.clear-code.com/update.rdf</em:updateURL>
@@ -26,13 +25,13 @@
   </em:localized>
   <em:targetApplication>
     <RDF:Description em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
-                     em:minVersion="4.0"
-                     em:maxVersion="13.0a1"/>
+                     em:minVersion="10.0"
+                     em:maxVersion="20.0a1"/>
   </em:targetApplication>
   <em:targetApplication>
     <RDF:Description em:id="{3550f703-e582-4d05-9a08-453d09bdfdc6}"
-                     em:minVersion="5.0"
-                     em:maxVersion="13.0a1"/>
+                     em:minVersion="10.0"
+                     em:maxVersion="20.0a1"/>
   </em:targetApplication>
   <em:targetPlatform>WINNT_x86-msvc</em:targetPlatform>
   <em:targetPlatform>Linux_x86-gcc3</em:targetPlatform>
