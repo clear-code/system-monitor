@@ -440,6 +440,7 @@ MonitorData.prototype = {
 	init : function(aOwner) {
 		this.ownerUtils = getDOMWindowUtils(aOwner);
 		this.ownerID = this.ownerUtils && this.ownerUtils.outerWindowID;
+		this.innerID = this.ownerUtils && this.ownerUtils.currentInnerWindowID;
 		this.timer = Cc['@mozilla.org/timer;1'].createInstance(Ci.nsITimer);
 		this.timer.initWithCallback(this, this.interval, Ci.nsITimer.TYPE_REPEATING_SLACK);
 	},
@@ -450,6 +451,7 @@ MonitorData.prototype = {
 		delete this.topic;
 		delete this.monitor;
 		delete this.interval;
+		delete this.innerID;
 		delete this.ownerID;
 		delete this.ownerUtils;
 		delete this.system;
@@ -458,11 +460,17 @@ MonitorData.prototype = {
 		return this.topic === aTopic && this.monitor === aMonitor;
 	},
 	isOwnerDestroyed : function() {
+		// if this is not associated to any window, never stop automatically.
 		if (!this.ownerID)
 			return false;
 
+		// when the tab or the window is closed, or the iframe is removed
 		var owner = this.owner;
-		return (!owner || owner.closed);
+		if (!owner || owner.closed)
+			return true;
+
+		// when the content of the window is replaced
+		return this.ownerUtils.currentInnerWindowID != this.innerID;
 	},
 	getMonitoringObject : function() {
 		switch (this.topic) {
