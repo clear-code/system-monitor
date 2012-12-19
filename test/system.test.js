@@ -28,18 +28,18 @@ testAddRemoveMonitor.parameters = {
 function testAddRemoveMonitor(aParameter) {
   var functionListenerMock = new FunctionMock(aParameter.target + ' function');
   functionListenerMock.expect(aParameter.expected);
-  assert.isTrue(system.addMonitor(aParameter.target, functionListenerMock, 30));
+  assert.isTrue(system.addMonitor(aParameter.target, functionListenerMock, 150));
 
   var objectListenerMock = new Mock(aParameter.target + ' object');
   objectListenerMock.expect('monitor', aParameter.expected);
-  assert.isTrue(system.addMonitor(aParameter.target, objectListenerMock, 30));
+  assert.isTrue(system.addMonitor(aParameter.target, objectListenerMock, 150));
 
-  utils.wait(50);
+  utils.wait(200);
 
   assert.isTrue(system.removeMonitor(aParameter.target, functionListenerMock));
   assert.isTrue(system.removeMonitor(aParameter.target, objectListenerMock));
 
-  utils.wait(50);
+  utils.wait(200);
 }
 
 var contentURI = 'chrome://system-monitor/content/icon.png';
