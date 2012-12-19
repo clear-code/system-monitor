@@ -49,12 +49,13 @@ function testAutoStop_inContent() {
   utils.wait(utils.loadURI(contentURI + '?' + parseInt(Math.random() * 10000)));
   assert.isDefined(content.system);
 
+  var lastCall = 0;
+  var monitor = content.wrappedJSObject.monitor = function(aValue) {
+        lastCall = Date.now();
+      };
   content.setTimeout(
-    'window.lastCall = 0; \
-     window.monitor = function(aValue) { \
-       window.lastCall = Date.now(); \
-     }; \
-     system.addMonitor("cpu-time", monitor, 50);',
+    'system.addMonitor("cpu-time", window.montor, 50);\n' +
+    'window.montor = null;',
     0
   );
   utils.wait(200);
@@ -62,7 +63,7 @@ function testAutoStop_inContent() {
   utils.wait(200);
   var afterUnload = Date.now();
   utils.wait(200);
-  assert.compare(afterUnload, '>', content.wrappedJSObject.lastCall);
+  assert.compare(afterUnload, '>', lastCall);
 }
 
 testAutoStop_inChrome.priority = 'must';
