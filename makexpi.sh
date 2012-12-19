@@ -1,17 +1,17 @@
 #!/bin/bash
 
-PACKAGE_NAME=$1
-PACKAGE_VERSION=$2
-
-BASENAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
-
-XPI_TARGET_FILES="install.rdf chrome.manifest content locale skin components/*.js defaults modules"
-
-
 case $(uname) in
   Darwin|*BSD|CYGWIN*) sed="sed -E" ;;
   *)                   sed="sed -r" ;;
 esac
+
+
+PACKAGE_NAME=$(grep "PACKAGE_NAME" VERSION | cut -d "=" -f 2 | $sed -e "s/^ +| +\$//g")
+PACKAGE_VERSION=$(grep "PACKAGE_VERSION" VERSION | cut -d "=" -f 2 | $sed -e "s/^ +| +\$//g")
+
+BASENAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
+
+XPI_TARGET_FILES="install.rdf chrome.manifest content locale skin components/*.js defaults modules"
 
 
 main() {
@@ -49,4 +49,5 @@ makexpi() {
 }
 
 main
+
 exit 0
