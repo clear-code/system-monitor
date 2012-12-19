@@ -42,22 +42,43 @@ function testAddRemoveMonitor(aParameter) {
   utils.wait(50);
 }
 
-testAutoStop.priority = 'must';
-function testAutoStop() {
-  utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
+var contentURI = 'chrome://system-monitor/content/icon.png';
+
+testAutoStop_inContent.priority = 'must';
+function testAutoStop_inContent() {
+  utils.wait(utils.loadURI(contentURI + '?' + parseInt(Math.random() * 10000)));
   assert.isDefined(content.system);
 
-  var monitor = content.wrappedJSObject.monitor = new FunctionMock('added on a context in a content window');
-  monitor.expect(TypeOf('object'));
-  content.setTimeout('system.addMonitor("cpu-time", monitor, 500);', 0);
-  utils.wait(600);
-  utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
-  utils.wait(600);
+  content.setTimeout(
+    'window.lastCall = 0; \
+     window.monitor = function(aValue) { \
+       window.lastCall = Date.now(); \
+     }; \
+     system.addMonitor("cpu-time", monitor, 50);',
+    0
+  );
+  utils.wait(200);
+  utils.wait(utils.loadURI('data:text/plain,' + parseInt(Math.random() * 10000)));
+  utils.wait(200);
+  var afterUnload = Date.now();
+  utils.wait(200);
+  assert.compare(afterUnload, '>', content.wrappedJSObject.lastCall);
+}
 
-  monitor = new FunctionMock('added on a context in a chrome window');
-  monitor.expect(TypeOf('object'));
-  assert.isTrue(content.system.addMonitor("cpu-time", monitor, 500));
-  utils.wait(600);
-  utils.loadURI('about:blank?'+parseInt(Math.random() * 10000));
-  utils.wait(600);
+testAutoStop_inChrome.priority = 'must';
+function testAutoStop_inChrome() {
+  utils.wait(utils.loadURI(contentURI + '?' + parseInt(Math.random() * 10000)));
+  assert.isDefined(content.system);
+
+  var lastCall = 0;
+  var monitor = function(aValue) {
+        lastCall = Date.now();
+      };
+  assert.isTrue(content.system.addMonitor("cpu-time", monitor, 50));
+  utils.wait(200);
+  utils.wait(utils.loadURI('data:text/plain,' + parseInt(Math.random() * 10000)));
+  utils.wait(200);
+  var afterUnload = Date.now();
+  utils.wait(200);
+  assert.compare(afterUnload, '>', lastCall);
 }
