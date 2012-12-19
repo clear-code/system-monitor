@@ -144,11 +144,14 @@ SystemMonitorItem.prototype = {
   item : null,
 
   init : function SystemMonitorItem_init() {
-    this.klass.instances.push(this);
+    if (this.klass.instances.indexOf(this) < 0)
+      this.klass.instances.push(this);
   },
 
   destroy : function SystemMonitorItem_destroy() {
-    this.klass.instances.splice(this.klass.instances.indexOf(this), 1);
+    var index = this.klass.instances.indexOf(this);
+    if (index > -1)
+      this.klass.instances.splice(index, 1);
   }
 };
 defineSharedProperties(SystemMonitorItem,
@@ -215,7 +218,6 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     this.onChangePref(DOMAIN+this.id+".style");
 
     this.initValueArray();
-
     Services.obs.addObserver(this.observer, this.topic, false);
     prefs.addPrefListener(this.observer);
   },
@@ -387,8 +389,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
 
   init : function SystemMonitorSimpleGraph_init() {
     SystemMonitorItem.prototype.init.apply(this, arguments);
-    if (this.klass.instances.length == 1) this.klass.start();
     resizableToolbarItem.allowResize(this.item);
+    if (this.klass.instances.length == 1) this.klass.start();
     this.start();
   },
 
@@ -409,6 +411,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       var canvas = this.canvas;
       canvas.style.width = (canvas.width = item.width = this.size)+"px";
 
+      SystemMonitorManager.onStart(this);
       Services.obs.addObserver(this, this.topic, false);
 
       this.drawGraph(true);
@@ -432,6 +435,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
         return;
 
     try {
+      SystemMonitorManager.onStop(this);
       Services.obs.removeObserver(this, this.topic);
       prefs.removePrefListener(this);
       this.stopObserve();

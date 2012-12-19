@@ -1,3 +1,5 @@
+// var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+
 var EXPORTED_SYMBOLS = ["SystemMonitorManager"];
 
 const { classes: Cc, interfaces: Ci, utils: Cu, results: Cr } = Components;
@@ -39,7 +41,7 @@ SystemMonitorListener.prototype = {
   },
 
   stop: function () {
-    system.removeMonitor(this.name, this);
+    system.removeMonitor(this.type, this);
     // Prefs.removeObserver(DOMAIN, this, false);
   },
 
@@ -90,26 +92,41 @@ var SystemMonitorManager = {
   },
 
   _listeners: [],
-  addListener: function (args) {
-    this._listeners.push(new SystemMonitorListener(args.type, args.id));
+  addListener: function (aArgs) {
+    this._listeners.push(new SystemMonitorListener(aArgs.type, aArgs.id));
+  },
+  removeListener: function (aArgs) {
+    this._listeners.some(function(aListener, aIndex) {
+      if (aArgs.type == aListener.type && aArgs.id == aListener.id) {
+        this._listeners[aIndex].stop();
+        this._listeners.splice(aIndex, 1);
+        return true;
+      }
+      return false;
+    }, this);
   },
 
   init: function () {
     this.applyPlatformDefaultPrefs();
+  },
 
+  _count: {},
+  onStart: function(aListener) {
+    var count = this._count[aListener.type] || 0;
+    this._count[aListener.type] = count = count + 1;
+    if (count > 1) return;
     this.addListener({
-      type : "cpu-usages",
-      id   : "cpu-usage"
+      type: aListener.type,
+      id:   aListener.id
     });
-
-    this.addListener({
-      type : "memory-usage",
-      id   : "memory-usage"
-    });
-
-    this.addListener({
-      type : "network-usage",
-      id   : "network-usage"
+  },
+  onStop: function(aListener) {
+    var count = this._count[aListener.type] || 0;
+    this._count[aListener.type] = count = Math.max(0, count - 1);
+    if (count > 0) return;
+    this.removeListener({
+      type: aListener.type,
+      id:   aListener.id
     });
   },
 
