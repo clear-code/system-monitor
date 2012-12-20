@@ -1,6 +1,7 @@
 const PACKAGE_NAME = 'system-monitor';
 const MODULES_ROOT = 'resource://system-monitor-modules/';
 const PREF_ROOT = 'extensions.system-monitor@clear-code.com.';
+const DOMAIN = PREF_ROOT + ".";
 
 const PERMISSION_NAME = 'system-monitor';
 const PERMISSION_CONFIRM_ID = 'system-monitor-add-monitor';
@@ -392,6 +393,7 @@ clSystem.prototype = {
 		return contentSystem;
 	}
 };
+clSystem.DOMAIN = clSystem.prototype.DOMAIN = DOMAIN;
 
 var gCPU;
 function clCPU() {
@@ -545,3 +547,25 @@ MonitorData.prototype = {
 	}
 };
 
+function applyPlatformDefaultPrefs() {
+  const XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
+                       .getService(Ci.nsIXULAppInfo)
+                       .QueryInterface(Ci.nsIXULRuntime);
+  var OS = XULAppInfo.OS;
+  var processed = {};
+  var originalKeys = prefs.getDescendant(DOMAIN + 'platform.' + OS);
+  for (let i = 0, maxi = originalKeys.length; i < maxi; i++) {
+    let originalKey = originalKeys[i];
+    let key = originalKey.replace('platform.' + OS + '.', '');
+    prefs.setDefaultPref(key, prefs.getPref(originalKey));
+    processed[key] = true;
+  }
+  originalKeys = prefs.getDescendant(DOMAIN + 'platform.default');
+  for (let i = 0, maxi = originalKeys.length; i < maxi; i++) {
+    let originalKey = originalKeys[i];
+    let key = originalKey.replace('platform.default.', '');
+    if (!(key in processed))
+      prefs.setDefaultPref(key, prefs.getPref(originalKey));
+  }
+}
+applyPlatformDefaultPrefs();
