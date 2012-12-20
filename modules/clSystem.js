@@ -579,4 +579,33 @@ function applyPlatformDefaultPrefs() {
       prefs.setDefaultPref(key, prefs.getPref(originalKey));
   }
 }
+
+const PREFS_VERSION = 1;
+function migratePrefs() {
+  switch (prefs.getPref(DOMAIN + 'prefsVersion') || 0) {
+    case 0:
+      let (color = prefs.getPref(DOMAIN + 'memory-usage.color.self'),
+           style = prefs.getPref(DOMAIN + 'memory-usage.style')) {
+        if (color)
+          prefs.setPref(DOMAIN + 'memory-usage.color.foreground.1', color);
+
+        if (style & 128) {
+          style ^= 128;
+          style |= 256;
+          prefs.setPref(DOMAIN + 'memory-usage.style', style);
+        }
+
+        prefs.clearPref(DOMAIN + 'memory-usage.color.self');
+      }
+
+      prefs.setPref(DOMAIN + 'prefsVersion', PREFS_VERSION);
+      break;
+
+    default:
+      break;
+  }
+}
+
 applyPlatformDefaultPrefs();
+migratePrefs();
+
