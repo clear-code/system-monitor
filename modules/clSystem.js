@@ -1,7 +1,8 @@
+// var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+
 const PACKAGE_NAME = 'system-monitor';
 const MODULES_ROOT = 'resource://system-monitor-modules/';
-const PREF_ROOT = 'extensions.system-monitor@clear-code.com.';
-const DOMAIN = PREF_ROOT + ".";
+const DOMAIN = 'extensions.system-monitor@clear-code.com.';
 
 const PERMISSION_NAME = 'system-monitor';
 const PERMISSION_CONFIRM_ID = 'system-monitor-add-monitor';
@@ -210,7 +211,7 @@ var gCachedNativeAPI = {
 		}
 	},
 
-	domain : PREF_ROOT + 'lifetime.',
+	domain : DOMAIN + 'lifetime.',
 	observe : function(aSubject, aTopic, aData) {
 		switch (aTopic) {
 			case 'nsPref:changed':

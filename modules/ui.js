@@ -1,4 +1,4 @@
-// var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
 // function dump(s) { Application.console.log(s); }
 // function log(s) { dump(s + "\n"); }
 
@@ -16,13 +16,6 @@ const packageName = "system-monitor";
 const modulesRoot = packageName + "-modules";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-
-Components.utils.import("resource://" + modulesRoot + "/SystemMonitorManager.js");
-
-XPCOMUtils.defineLazyGetter(this, "Services", function () {
-	var { Services } = Components.utils.import("resource://gre/modules/Services.jsm", {});
-	return Services;
-});
 
 XPCOMUtils.defineLazyGetter(this, "prefs", function () {
 	var { prefs } = Components.utils.import("resource://" + modulesRoot + "/lib/prefs.js", {});
@@ -49,8 +42,11 @@ XPCOMUtils.defineLazyGetter(this, "resizableToolbarItem", function () {
 	return resizableToolbarItem;
 });
 
-const DOMAIN = SystemMonitorManager.DOMAIN;
+const { clSystem } = Components.utils.import("resource://system-monitor-modules/clSystem.js", {});
+const gSystem = new clSystem();
 
+const DOMAIN = clSystem.DOMAIN;
+const TOPIC_BASE = "SystemMonitor:";
 
 
 function defineProperties(aTarget, aProperties) {
@@ -84,7 +80,8 @@ function defineSharedProperties(aConstructor, aProperties) {
 function defineObserver(aFunctionalObserver) {
   aFunctionalObserver.observer = {
     domain  : aFunctionalObserver.domain,
-    observe : function(aSubject, aTopic, aData) { aFunctionalObserver.observe(aSubject, aTopic, aData); }
+    observe : function(aSubject, aTopic, aData) { aFunctionalObserver.observe(aSubject, aTopic, aData); },
+    monitor : function(aValue) { aFunctionalObserver.monitor(aValue); }
   };
 }
 
@@ -136,7 +133,8 @@ defineProperties(SystemMonitorItem, {
 
   id     : "",
   itemId : "",
-  domain : DOMAIN
+  domain : DOMAIN,
+  DOMAIN : DOMAIN
 });
 SystemMonitorItem.prototype = {
   klass : SystemMonitorItem,
@@ -155,7 +153,7 @@ SystemMonitorItem.prototype = {
   }
 };
 defineSharedProperties(SystemMonitorItem,
-                       'id itemId domain');
+                       'id itemId domain DOMAIN');
 
 
 const MULTIPLEX_SHARED   = (1 << 0);
@@ -176,6 +174,8 @@ function SystemMonitorSimpleGraphItem(aDocument)
 defineProperties(SystemMonitorSimpleGraphItem, SystemMonitorItem);
 defineProperties(SystemMonitorSimpleGraphItem, {
   instances : [],
+  activeInstances : [],
+  monitoringCount : 0,
 
   id     : "",
   itemId : "",
@@ -205,25 +205,24 @@ defineProperties(SystemMonitorSimpleGraphItem, {
   valueArray : null,
 
   get topic() {
-    return SystemMonitorManager.TOPIC_BASE + this.type;
+    return TOPIC_BASE + this.type;
   },
 
   start : function SystemMonitorSimpleGraph_klass_start() {
-    this.size = prefs.getPref(DOMAIN+this.id+".size");
-    this.interval = prefs.getPref(DOMAIN+this.id+".interval");
+    this.size = prefs.getPref(DOMAIN + this.id + ".size");
+    this.interval = prefs.getPref(DOMAIN + this.id + ".interval");
 
-    this.onChangePref(DOMAIN+this.id+".color.background");
-    this.onChangePref(DOMAIN+this.id+".color.foreground");
-    this.onChangePref(DOMAIN+this.id+".color.foregroundMinAlpha");
-    this.onChangePref(DOMAIN+this.id+".style");
+    this.onChangePref(DOMAIN + this.id + ".interval");
+    this.onChangePref(DOMAIN + this.id + ".color.background");
+    this.onChangePref(DOMAIN + this.id + ".color.foreground");
+    this.onChangePref(DOMAIN + this.id + ".color.foregroundMinAlpha");
+    this.onChangePref(DOMAIN + this.id + ".style");
 
     this.initValueArray();
-    Services.obs.addObserver(this.observer, this.topic, false);
     prefs.addPrefListener(this.observer);
   },
 
   stop : function SystemMonitorSimpleGraph_klass_stop() {
-    Services.obs.removeObserver(this.observer, this.topic);
     prefs.removePrefListener(this.observer);
   },
 
@@ -234,26 +233,47 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     this.valueArray = resizeArray(this.valueArray, arraySize);
   },
 
+  onStartMonitor : function SystemMonitorSimpleGraph_klass_onStartMonitor(aInstance) {
+    if (this.activeInstances.indexOf(aInstance) < 0)
+      this.activeInstances.push(aInstance);
+    this.monitoringCount++;
+    if (this.monitoringCount > 1) return;
+    gSystem.addMonitor(this.type, this.observer, this.interval);
+  },
+
+  onStopMonitor : function SystemMonitorSimpleGraph_klass_onStopMonitor(aInstance) {
+    var index = this.activeInstances.indexOf(aInstance);
+    if (index > -1)
+      this.activeInstances.splice(index, 1);
+    this.monitoringCount = Math.max(0, this.monitoringCount - 1);
+    if (this.monitoringCount > 0) return;
+    gSystem.removeMonitor(this.type, this.observer);
+  },
+
+  monitor : function SystemMonitorSimpleGraph_klass_monitor(aValue) {
+    this.valueArray.shift();
+    this.valueArray.push(aValue);
+    this.notifyToInstances(aValue);
+  },
+
+  notifyToInstances : function SystemMonitorSimpleGraph_klass_notifyToInstances(aValue) {
+    this.activeInstances.forEach(function(aInstance) {
+      aInstance.monitor(aValue);
+    });
+  },
+
   // nsIObserver
   observe : function SystemMonitorSimpleGraph_klass_observe(aSubject, aTopic, aData) {
     switch (aTopic) {
       case "nsPref:changed":
         this.onChangePref(aData);
         break;
-      case this.topic:
-        this.monitor(aSubject.wrappedJSObject);
-        break;
     }
-  },
-
-  monitor : function SystemMonitorSimpleGraph_klass_monitor(aValue) {
-    this.valueArray.shift();
-    this.valueArray.push(aValue);
   },
 
   // preferences listener
   onChangePref : function SystemMonitorSimpleGraph_klass_onChangePref(aData) {
-    var part = aData.replace(DOMAIN+this.id+".", "");
+    var part = aData.replace(DOMAIN + this.id + ".", "");
     switch (part) {
       case "size":
         this.size = prefs.getPref(aData);
@@ -262,6 +282,14 @@ defineProperties(SystemMonitorSimpleGraphItem, {
           if (aInstance.observing)
             aInstance.update();
         });
+        break;
+
+      case "interval":
+        this.interval = prefs.getPref(DOMAIN + this.id + ".interval");
+        if (this.monitoringCount > 0) {
+          gSystem.removeMonitor(this.type, this.observer);
+          gSystem.addMonitor(this.type, this.observer, this.interval);
+        }
         break;
 
       case "color.foregroundMinAlpha":
@@ -411,8 +439,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       var canvas = this.canvas;
       canvas.style.width = (canvas.width = item.width = this.size)+"px";
 
-      SystemMonitorManager.onStart(this);
-      Services.obs.addObserver(this, this.topic, false);
+      this.klass.onStartMonitor(this);
 
       this.drawGraph(true);
 
@@ -435,8 +462,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
         return;
 
     try {
-      SystemMonitorManager.onStop(this);
-      Services.obs.removeObserver(this, this.topic);
+      this.klass.onStopMonitor(this);
       prefs.removePrefListener(this);
       this.stopObserve();
     }
@@ -872,6 +898,8 @@ function SystemMonitorScalableGraphItem(aDocument)
 defineProperties(SystemMonitorScalableGraphItem, SystemMonitorSimpleGraphItem);
 defineProperties(SystemMonitorScalableGraphItem, {
   instances : [],
+  activeInstances : [],
+  monitoringCount : 0,
 
   rawValueArray     : null,
   unifiedValueArray : null,
@@ -981,13 +1009,15 @@ function SystemMonitorCPUItem(aDocument)
 defineProperties(SystemMonitorCPUItem, SystemMonitorSimpleGraphItem);
 defineProperties(SystemMonitorCPUItem, {
   instances : [],
+  activeInstances : [],
+  monitoringCount : 0,
 
   id     : "cpu-usage",
   type   : "cpu-usages",
   itemId : "system-monitor-cpu-usage",
 
   multiplexed    : true,
-  multiplexCount : SystemMonitorManager.cpuCount,
+  multiplexCount : gSystem.cpu.count,
   multiplexType  : MULTIPLEX_SEPARATE,
 });
 SystemMonitorCPUItem.prototype = Object.create(SystemMonitorSimpleGraphItem.prototype, toPropertyDescriptors({
@@ -1027,6 +1057,8 @@ function SystemMonitorMemoryItem(aDocument)
 defineProperties(SystemMonitorMemoryItem, SystemMonitorSimpleGraphItem);
 defineProperties(SystemMonitorMemoryItem, {
   instances : [],
+  activeInstances : [],
+  monitoringCount : 0,
 
   id     : "memory-usage",
   type   : "memory-usage",
@@ -1045,6 +1077,7 @@ defineProperties(SystemMonitorMemoryItem, {
       value[1] = aValue.self / aValue.total;
     }
     this.valueArray.push(value);
+    this.notifyToInstances(aValue);
   }
 });
 SystemMonitorMemoryItem.prototype = Object.create(SystemMonitorSimpleGraphItem.prototype, toPropertyDescriptors({
@@ -1080,6 +1113,8 @@ function SystemMonitorNetworkItem(aDocument)
 defineProperties(SystemMonitorNetworkItem, SystemMonitorScalableGraphItem);
 defineProperties(SystemMonitorNetworkItem, {
   instances : [],
+  activeInstances : [],
+  monitoringCount : 0,
 
   id     : "network-usage",
   type   : "network-usage",
@@ -1169,6 +1204,8 @@ defineProperties(SystemMonitorNetworkItem, {
     var upBytesPerSec = elapsedTime ? upBytesDelta / elapsedSec : 0;
     // Refresh chart
     this.addNewValue([downBytesPerSec, upBytesPerSec]);
+
+    this.notifyToInstances(aNetworkLoad);
   }
 });
 SystemMonitorNetworkItem.prototype = Object.create(SystemMonitorScalableGraphItem.prototype, toPropertyDescriptors({

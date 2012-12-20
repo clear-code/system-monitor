@@ -1,10 +1,9 @@
-Components.utils.import("resource://system-monitor-modules/SystemMonitorManager.js");
 Components.utils.import("resource://system-monitor-modules/ui.js");
 
 // function log(s) { dump(s + "\n"); }
 
 var SystemMonitorService = {
-  domain : SystemMonitorManager.DOMAIN,
+  DOMAIN : SystemMonitorCPUItem.DOMAIN,
 
   initialized : false,
   resizing : false,
@@ -95,7 +94,7 @@ var SystemMonitorService = {
 
   initialShow : function SystemMonitorService_initialShow() {
     var bar;
-    this.prefs.getPref(this.domain+"defaultTargetToolbar")
+    this.prefs.getPref(this.DOMAIN + "defaultTargetToolbar")
       .split(/[,\s]+/)
       .some(function(aTarget) {
         bar = document.getElementById(aTarget);
