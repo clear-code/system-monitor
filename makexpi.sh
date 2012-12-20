@@ -5,9 +5,15 @@ case $(uname) in
   *)                   sed="sed -r" ;;
 esac
 
+extract() {
+  grep "$1" VERSION | \
+    cut -d "=" -f 2 | \
+    $sed -e "s/^ +| +\$//g" | \
+    tr -d "\r" | tr -d "\n"
+}
 
-PACKAGE_NAME=$(grep "PACKAGE_NAME" VERSION | cut -d "=" -f 2 | $sed -e "s/^ +| +\$//g")
-PACKAGE_VERSION=$(grep "PACKAGE_VERSION" VERSION | cut -d "=" -f 2 | $sed -e "s/^ +| +\$//g")
+PACKAGE_NAME=$(extract PACKAGE_NAME)
+PACKAGE_VERSION=$(extract PACKAGE_VERSION)
 
 BASENAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 
