@@ -1,4 +1,4 @@
-var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
+// var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
 // function dump(s) { Application.console.log(s); }
 // function log(s) { dump(s + "\n"); }
 
