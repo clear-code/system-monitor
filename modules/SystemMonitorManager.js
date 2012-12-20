@@ -106,10 +106,6 @@ var SystemMonitorManager = {
     }, this);
   },
 
-  init: function () {
-    this.applyPlatformDefaultPrefs();
-  },
-
   _count: {},
   onStart: function(aListener) {
     var count = this._count[aListener.type] || 0;
@@ -128,28 +124,5 @@ var SystemMonitorManager = {
       type: aListener.type,
       id:   aListener.id
     });
-  },
-
-  applyPlatformDefaultPrefs: function () {
-    const XULAppInfo = Cc["@mozilla.org/xre/app-info;1"]
-                         .getService(Ci.nsIXULAppInfo)
-                         .QueryInterface(Ci.nsIXULRuntime);
-    var OS = XULAppInfo.OS;
-    var processed = {};
-    var originalKeys = prefs.getDescendant(DOMAIN+"platform."+OS);
-    for (let i = 0, maxi = originalKeys.length; i < maxi; i++) {
-      let originalKey = originalKeys[i];
-      let key = originalKey.replace("platform."+OS+".", "");
-      prefs.setDefaultPref(key, prefs.getPref(originalKey));
-      processed[key] = true;
-    }
-    originalKeys = prefs.getDescendant(DOMAIN+"platform.default");
-    for (let i = 0, maxi = originalKeys.length; i < maxi; i++) {
-      let originalKey = originalKeys[i];
-      let key = originalKey.replace("platform.default.", "");
-      if (!(key in processed))
-        prefs.setDefaultPref(key, prefs.getPref(originalKey));
-    }
   }
 };
-SystemMonitorManager.init();
