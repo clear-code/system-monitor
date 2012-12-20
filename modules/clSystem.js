@@ -287,14 +287,24 @@ clSystem.prototype = {
 		return false;
 	},
 	_ensureAllowed : function(aOwner) {
-		var self = this;
-		var uri  = Services.io.newURI(aOwner.location.href, null, null);
+		var uri = Services.io.newURI(aOwner.location.href, null, null);
+		// see also:
+		//   https://github.com/clear-code/system-monitor/issues/9
+		//   https://bugzilla.mozilla.org/show_bug.cgi?id=204285
+		if (uri.scheme == 'file')
+			return Deferred.next(function() {
+				throw new Error('Local files cannot have permission to monitor system informations.');
+			});
+
+		var siteName;
 		try {
 			// throws exception for special URLs (e.g., about:blank)
-			var siteName = uri.host;
+			siteName = uri.host;
 		} catch (x) {
 			siteName = uri.spec;
 		}
+
+		var self = this;
 		return confirmWithPopup({
 					browser : getOwnerFrameElement(aOwner),
 					label   : bundle.getFormattedString('permission_confirm_text', [siteName]),
