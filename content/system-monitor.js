@@ -165,6 +165,11 @@ var SystemMonitorService = {
         });
   },
   confirmInsertToolbarItems : function SystemMonitorService_confirmInsertToolbarItems() {
+    if (!('gBrowser' in window)) { // Thunderbird
+      return this.Deferred.next(function() {
+        return false;
+      });
+    }
     var ns = {};
     Components.utils.import("resource://system-monitor-modules/lib/confirmWithTab.js", ns);
     return ns.confirmWithTab({
