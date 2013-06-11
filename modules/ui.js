@@ -2,7 +2,9 @@
 // function dump(s) { Application.console.log(s); }
 // function log(s) { dump(s + "\n"); }
 
-const DISABLE_DRAW = false; // for debugging
+// for debugging
+const DISABLE_DRAW = false;
+const DISABLE_GRADIENT = false;
 
 const EXPORTED_SYMBOLS = [
 //      "SystemMonitorItem",
@@ -365,6 +367,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   observing : false,
 
   get foregroundGradientStyle() {
+    if (DISABLE_GRADIENT)
+      return this.foregroundGradient[0];
+
     if (!this._foregroundGradientStyle)
       this._foregroundGradientStyle = this.createGradient(this.foregroundGradient);
     return this._foregroundGradientStyle;
@@ -375,6 +380,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   _foregroundGradientStyle : null,
 
   get backgroundGradientStyle() {
+    if (DISABLE_GRADIENT)
+      return this.backgroundGradient[0];
+
     if (!this._backgroundGradientStyle)
       this._backgroundGradientStyle = this.createGradient(this.backgroundGradient);
     return this._backgroundGradientStyle;
@@ -644,6 +652,12 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var startAlpha = this.foregroundStartAlpha;
     var endAlpha   = this.foregroundEndAlpha;
 
+    var foregroundStyle;
+    if (DISABLE_GRADIENT) {
+      foregroundStyle = color;
+    }
+    else {
+
     var gradient = context.createLinearGradient(0, this.canvas.height, 0, 0);
     gradient.addColorStop(0, "rgba("+color+", "+startAlpha+")");
 
@@ -666,9 +680,12 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     }
 
     gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
+    foregroundStyle = gradient;
+
+    }
 
     if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
-    this.drawGraphBar(gradient, aX, aMaxY, 0, aMaxY * total);
+    this.drawGraphBar(foregroundStyle, aX, aMaxY, 0, aMaxY * total);
 
     context.restore();
   },
