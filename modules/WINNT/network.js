@@ -5,7 +5,12 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/ShutdownListener.js');
-Components.utils.import('resource://system-monitor-modules/lib/prmem.js');
+try {
+  Components.utils.import('resource://system-monitor-modules/lib/mozalloc.js');
+}
+catch(error) { // for old environments
+  Components.utils.import('resource://system-monitor-modules/lib/prmem.js');
+}
 
 const XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
         .getService(Ci.nsIXULAppInfo)
@@ -128,7 +133,7 @@ function getNetworkLoad() {
   // Get proper dwSize
   GetIfTable(null, dwSize.address(), 0);
   // Allocate MIB_IFTABLE
-  var ifTablePtr = ctypes.cast(PR_Calloc(1, dwSize), MIB_IFTABLE.ptr);
+  var ifTablePtr = ctypes.cast(calloc(1, dwSize), MIB_IFTABLE.ptr);
 
   // Get IF table
   GetIfTable(ifTablePtr, dwSize.address(), 0);
@@ -147,7 +152,7 @@ function getNetworkLoad() {
     }
   }
 
-  PR_Free(ifTablePtr);
+  free(ifTablePtr);
 
   totalNetworkload.totalBytes = totalNetworkload.downBytes + totalNetworkload.upBytes;
   return totalNetworkload;

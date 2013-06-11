@@ -5,7 +5,12 @@ const Ci = Components.interfaces;
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
 Components.utils.import('resource://system-monitor-modules/ShutdownListener.js');
-Components.utils.import('resource://system-monitor-modules/lib/prmem.js');
+try {
+  Components.utils.import('resource://system-monitor-modules/lib/mozalloc.js');
+}
+catch(error) { // for old environments
+  Components.utils.import('resource://system-monitor-modules/lib/prmem.js');
+}
 
 const XULAppInfo = Cc['@mozilla.org/xre/app-info;1']
 					.getService(Ci.nsIXULAppInfo)
