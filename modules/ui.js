@@ -2,6 +2,8 @@
 // function dump(s) { Application.console.log(s); }
 // function log(s) { dump(s + "\n"); }
 
+const DISABLE_DRAW = false; // for debugging
+
 const EXPORTED_SYMBOLS = [
 //      "SystemMonitorItem",
 //      "SystemMonitorSimpleGraphItem",
@@ -511,6 +513,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   },
 
   drawGraph : function SystemMonitorSimpleGraph_drawGraph(aDrawAll) {
+    if (DISABLE_DRAW)
+      return;
+
     var canvas = this.canvas;
     var w = canvas.width;
     var h = canvas.height;
@@ -545,6 +550,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   },
 
   clearAll : function SystemMonitorSimpleGraph_clearAll() {
+    if (DISABLE_DRAW)
+      return;
+
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     context.save();
@@ -555,8 +563,12 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   },
 
   drawVerticalLine : function SystemMonitorSimpleGraph_drawVerticalLine(aStyle, aX, aMaxY, aBeginY, aEndY, aWidth) {
-    // On Mac OS X, a zero-length line wrongly covers whole the canvas!
-    if (aBeginY == aEndY) return;
+     if (DISABLE_DRAW)
+      return;
+
+   // On Mac OS X, a zero-length line wrongly covers whole the canvas!
+    if (aBeginY == aEndY)
+      return;
 
     var context = this.canvas.getContext("2d");
     context.save();
@@ -579,6 +591,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
 
   drawSeparators : function SystemMonitorSimpleGraph_drawSeparators(aMaxX, aMaxY)
   {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
     context.globalAlpha = 0.5;
@@ -597,6 +612,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   },
 
   drawGraphMultiplexedBar : function SystemMonitorSimpleGraph_drawGraphMultiplexedBar(aValues, aX, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
     context.globalAlpha = 1;
@@ -614,6 +632,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
   drawGraphMultiplexedBarStacked : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -652,6 +673,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
   drawGraphMultiplexedBarLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarLayered(aValues, aX, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -671,6 +695,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
   drawGraphMultiplexedBarSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarSeparated(aValues, aX, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -690,6 +717,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
 
   // polygonal graph
   drawGraphPolygon : function SystemMonitorSimpleGraph_drawGraphPolygon(aValues, aMaxY, aStyle) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -723,6 +753,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     }
   },
   drawGraphMultiplexedPolygonStacked : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonStacked(aValues, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -748,6 +781,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
   drawGraphMultiplexedPolygonLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonLayered(aValues, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
     context.save();
 
@@ -765,6 +801,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
   drawGraphMultiplexedPolygonSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonSeparated(aValues, aMaxX, aMaxY) {
+    if (DISABLE_DRAW)
+      return;
+
     var context = this.canvas.getContext("2d");
 
     var count  = this.multiplexCount;
@@ -784,6 +823,9 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   },
 
   drawDisabled : function SystemMonitorSimpleGraph_drawDisabled() {
+    if (DISABLE_DRAW)
+      return;
+
     this.clearAll();
 
     var canvas = this.canvas;
@@ -1238,6 +1280,9 @@ SystemMonitorNetworkItem.prototype = Object.create(SystemMonitorScalableGraphIte
     this.drawRedZone();
   },
   drawRedZone : function SystemMonitorNetworkItem_drawRedZone() {
+    if (DISABLE_DRAW)
+      return;
+
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     var h = canvas.height;
