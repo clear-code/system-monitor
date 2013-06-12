@@ -372,7 +372,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
 
   get foregroundGradientStyle() {
     if (DISABLE_GRADIENT)
-      return this.foregroundGradient[0];
+      return this.foreground;
 
     if (!this._foregroundGradientStyle)
       this._foregroundGradientStyle = this.createGradient(this.foregroundGradient);
