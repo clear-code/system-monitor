@@ -192,7 +192,7 @@ defineProperties(SystemMonitorSimpleGraphItem, {
   foreground                 : "#33FF33",
   foregroundGradient         : ["#33FF33", "#33FF33"],
   foregroundColors           : [],
-  foregroundColorsDecimalRGB : [],
+  foregroundGradients        : [["#33FF33", "#33FF33"]],
   foregroundStartAlpha       : 0,
   foregroundEndAlpha         : 1,
   foregroundMinAlpha         : 0.2,
@@ -321,47 +321,30 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     this[aTarget+"EndAlpha"]   = endAlpha;
 
     var baseGradient = this.calculateGradientColors(base, startAlpha, endAlpha);
-    this[aTarget+"ColorsDecimalRGB"] = [baseGradient.decimalRGB];
-
     this[aTarget] = base;
     this[aTarget+"Colors"] = [base];
-    this[aTarget+"Gradient"] = baseGradient.gradient;
-    this[aTarget+"ColorsGradient"] = [baseGradient.gradient];
+    this[aTarget+"Gradient"] = baseGradient;
+    this[aTarget+"Gradients"] = [baseGradient];
 
     this.instances.forEach(function(aInstance) {
       aInstance[aTarget+"GradientStyle"] = null;
-      aInstance[aTarget+"ColorsGradientStyles"] = null;
+      aInstance[aTarget+"GradientStyles"] = null;
     });
 
-    var number = 1;
-    do {
-      let color = prefs.getPref(key + "." + number);
-      if (color === null) break;
-
+    for (let i = 1; (color = prefs.getPref(key + "." + i)) !== null; i++) {
       this[aTarget+"Colors"].push(color);
-
       let gradient = this.calculateGradientColors(color, startAlpha, endAlpha);
-      this[aTarget+"ColorsDecimalRGB"].push(gradient.decimalRGB);
-      this[aTarget+"ColorsGradient"].push(gradient.gradient);
-
-      number++;
-    } while (true);
+      this[aTarget+"Gradients"].push(gradient);
+    }
   },
   calculateGradientColors : function SystemMonitorSimpleGraph_calculateGradientColors(aBase, aStartAlpha, aEndAlpha)
   {
-    var result = {
-      gradient:   [aBase, aBase],
-      decimalRGB: aBase
-    };
     if (aBase.charAt(0) == "#") {
       let baseCode = aBase.substr(1);
-      result.gradient = [RGBToRGBA(baseCode, aStartAlpha),
-                         RGBToRGBA(baseCode, aEndAlpha)];
-      result.decimalRGB = hexToDecimal(baseCode);
-    } else if (aBase.indexOf("rgb") == 0) {
-      result.decimalRGB = aBase.replace(/^rgba?\(|\)/g, "");
+      return [RGBToRGBA(baseCode, aStartAlpha),
+              RGBToRGBA(baseCode, aEndAlpha)];
     }
-    return result;
+    return [aBase, aBase];
   }
 });
 SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototype, toPropertyDescriptors({
@@ -383,21 +366,24 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
   },
   _foregroundGradientStyle : null,
 
-  get foregroundColorsGradientStyles() {
-    if (!this._foregroundColorsGradientStyles)
-      this._foregroundColorsGradientStyles = this.foregroundColorsGradient.map(function(gradient) {
+  get foregroundGradientStyles() {
+    if (DISABLE_GRADIENT || !this.foregroundGradients)
+      return this.foregroundColors;
+
+    if (!this._foregroundGradientStyles)
+      this._foregroundGradientStyles = this.foregroundGradients.map(function(gradient) {
         return this.createGradient(gradient);
       }, this);
-    return this._foregroundColorsGradientStyles;
+    return this._foregroundGradientStyles;
   },
-  set foregroundColorsGradientStyles(aValue) {
-    return this._foregroundColorsGradientStyles = aValue;
+  set foregroundGradientStyles(aValue) {
+    return this._foregroundGradientStyles = aValue;
   },
-  _foregroundColorsGradientStyles: null,
+  _foregroundGradientStyles: null,
 
   get backgroundGradientStyle() {
     if (DISABLE_GRADIENT)
-      return this.backgroundGradient[0];
+      return this.background;
 
     if (!this._backgroundGradientStyle)
       this._backgroundGradientStyle = this.createGradient(this.backgroundGradient);
@@ -613,15 +599,20 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.save();
 
     context.translate(Math.floor(aX)+(aWidth/2), aMaxY - aEndY);
-    context.scale(1, (aEndY - aBeginY) / aMaxY);
+    var yScale = (aEndY - aBeginY) / aMaxY
+    context.scale(1, yScale);
+
+    var length = aMaxY;
+    if (aOffsetBeginY > 0)
+      length = (aEndY - aOffsetBeginY) / yScale;
 
     context.strokeStyle = aStyle;
 
     context.beginPath();
     context.lineWidth = aWidth || 1.0;
     context.lineCap = "square";
-    context.moveTo(0, aOffsetBeginY);
-    context.lineTo(0, aMaxY);
+    context.moveTo(0, 0);
+    context.lineTo(0, length);
     context.closePath();
     context.stroke();
 
@@ -699,52 +690,29 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var context = this.canvas.getContext("2d");
     context.save();
 
-    var count      = this.multiplexCount;
-    var colors     = this.foregroundColorsDecimalRGB;
-    var color      = colors[0];
-    var startAlpha = this.foregroundStartAlpha;
-    var endAlpha   = this.foregroundEndAlpha;
-
-    var foregroundStyle;
-    if (DISABLE_GRADIENT) {
-      foregroundStyle = color;
-    }
-    else {
-
-    var gradient = context.createLinearGradient(0, this.canvas.height, 0, 0);
-    gradient.addColorStop(0, "rgba("+color+", "+startAlpha+")");
+    var count     = this.multiplexCount;
+    var gradients = DISABLE_GRADIENT ? this.foregroundColors : this.foregroundGradientStyles ;
+    var gradient  = gradients[0];
 
     var total = unifyValues(aValues);
-    var current = 0;
-    for (let i = 0; i < count; i++) {
-      let delta = aValues[i] / total; // this can be NaN when 0/0
-      current += isNaN(delta) ? 0 : delta ;
-
-      let nextColor = colors[i+1] || color;
-      if (nextColor == color) {
-        gradient.addColorStop(current, "rgba("+color+", "+endAlpha+")");
-        if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+startAlpha+")");
-      } else {
-        let alpha = startAlpha + (current * (endAlpha - startAlpha));
-        gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
-        color = nextColor;
-        if (i < count - 1) gradient.addColorStop(current, "rgba("+color+", "+alpha+")");
-      }
-    }
-
-    gradient.addColorStop(1, "rgba("+color+", "+endAlpha+")");
-    foregroundStyle = gradient;
-
-    }
-
     if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
-    this.drawGraphBar({
-      style:  foregroundStyle,
-      x:      aX,
-      maxY:   aMaxY,
-      beginY: 0,
-      endY:   aMaxY * total
-    });
+
+    var lastY = 0;
+    var lastGraphY = 0;
+    for (let i = 0; i < count; i++) {
+      let y = lastY + aValues[i];
+      let graphY = y * aMaxY;
+      this.drawGraphBar({
+        style:  gradients[i] || gradient,
+        x:      aX,
+        maxY:   aMaxY,
+        beginY: 0,
+        offsetBeginY: i == 0 ? 0 : lastGraphY + 0.1,
+        endY:   graphY
+      });
+      lastY = y;
+      lastGraphY = graphY;
+    }
 
     context.restore();
   },
@@ -1015,7 +983,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
 defineSharedProperties(SystemMonitorSimpleGraphItem,
                        'type topic interval size unit ' +
                        'foreground foregroundGradient foregroundMinAlpha ' +
-                       'foregroundColors foregroundColorsDecimalRGB foregroundStartAlpha foregroundEndAlpha ' +
+                       'foregroundColors foregroundGradients foregroundStartAlpha foregroundEndAlpha ' +
                        'background backgroundGradient ' +
                        'style multiplexed multiplexCount multiplexType valueArray');
 defineObserver(SystemMonitorSimpleGraphItem);
