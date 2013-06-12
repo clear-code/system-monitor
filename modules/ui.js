@@ -563,7 +563,13 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
           if (typeof value == "object") {
             this.drawGraphMultiplexedBar(value, x, w, h);
           } else {
-            this.drawGraphBar(this.foregroundGradientStyle, x, h, 0, h * value);
+            this.drawGraphBar({
+              style:  this.foregroundGradientStyle,
+              x:      x,
+              maxY:   h,
+              beginY: 0,
+              endY:   h * value
+            });
           }
         }
         x += this.unit;
@@ -586,9 +592,17 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.restore();
   },
 
-  drawVerticalLine : function SystemMonitorSimpleGraph_drawVerticalLine(aStyle, aX, aMaxY, aBeginY, aEndY, aWidth) {
+  drawVerticalLine : function SystemMonitorSimpleGraph_drawVerticalLine(aParameters) {
      if (DISABLE_DRAW)
       return;
+
+   aParameters = aParameters || {};
+   var aStyle  = aParameters.style;
+   var aX      = aParameters.x;
+   var aMaxY   = aParameters.maxY;
+   var aBeginY = aParameters.beginY;
+   var aEndY   = aParameters.endY;
+   var aWidth  = aParameters.width;
 
    // On Mac OS X, a zero-length line wrongly covers whole the canvas!
     if (aBeginY == aEndY)
@@ -625,14 +639,29 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var width = (aMaxX / count) - 1;
     for (let i = 1, maxi = count; i < maxi; i++)
     {
-      this.drawVerticalLine(this.foreground, width + 0.5, aMaxY, 0, aMaxY, 1);
+      this.drawVerticalLine({
+        style:  this.foreground,
+        x:      width + 0.5,
+        maxY:   aMaxY,
+        beginY: 0,
+        endY:   aMaxY,
+        width:  1
+      });
     }
     context.restore();
   },
 
   // bar graph
-  drawGraphBar : function SystemMonitorSimpleGraph_drawGraphBar(aStyle, aX, aMaxY, aBeginY, aEndY) {
-    this.drawVerticalLine(aStyle, aX, aMaxY, aBeginY, aEndY, this.unit);
+  drawGraphBar : function SystemMonitorSimpleGraph_drawGraphBar(aParameters) {
+   aParameters = aParameters || {};
+    this.drawVerticalLine({
+      style:  aParameters.style,
+      x:      aParameters.x,
+      maxY:   aParameters.maxY,
+      beginY: aParameters.beginY,
+      endY:   aParameters.endY,
+      width:  this.unit
+    });
   },
 
   drawGraphMultiplexedBar : function SystemMonitorSimpleGraph_drawGraphMultiplexedBar(aValues, aX, aMaxX, aMaxY) {
@@ -651,7 +680,13 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     } else { // unified (by default)
       let value = unifyValues(aValues);
       if (this.multiplexType == MULTIPLEX_SEPARATE) value /= this.multiplexCount;
-      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, aMaxY * value);
+      this.drawGraphBar({
+        style:  this.foregroundGradientStyle,
+        x:      aX,
+        maxY:   aMaxY,
+        beginY: 0,
+        endY:   aMaxY * value
+      });
     }
     context.restore();
   },
@@ -701,7 +736,13 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     }
 
     if (this.multiplexType == MULTIPLEX_SEPARATE) total /= count;
-    this.drawGraphBar(foregroundStyle, aX, aMaxY, 0, aMaxY * total);
+    this.drawGraphBar({
+      style:  foregroundStyle,
+      x:      aX,
+      maxY:   aMaxY,
+      beginY: 0,
+      endY:   aMaxY * total
+    });
 
     context.restore();
   },
@@ -721,7 +762,13 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       let value = aValues[i];
       let endY = aMaxY * value;
       context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
-      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, beginY, endY);
+      this.drawGraphBar({
+        style:  this.foregroundGradientStyle,
+        x:      aX,
+        maxY:   aMaxY,
+        beginY: beginY,
+        endY:   endY
+      });
       beginY = endY + 0.5;
     }
 
@@ -741,7 +788,13 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       let endY = aMaxY * value;
       context.save();
       context.translate((width + 1) * i, 0);
-      this.drawGraphBar(this.foregroundGradientStyle, aX, aMaxY, 0, endY);
+      this.drawGraphBar({
+        style:  this.foregroundGradientStyle,
+        x:      aX,
+        maxY:   aMaxY,
+        beginY: 0,
+        endY:   endY
+      });
       context.restore();
     }
 
