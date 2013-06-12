@@ -320,25 +320,17 @@ defineProperties(SystemMonitorSimpleGraphItem, {
     this[aTarget+"StartAlpha"] = startAlpha;
     this[aTarget+"EndAlpha"]   = endAlpha;
 
-    var startColor = base,
-        endColor = base,
-        decimalRGB = base;
-    if (base.charAt(0) == "#") {
-      let baseCode = base.substr(1);
-      startColor = RGBToRGBA(baseCode, startAlpha);
-      endColor = RGBToRGBA(baseCode, endAlpha);
-      decimalRGB = hexToDecimal(baseCode);
-    } else if (base.indexOf("rgb") == 0) {
-      decimalRGB = base.replace(/^rgba?\(|\)/g, "");
-    }
-    this[aTarget+"ColorsDecimalRGB"] = [decimalRGB];
+    var baseGradient = this.calculateGradientColors(base, startAlpha, endAlpha);
+    this[aTarget+"ColorsDecimalRGB"] = [baseGradient.decimalRGB];
 
     this[aTarget] = base;
     this[aTarget+"Colors"] = [base];
-    this[aTarget+"Gradient"] = [startColor, endColor];
+    this[aTarget+"Gradient"] = baseGradient.gradient;
+    this[aTarget+"ColorsGradient"] = [baseGradient.gradient];
 
     this.instances.forEach(function(aInstance) {
       aInstance[aTarget+"GradientStyle"] = null;
+      aInstance[aTarget+"ColorsGradientStyles"] = null;
     });
 
     var number = 1;
@@ -348,16 +340,28 @@ defineProperties(SystemMonitorSimpleGraphItem, {
 
       this[aTarget+"Colors"].push(color);
 
-      let decimalRGB = color;
-      if (color.charAt(0) == "#") {
-        decimalRGB = hexToDecimal(color.substr(1));
-      } else if (color.indexOf("rgb") == 0) {
-        decimalRGB = color.replace(/^rgba?\(|\)/g, "");
-      }
-      this[aTarget+"ColorsDecimalRGB"].push(decimalRGB);
+      let gradient = this.calculateGradientColors(color, startAlpha, endAlpha);
+      this[aTarget+"ColorsDecimalRGB"].push(gradient.decimalRGB);
+      this[aTarget+"ColorsGradient"].push(gradient.gradient);
 
       number++;
     } while (true);
+  },
+  calculateGradientColors : function SystemMonitorSimpleGraph_calculateGradientColors(aBase, aStartAlpha, aEndAlpha)
+  {
+    var result = {
+      gradient:   [aBase, aBase],
+      decimalRGB: aBase
+    };
+    if (aBase.charAt(0) == "#") {
+      let baseCode = aBase.substr(1);
+      result.gradient = [RGBToRGBA(baseCode, aStartAlpha),
+                         RGBToRGBA(baseCode, aEndAlpha)];
+      result.decimalRGB = hexToDecimal(baseCode);
+    } else if (aBase.indexOf("rgb") == 0) {
+      result.decimalRGB = aBase.replace(/^rgba?\(|\)/g, "");
+    }
+    return result;
   }
 });
 SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototype, toPropertyDescriptors({
@@ -378,6 +382,18 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     return this._foregroundGradientStyle = aValue;
   },
   _foregroundGradientStyle : null,
+
+  get foregroundColorsGradientStyles() {
+    if (!this._foregroundColorsGradientStyles)
+      this._foregroundColorsGradientStyles = this.foregroundColorsGradient.map(function(gradient) {
+        return this.createGradient(gradient);
+      }, this);
+    return this._foregroundColorsGradientStyles;
+  },
+  set foregroundColorsGradientStyles(aValue) {
+    return this._foregroundColorsGradientStyles = aValue;
+  },
+  _foregroundColorsGradientStyles: null,
 
   get backgroundGradientStyle() {
     if (DISABLE_GRADIENT)
