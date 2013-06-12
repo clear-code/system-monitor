@@ -602,10 +602,11 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
    var aMaxY   = aParameters.maxY;
    var aBeginY = aParameters.beginY;
    var aEndY   = aParameters.endY;
+   var aOffsetBeginY = aParameters.offsetBeginY || 0;
    var aWidth  = aParameters.width;
 
    // On Mac OS X, a zero-length line wrongly covers whole the canvas!
-    if (aBeginY == aEndY)
+    if (aBeginY - aOffsetBeginY == aEndY)
       return;
 
     var context = this.canvas.getContext("2d");
@@ -619,7 +620,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.beginPath();
     context.lineWidth = aWidth || 1.0;
     context.lineCap = "square";
-    context.moveTo(0, 0);
+    context.moveTo(0, aOffsetBeginY);
     context.lineTo(0, aMaxY);
     context.closePath();
     context.stroke();
@@ -660,6 +661,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       maxY:   aParameters.maxY,
       beginY: aParameters.beginY,
       endY:   aParameters.endY,
+      offsetBeginY: aParameters.offsetBeginY,
       width:  this.unit
     });
   },
