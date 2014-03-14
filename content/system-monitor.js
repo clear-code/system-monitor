@@ -120,7 +120,7 @@ var SystemMonitorService = {
 
     var autoInsertedItems = [];
     for each (let item in this.items) {
-      if (this.prefs.getPref(this.domain+item.id+".initialShow"))
+      if (this.prefs.getPref(this.DOMAIN+item.id+".initialShow"))
         continue;
 
       if (currentset.indexOf(item.itemId) < 0) {
@@ -143,7 +143,7 @@ var SystemMonitorService = {
     this.confirmInsertToolbarItems()
         .next(function(aInsert) {
           for each (let item in autoInsertedItems) {
-            self.prefs.setPref(self.domain+item+".initialShow", true);
+            self.prefs.setPref(self.DOMAIN+item+".initialShow", true);
           }
           if (!aInsert)
             return;
