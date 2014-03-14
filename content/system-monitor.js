@@ -150,15 +150,20 @@ var SystemMonitorService = {
           bar.currentSet = newset;
           bar.setAttribute("currentset", newset);
           document.persist(bar.id, "currentset");
-          if ("BrowserToolboxCustomizeDone" in window) {
+          if ("BrowserToolboxCustomizeDone" in window) { // non-Australis Firefox (Firefox 28 and olders)
             self.Deferred.next(function() {
               BrowserToolboxCustomizeDone(true);
               self.initToolbarItems();
             });
           }
-          else if ("MailToolboxCustomizeDone" in window) {
+          else if ("MailToolboxCustomizeDone" in window) { // Thunderbird
             self.Deferred.next(function() {
               MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');
+              self.initToolbarItems();
+            });
+          }
+          else { // Australis Firefox (Firefox 29 and later)
+            self.Deferred.next(function() {
               self.initToolbarItems();
             });
           }
