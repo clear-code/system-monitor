@@ -1,7 +1,7 @@
 /**
  * @fileOverview Resizable Toolbar Item Library for Firefox 24 or later
  * @author       ClearCode Inc.
- * @version      3
+ * @version      4
  *
  * @license
  *   The MIT License, Copyright (c) 2011-2014 ClearCode Inc.
@@ -27,7 +27,7 @@ if (typeof namespace == 'undefined') {
 
 var resizableToolbarItem;
 (function() {
-	const currentRevision = 3;
+	const currentRevision = 4;
 
 	var loadedRevision = 'resizableToolbarItem' in namespace ?
 			namespace.resizableToolbarItem.revision :
@@ -65,6 +65,8 @@ var resizableToolbarItem;
 			'  min-width: 8px !important;\n' +
 			'  margin: 0 -4px 0 -3px !important;\n' +
 			'  max-width: 8px !important;\n' +
+			'  position: relative !important;\n' +
+			'  z-index: 1000 !important;\n' +
 			'}\n' +
 
 			'[orient="vertical"] > .%SPLITTER_CLASS% {\n' +
