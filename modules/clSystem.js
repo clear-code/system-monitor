@@ -63,7 +63,9 @@ function getDOMWindowUtils(aWindow) {
 }
 
 function getOwnerFrameElement(aWindow) {
-	if (!aWindow || !(aWindow instanceof Ci.nsIDOMWindow))
+	if (!aWindow ||
+		typeof aWindow.Window != 'function' ||
+		!(aWindow instanceof aWindow.Window))
 		return null;
 
 	return aWindow
@@ -246,7 +248,9 @@ clSystem.prototype = {
 	addMonitor : function(aTopic, aMonitor, aInterval) {
 		var caller = arguments.callee.caller;
 		var owner = caller && Components.utils.getGlobalForObject(caller);
-		if (owner && !(owner instanceof Ci.nsIDOMWindow))
+		if (owner &&
+			!(typeof owner.Window == 'function' &&
+			  owner instanceof owner.Window))
 			owner = null;
 		return this.addMonitorWithOwner(aTopic, aMonitor, aInterval, owner || this.owner);
 	},
