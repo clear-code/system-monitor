@@ -1,7 +1,7 @@
 /**
- * @fileOverview Resizable Toolbar Item Library for Firefox 24 or later
+ * @fileOverview Resizable Toolbar Item Library for Firefox 31 or later
  * @author       ClearCode Inc.
- * @version      4
+ * @version      5
  *
  * @license
  *   The MIT License, Copyright (c) 2011-2014 ClearCode Inc.
@@ -27,7 +27,7 @@ if (typeof namespace == 'undefined') {
 
 var resizableToolbarItem;
 (function() {
-	const currentRevision = 4;
+	const currentRevision = 5;
 
 	var loadedRevision = 'resizableToolbarItem' in namespace ?
 			namespace.resizableToolbarItem.revision :
@@ -107,7 +107,12 @@ var resizableToolbarItem;
 
 
 		allowResize : function RTI_initItem(aElement) {
-			if (!aElement || !(aElement instanceof Ci.nsIDOMElement))
+			if (!aElement)
+				return;
+
+			var ns = aElement && aElement.ownerDocument && aElement.ownerDocument.defaultView;
+			var Element = ns && typeof ns.Element == 'function' ? ns.Element : null ;
+			if (!(Element && aElement instanceof Element))
 				return;
 
 			var classNames = aElement.className.replace(/^\s+|\s+$/g, '').split(/\s+/);
