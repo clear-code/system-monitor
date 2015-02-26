@@ -588,8 +588,9 @@ const PREFS_VERSION = 1;
 function migratePrefs() {
   switch (prefs.getPref(DOMAIN + 'prefsVersion') || 0) {
     case 0:
-      let (color = prefs.getPref(DOMAIN + 'memory-usage.color.self'),
-           style = prefs.getPref(DOMAIN + 'memory-usage.style')) {
+      {
+        let color = prefs.getPref(DOMAIN + 'memory-usage.color.self');
+        let style = prefs.getPref(DOMAIN + 'memory-usage.style');
         if (color)
           prefs.setPref(DOMAIN + 'memory-usage.color.foreground.1', color);
 
