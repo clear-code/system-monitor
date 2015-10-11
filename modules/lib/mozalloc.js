@@ -7,14 +7,14 @@ Components.utils.import('resource://gre/modules/ctypes.jsm');
 
 const gMozalloc = ctypes.open(ctypes.libraryName('mozalloc'));
 
-const moz_malloc = gMozalloc.declare(
+var moz_malloc = gMozalloc.declare(
 		'moz_malloc',
 		ctypes.default_abi,
 		ctypes.voidptr_t,
 		ctypes.uint32_t // size
 	);
 
-const moz_calloc = gMozalloc.declare(
+var moz_calloc = gMozalloc.declare(
 		'moz_calloc',
 		ctypes.default_abi,
 		ctypes.voidptr_t,
@@ -22,7 +22,7 @@ const moz_calloc = gMozalloc.declare(
 		ctypes.uint32_t // elsize
 	);
 
-const moz_realloc = gMozalloc.declare(
+var moz_realloc = gMozalloc.declare(
 		'moz_realloc',
 		ctypes.default_abi,
 		ctypes.voidptr_t,
@@ -30,14 +30,14 @@ const moz_realloc = gMozalloc.declare(
 		ctypes.uint32_t // elsize
 	);
 
-const moz_free = gMozalloc.declare(
+var moz_free = gMozalloc.declare(
 		'moz_free',
 		ctypes.default_abi,
 		ctypes.void_t,
 		ctypes.voidptr_t // ptr
 	);
 
-const malloc = moz_malloc;
-const calloc = moz_calloc;
-const realloc = moz_realloc;
-const free = moz_free;
+var malloc = moz_malloc;
+var calloc = moz_calloc;
+var realloc = moz_realloc;
+var free = moz_free;

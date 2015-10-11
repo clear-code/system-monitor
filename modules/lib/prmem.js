@@ -7,14 +7,14 @@ Components.utils.import('resource://gre/modules/ctypes.jsm');
 
 const gNspr4 = ctypes.open(ctypes.libraryName('nspr4'));
 
-const PR_Malloc = gNspr4.declare(
+var PR_Malloc = gNspr4.declare(
 		'PR_Malloc',
 		ctypes.default_abi,
 		ctypes.voidptr_t,
 		ctypes.uint32_t // size
 	);
 
-const PR_Calloc = gNspr4.declare(
+var PR_Calloc = gNspr4.declare(
 		'PR_Calloc',
 		ctypes.default_abi,
 		ctypes.voidptr_t,
@@ -22,7 +22,7 @@ const PR_Calloc = gNspr4.declare(
 		ctypes.uint32_t // elsize
 	);
 
-const PR_Realloc = gNspr4.declare(
+var PR_Realloc = gNspr4.declare(
 		'PR_Realloc',
 		ctypes.default_abi,
 		ctypes.voidptr_t,
@@ -30,14 +30,14 @@ const PR_Realloc = gNspr4.declare(
 		ctypes.uint32_t // elsize
 	);
 
-const PR_Free = gNspr4.declare(
+var PR_Free = gNspr4.declare(
 		'PR_Free',
 		ctypes.default_abi,
 		ctypes.void_t,
 		ctypes.voidptr_t // ptr
 	);
 
-const malloc = PR_Malloc;
-const calloc = PR_Calloc;
-const realloc = PR_Realloc;
-const free = PR_Free;
+var malloc = PR_Malloc;
+var calloc = PR_Calloc;
+var realloc = PR_Realloc;
+var free = PR_Free;
