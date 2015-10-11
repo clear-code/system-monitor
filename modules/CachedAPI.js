@@ -1,4 +1,4 @@
-const EXPORTED_SYMBOLS = ['CachedAPI'];
+var EXPORTED_SYMBOLS = ['CachedAPI'];
 
 function CachedAPI(aSource, aCachedMethods, aLifetime) {
 	this._init(aSource, aCachedMethods, aLifetime);

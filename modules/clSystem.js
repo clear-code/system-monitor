@@ -12,7 +12,7 @@ const STRING_BUNDLE_URL = 'chrome://'+PACKAGE_NAME+'/locale/system-monitor.prope
 const PERMISSION_DENIED_TOPIC = 'system-monitor:permission-denied';
 const PERMISSION_UNKNOWN_TOPIC = 'system-monitor:unknown-permission';
 
-const EXPORTED_SYMBOLS = ['clSystem', 'clCPU'];
+var EXPORTED_SYMBOLS = ['clSystem', 'clCPU'];
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;

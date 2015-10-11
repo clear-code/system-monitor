@@ -1,6 +1,6 @@
 // http://mxr.mozilla.org/mozilla-central/source/memory/mozalloc/mozalloc.h
 
-const EXPORTED_SYMBOLS = ['moz_malloc', 'moz_calloc', 'moz_realloc', 'moz_free',
+var EXPORTED_SYMBOLS = ['moz_malloc', 'moz_calloc', 'moz_realloc', 'moz_free',
                           'malloc', 'calloc', 'realloc', 'free'];
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');

@@ -6,7 +6,7 @@
 const DISABLE_DRAW = false;
 const DISABLE_GRADIENT = false;
 
-const EXPORTED_SYMBOLS = [
+var EXPORTED_SYMBOLS = [
 //      "SystemMonitorItem",
 //      "SystemMonitorSimpleGraphItem",
 //      "SystemMonitorScalableGraphItem",

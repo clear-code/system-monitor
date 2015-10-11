@@ -1,6 +1,6 @@
 // http://mxr.mozilla.org/mozilla-central/source/nsprpub/pr/include/prmem.h
 
-const EXPORTED_SYMBOLS = ['PR_Malloc', 'PR_Calloc', 'PR_Realloc', 'PR_Free',
+var EXPORTED_SYMBOLS = ['PR_Malloc', 'PR_Calloc', 'PR_Realloc', 'PR_Free',
                           'malloc', 'calloc', 'realloc', 'free'];
 
 Components.utils.import('resource://gre/modules/ctypes.jsm');
