@@ -1,7 +1,7 @@
 /**
- * @fileOverview Popup Notification (Door Hanger) Based Confirmation Library for Firefox 4.0 or later
+ * @fileOverview Popup Notification (Door Hanger) Based Confirmation Library for Firefox 31 or later
  * @author       YUKI "Piro" Hiroshi
- * @version      4
+ * @version      8
  * Basic usage:
  *
  * @example
@@ -25,9 +25,9 @@
  *       //   popupIconURL (string) : will be used instead of "image" option.
  *     });
  *
- *  JSDeferred style:
+ *  ES6 Promise style:
  *    confirmWithPopup(...)
- *     .next(function(aButtonIndex) {
+ *     .then(function(aButtonIndex) {
  *       // the next callback receives the index of the clicked button.
  *       switch (aButtonIndex) {
  *         case 0: return YesAction();
@@ -35,12 +35,12 @@
  *         case 2: return NoForeverAction();
  *       }
  *     })
- *     .error(function(aError) {
+ *     .catch(function(aError) {
  *       // dismissed or removed (not called if any button is chosen)
  *       ...
  *     });
  *
- *  without JSDeferred:
+ *  without Promise:
  *    confirmWithPopup({ ...,
  *      // Yes, Yes Forever, or No Forever
  *      callback : function(aButtonIndex) { ... },
@@ -49,10 +49,8 @@
  *    });
  *
  * @license
- *   The MIT License, Copyright (c) 2011-2012 YUKI "Piro" Hiroshi
- *   http://github.com/piroor/fxaddonlibs/blob/master/license.txt
- * @url http://github.com/piroor/fxaddonlibs/blob/master/confirmWithPopup.js
- * @url http://github.com/piroor/fxaddonlibs
+ *   The MIT License, Copyright (c) 2011-2014 YUKI "Piro" Hiroshi
+ * @url http://github.com/piroor/fxaddonlib-confirm-popup
  */
 
 if (typeof window == 'undefined')
@@ -72,15 +70,6 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
-// This can be extended by JSDeferred.
-// See: https://github.com/cho45/jsdeferred
-try {
-	if (typeof namespace.Deferred == 'undefined')
-		Components.utils.import('resource://system-monitor-modules/lib/jsdeferred.js', namespace);
-}
-catch(e) {
-}
-
 var available = false;
 try {
 	Components.utils.import('resource://gre/modules/PopupNotifications.jsm');
@@ -90,8 +79,8 @@ catch(e) {
 }
 
 var confirmWithPopup;
-(function() {
-	const currentRevision = 4;
+(function(global) {
+	const currentRevision = 8;
 
 	var loadedRevision = 'confirmWithPopup' in namespace ?
 			namespace.confirmWithPopup.revision :
@@ -102,7 +91,7 @@ var confirmWithPopup;
 	}
 
 	if (!available)
-		return confirmWithPopup = undefined;
+		return global.confirmWithPopup = undefined;
 
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
@@ -111,10 +100,12 @@ var confirmWithPopup;
 	const NATIVE_OPTIONS = 'persistence,timeout,persistWhileVisible,dismissed,eventCallback,neverShow,popupIconURL'.split(',');
 	const OPTIONS = 'browser,tab,label,value,anchor,image,imageWidth,imageHeight,button,buttons,callback,onerror'.split(',');
 
-	function next(aCallback) {
+	var { Promise } = Components.utils.import('resource://gre/modules/Promise.jsm', {});
+
+	function setTimeout(aCallback, aDelay) {
 		Cc['@mozilla.org/timer;1']
 			.createInstance(Ci.nsITimer)
-			.init(aCallback, 0, Ci.nsITimer.TYPE_ONE_SHOT);
+			.init(aCallback, aDelay, Ci.nsITimer.TYPE_ONE_SHOT);
 	}
 
 	// We have to use a custom stylesheet to show the anchor element.
@@ -130,7 +121,13 @@ var confirmWithPopup;
 				)+
 				'#notification-popup-box[anchorid="'+aOptions.anchor+'"] > #'+aOptions.anchor+' {'+
 				'	display: -moz-box;'+
-				'}'
+				'}' +
+				(aOptions.label.indexOf('\n') > -1 ?
+					'popupnotification[id="'+aOptions.id+'-notification"] .popup-notification-description {' +
+					'	white-space: pre-wrap;' +
+					'}' :
+					''
+				)
 			);
 
 		var styleSheets = aDocument.styleSheets;
@@ -180,36 +177,31 @@ var confirmWithPopup;
 		var options = normalizeOptions(aOptions);
 		var nativeOptions = collectNativeOptions(options);
 
-		var deferred = namespace.Deferred ?
-						new namespace.Deferred() :
-						{ // fake deferred
-							next : next,
-							call : function(aValue) { options.callback && options.callback.call(aOptions, aValue); },
-							fail : function(aError) { options.onerror && options.onerror.call(aOptions, aError); }
-						};
+		if (!options.buttons)
+			return Promise.reject(new Error('confirmWithPopup requires any button!'));
 
-		if (!options.buttons) {
-			return deferred
-					.next(function() {
-						throw new Error('confirmWithPopup requires any button!');
-					});
-		}
+		var b = options.browser;
+		if (!b && options.window)
+			b = options.window.gBrowser;
 
-		if (!options.browser)
-			return deferred
-					.next(function() {
-						throw new Error('confirmWithPopup requires a <xul:browser/>!');
-					});
+		if (!b)
+			return Promise.reject(new Error('confirmWithPopup requires a <xul:browser/>!'));
 
-		var doc = options.browser.ownerDocument;
+		if (b.localName == 'tabbrowser')
+			b = b.selectedBrowser;
+
+		var doc = b.ownerDocument;
 		var style;
 		var done = false;
 		var postProcess = function() {
-				if (doc && style) {
+				if (doc && style && style.parentNode) {
 					doc.removeChild(style);
 					style = null;
 				}
 			};
+
+		return new Promise((function(aResolve, aReject) {
+
 		var showPopup = function() {
 			var accessKeys = [];
 			var numericAccessKey = 0;
@@ -253,7 +245,7 @@ var confirmWithPopup;
 						callback  : function() {
 							done = true;
 							try {
-								deferred.call(aIndex);
+								aResolve(aIndex);
 							}
 							finally {
 								postProcess();
@@ -266,64 +258,41 @@ var confirmWithPopup;
 			var secondaryActions = buttons.length > 1 ? buttons.slice(1) : null ;
 
 			options.id = options.value || 'confirmWithPopup-'+encodeURIComponent(options.label);
+			options.label = options.label.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
 			style = addStyleSheet(doc, options);
 
 			try {
-				/**
-				 * 1st try: Prepare the anchor icon. If the icon isn't shown,
-				 *          the popup is wrongly positioned to the current tab
-				 *          by PopupNotifications.show().
-				 */
 				doc.defaultView.PopupNotifications.show(
-					options.browser,
+					b,
 					options.id,
 					options.label,
 					options.anchor,
 					primaryAction,
 					secondaryActions,
-					{
-						__proto__ : nativeOptions,
-						dismissed : true
-					}
-				);
-				if (!options.dismissed) {
-					/**
-					 * 2nd try: Show the popup.
-					 */
-					let secondTry = function() {
-						doc.defaultView.PopupNotifications.show(
-							options.browser,
-							options.id,
-							options.label,
-							options.anchor,
-							primaryAction,
-							secondaryActions,
-							{
-								__proto__     : nativeOptions,
-								eventCallback : function(aEventType) {
-									try {
-										if (!done && (aEventType == 'removed' || aEventType == 'dismissed'))
-											deferred.fail(aEventType);
-										if (options.eventCallback)
-											options.eventCallback.call(aOptions.options || aOptions, aEventType);
-									}
-									finally {
-										if (aEventType == 'removed')
-											postProcess();
-									}
+					Object.create(nativeOptions, {
+						eventCallback : {
+							writable     : true,
+							configurable : true,
+							enumerable   : true,
+							value        : function(aEventType) {
+								try {
+									if (!done && (aEventType == 'removed' || aEventType == 'dismissed'))
+										aReject(aEventType);
+									if (options.eventCallback)
+										options.eventCallback.call(aOptions.options || aOptions, aEventType);
+								}
+								finally {
+									if (aEventType == 'removed')
+										postProcess();
 								}
 							}
-						);
-					};
-					if (namespace.Deferred)
-						namespace.Deferred.next(secondTry);
-					else
-						next(secondTry);
-				}
+						}
+					})
+				);
 			}
 			catch(e) {
-				deferred.fail(e);
+				aReject(e);
 			}
 		};
 
@@ -339,37 +308,16 @@ var confirmWithPopup;
 				showPopup();
 			};
 		}
-		else if (namespace.Deferred) {
-			namespace.Deferred.next(showPopup);
-		}
 		else {
-			next(showPopup);
+			setTimeout(showPopup, 0);
 		}
 
-		if (namespace.Deferred) {
-			return deferred;
-		}
-		else {
-			let originalCall = deferred.call;
-			deferred.call = function(aButtonIndex) {
-				try {
-					originalCall(aButtonIndex);
-				}
-				finally {
-					postProcess();
-				}
-			};
-			let originalFail = deferred.fail;
-			deferred.fail = function(aError) {
-				try {
-					originalFail(aError);
-				}
-				finally {
-					postProcess();
-				}
-			};
-		}
+		}).bind(this));
 	};
+	confirmWithPopup.version = currentRevision;
 
-	namespace.confirmWithPopup = confirmWithPopup;
-})();
+	global.confirmWithPopup = namespace.confirmWithPopup = confirmWithPopup;
+})(this);
+
+if (typeof exports == 'object')
+	exports.confirmWithPopup = confirmWithPopup;

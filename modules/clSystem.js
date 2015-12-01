@@ -20,34 +20,14 @@ const Ci = Components.interfaces;
 Components.utils.import('resource://gre/modules/XPCOMUtils.jsm');
 Components.utils.import(MODULES_ROOT+'CachedAPI.js');
 
-XPCOMUtils.defineLazyGetter(this, 'Services', function () {
-	var ns = {};
-	Components.utils.import('resource://gre/modules/Services.jsm', ns);
-	return ns.Services;
-});
-
-XPCOMUtils.defineLazyGetter(this, 'Deferred', function () {
-	var ns = {};
-	Components.utils.import(MODULES_ROOT+'lib/jsdeferred.js', ns);
-	return ns.Deferred;
-});
-
-XPCOMUtils.defineLazyGetter(this, 'confirmWithPopup', function () {
-	var ns = {};
-	Components.utils.import(MODULES_ROOT+'lib/confirmWithPopup.js', ns);
-	return ns.confirmWithPopup;
-});
-
+XPCOMUtils.defineLazyModuleGetter(this, 'Promise', 'resource://gre/modules/Promise.jsm');
+XPCOMUtils.defineLazyModuleGetter(this, 'Services', 'resource://gre/modules/Services.jsm');
+XPCOMUtils.defineLazyModuleGetter(this, 'confirmWithPopup', MODULES_ROOT+'lib/confirmWithPopup.js');
+XPCOMUtils.defineLazyModuleGetter(this, 'prefs', MODULES_ROOT+'lib/prefs.js');
 XPCOMUtils.defineLazyGetter(this, 'bundle', function () {
 	var ns = {};
 	Components.utils.import(MODULES_ROOT+'lib/stringBundle.js', ns);
 	return ns.stringBundle.get(STRING_BUNDLE_URL);
-});
-
-XPCOMUtils.defineLazyGetter(this, 'prefs', function () {
-	var ns = {};
-	Components.utils.import(MODULES_ROOT+'lib/prefs.js', ns);
-	return ns.prefs;
 });
 
 function getDOMWindowUtils(aWindow) {
@@ -276,7 +256,7 @@ clSystem.prototype = {
 		Services.obs.notifyObservers(aOwner, PERMISSION_UNKNOWN_TOPIC, null);
 		var self = this;
 		this._ensureAllowed(aOwner)
-			.next(function() {
+			.then(function() {
 				self._addMonitorWithOwnerInternal(aTopic, aMonitor, aInterval, aOwner);
 			});
 		return true;
@@ -296,9 +276,7 @@ clSystem.prototype = {
 		//   https://github.com/clear-code/system-monitor/issues/9
 		//   https://bugzilla.mozilla.org/show_bug.cgi?id=204285
 		if (uri.scheme == 'file')
-			return Deferred.next(function() {
-				throw new Error('Local files cannot have permission to monitor system informations.');
-			});
+			return Promise.reject(new Error('Local files cannot have permission to monitor system informations.'));
 
 		var siteName;
 		try {
@@ -320,7 +298,7 @@ clSystem.prototype = {
 						bundle.getString('permission_confirm_no_forever')
 					]
 				})
-				.next(function(aButtonIndex) {
+				.then(function(aButtonIndex) {
 					var permission, expire;
 					switch (aButtonIndex) {
 						case 0:

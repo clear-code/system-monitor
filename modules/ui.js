@@ -15,36 +15,22 @@ var EXPORTED_SYMBOLS = [
       "SystemMonitorNetworkItem"
     ];
 
+var saved = 0;
+var restored = 0;
 
 const packageName = "system-monitor";
 const modulesRoot = packageName + "-modules";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-XPCOMUtils.defineLazyGetter(this, "prefs", function () {
-	var { prefs } = Components.utils.import("resource://" + modulesRoot + "/lib/prefs.js", {});
-	return prefs;
-});
-
-XPCOMUtils.defineLazyGetter(this, "Deferred", function () {
-	var { Deferred } = Components.utils.import("resource://" + modulesRoot + "/lib/jsdeferred.js", {});
-	return Deferred;
-});
-
-XPCOMUtils.defineLazyGetter(this, "TextUtil", function () {
-	var { TextUtil } = Components.utils.import("resource://" + modulesRoot + "/lib/TextUtil.js", {});
-	return TextUtil;
-});
-
+XPCOMUtils.defineLazyModuleGetter(this, "Promise", "resource://gre/modules/Promise.jsm");
+XPCOMUtils.defineLazyModuleGetter(this, "prefs", "resource://" + modulesRoot + "/lib/prefs.js");
+XPCOMUtils.defineLazyModuleGetter(this, "TextUtil", "resource://" + modulesRoot + "/lib/TextUtil.js");
 XPCOMUtils.defineLazyGetter(this, "bundle", function () {
 	var { stringBundle } = Components.utils.import("resource://" + modulesRoot + "/lib/stringBundle.js", {});
 	return stringBundle.get("chrome://"+packageName+"/locale/system-monitor.properties");
 });
-
-XPCOMUtils.defineLazyGetter(this, "resizableToolbarItem", function () {
-	var { resizableToolbarItem } = Components.utils.import("resource://" + modulesRoot + "/lib/resizableToolbarItem.jsm", {});
-	return resizableToolbarItem;
-});
+XPCOMUtils.defineLazyModuleGetter(this, "resizableToolbarItem", "resource://" + modulesRoot + "/lib/resizableToolbarItem.jsm");
 
 const { clSystem } = Components.utils.import("resource://system-monitor-modules/clSystem.js", {});
 const gSystem = new clSystem();
@@ -398,6 +384,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     var gradient = context.createLinearGradient(0, canvas.height, 0, 0);
+dump('createGradient createLinearGradient(0, '+canvas.height+', 0, 0)\n');
     var lastPosition = aColors.length - 1;
     aColors.forEach(function(aColor, aIndex) {
       gradient.addColorStop(aIndex / lastPosition, aColors[aIndex]);
@@ -571,10 +558,17 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
 
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
+saved++;
+dump('clearAll save ('+saved+' / '+restored+')\n');
     context.save();
+dump('clearAll clearRect('+[0, 0, canvas.width, canvas.height]+')\n');
     context.clearRect(0, 0, canvas.width, canvas.height);
+dump('clearAll fillStyle='+this.backgroundGradientStyle+'\n');
     context.fillStyle = this.backgroundGradientStyle;
+dump('clearAll fillRect('+[0, 0, canvas.width, canvas.height]+')\n');
     context.fillRect(0, 0, canvas.width, canvas.height);
+restored++;
+dump('clearAll restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
 
@@ -590,32 +584,55 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
    var aEndY   = aParameters.endY;
    var aOffsetBeginY = aParameters.offsetBeginY || 0;
    var aWidth  = aParameters.width;
+dump('drawVerticalLine params = '+JSON.stringify({
+x: aX,
+maxY: aMaxY,
+beginY: aBeginY,
+endY:aEndY,
+offsetBeginY:aOffsetBeginY,
+width:aWidth
+
+})+'\n');
 
    // On Mac OS X, a zero-length line wrongly covers whole the canvas!
     if (aBeginY - aOffsetBeginY == aEndY)
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
+dump('drawVerticalLine save ('+saved+' / '+restored+')\n');
     context.save();
 
+dump('drawVerticalLine translate('+[Math.floor(aX)+(aWidth/2), aMaxY - aEndY]+')\n');
     context.translate(Math.floor(aX)+(aWidth/2), aMaxY - aEndY);
-    var yScale = (aEndY - aBeginY) / aMaxY
+    var yScale = Math.abs(aEndY - aBeginY) / aMaxY
+dump('drawVerticalLine scale('+[1, yScale]+')\n');
     context.scale(1, yScale);
 
     var length = aMaxY;
     if (aOffsetBeginY > 0)
-      length = (aEndY - aOffsetBeginY) / yScale;
+      length = Math.abs(aEndY - aOffsetBeginY) / (yScale || 1);
 
+dump('drawVerticalLine strokeStyle='+aStyle+'\n');
     context.strokeStyle = aStyle;
 
+dump('drawVerticalLine beginPath\n');
     context.beginPath();
+dump('drawVerticalLine lineWidth='+(aWidth || 1.0)+'\n');
     context.lineWidth = aWidth || 1.0;
+dump('drawVerticalLine strokeStyle=square\n');
     context.lineCap = "square";
+dump('drawVerticalLine moveTo('+[0, 0]+')\n');
     context.moveTo(0, 0);
+dump('drawVerticalLine lineTo('+[0, length]+')\n');
     context.lineTo(0, length);
+dump('drawVerticalLine closePath\n');
     context.closePath();
+dump('drawVerticalLine stroke\n');
     context.stroke();
 
+restored++;
+dump('drawVerticalLine restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
 
@@ -625,7 +642,10 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
+dump('drawSeparators save ('+saved+' / '+restored+')\n');
     context.save();
+dump('drawSeparators globalAlpha=0.5\n');
     context.globalAlpha = 0.5;
     var count = this.multiplexCount;
     var width = (aMaxX / count) - 1;
@@ -640,6 +660,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
         width:  1
       });
     }
+restored++;
+dump('drawSeparators restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
 
@@ -662,7 +684,10 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
+dump('drawGraphMultiplexedBar save ('+saved+' / '+restored+')\n');
     context.save();
+dump('drawGraphMultiplexedBar globalAlpha=1\n');
     context.globalAlpha = 1;
     if (this.style & STYLE_STACKED) {
       this.drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY);
@@ -681,6 +706,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
         endY:   aMaxY * value
       });
     }
+restored++;
+dump('drawGraphMultiplexedBar restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
   drawGraphMultiplexedBarStacked : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY) {
@@ -688,6 +715,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
+dump('drawGraphMultiplexedBarStacked save ('+saved+' / '+restored+')\n');
     context.save();
 
     var count     = this.multiplexCount;
@@ -714,6 +743,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       lastGraphY = graphY;
     }
 
+restored++;
+dump('drawGraphMultiplexedBarStacked restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
   drawGraphMultiplexedBarLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarLayered(aValues, aX, aMaxX, aMaxY) {
@@ -721,6 +752,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
+dump('drawGraphMultiplexedBarLayered save ('+saved+' / '+restored+')\n');
     context.save();
 
     var count    = this.multiplexCount;
@@ -731,6 +764,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     for (let i = 0; i < count; i++) {
       let value = aValues[i];
       let endY = aMaxY * value;
+dump('drawGraphMultiplexedBarLayered globalAlpha='+(minAlpha + ((1 - minAlpha) / (i + 1)))+'\n');
       context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
       this.drawGraphBar({
         style:  this.foregroundGradientStyle,
@@ -742,6 +776,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       beginY = endY + 0.5;
     }
 
+restored++;
+dump('drawGraphMultiplexedBarLayered restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
   drawGraphMultiplexedBarSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarSeparated(aValues, aX, aMaxX, aMaxY) {
@@ -749,6 +785,8 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
+dump('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')\n');
     context.save();
 
     var count    = this.multiplexCount;
@@ -756,7 +794,10 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     for (let i = 0; i < count; i++) {
       let value = aValues[i];
       let endY = aMaxY * value;
+saved++;
+dump('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')\n');
       context.save();
+dump('drawGraphMultiplexedBarSeparated translate('+[(width + 1) * i, 0]+')\n');
       context.translate((width + 1) * i, 0);
       this.drawGraphBar({
         style:  this.foregroundGradientStyle,
@@ -765,9 +806,13 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
         beginY: 0,
         endY:   endY
       });
+restored++;
+dump('drawGraphMultiplexedBarSeparated restore ('+saved+' / '+restored+')\n');
       context.restore();
     }
 
+restored++;
+dump('drawGraphMultiplexedBarSeparated restore ('+saved+' / '+restored+')\n');
     context.restore();
   },
 
@@ -777,6 +822,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
     context.save();
 
     context.translate(0, aMaxY);
@@ -794,6 +840,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.closePath();
     context.stroke();
 
+restored++;
     context.restore();
   },
 
@@ -813,6 +860,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
     context.save();
 
     var count  = this.multiplexCount;
@@ -834,6 +882,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       this.drawGraphPolygon(lastValues, aMaxY, color);
     }
 
+restored++;
     context.restore();
   },
   drawGraphMultiplexedPolygonLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonLayered(aValues, aMaxX, aMaxY) {
@@ -841,6 +890,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       return;
 
     var context = this.canvas.getContext("2d");
+saved++;
     context.save();
 
     var count  = this.multiplexCount;
@@ -854,6 +904,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
       this.drawGraphPolygon(values, aMaxY, color);
     }
 
+restored++;
     context.restore();
   },
   drawGraphMultiplexedPolygonSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedPolygonSeparated(aValues, aMaxX, aMaxY) {
@@ -866,6 +917,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var color  = this.foreground;
     var width = Math.round(aMaxX / count) - 1;
     for (let i = 0; i < count; i++) {
+saved++;
       context.save();
       context.translate((width + 1) * i, 0);
       let values = [];
@@ -874,6 +926,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
         values[j] = value && value[i] || 0 ;
       }
       this.drawGraphPolygon(values, aMaxY, color);
+restored++;
       context.restore();
     }
   },
@@ -889,6 +942,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var w = canvas.width;
     var h = canvas.height;
 
+saved++;
     context.save();
 
     context.beginPath();
@@ -902,6 +956,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     context.closePath();
     context.stroke();
 
+restored++;
     context.restore();
   },
 
@@ -1344,6 +1399,7 @@ SystemMonitorNetworkItem.prototype = Object.create(SystemMonitorScalableGraphIte
     var h = canvas.height;
     var y = h * (this.redZone / this.maxValue) * this.maxValueMargin;
 
+saved++;
     context.save();
 
     context.translate(0, h);
@@ -1358,6 +1414,7 @@ SystemMonitorNetworkItem.prototype = Object.create(SystemMonitorScalableGraphIte
     context.closePath();
     context.stroke();
 
+restored++;
     context.restore();
   },
 

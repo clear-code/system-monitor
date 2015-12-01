@@ -1,4 +1,5 @@
 Components.utils.import("resource://system-monitor-modules/ui.js");
+Components.utils.import("resource://gre/modules/Promise.jsm");
 
 // function log(s) { dump(s + "\n"); }
 
@@ -12,15 +13,6 @@ var SystemMonitorService = {
   get bundle() {
     return document.getElementById("system-monitor-bundle");
   },
-
-  get Deferred() {
-    if (!this._Deferred) {
-      var { Deferred } = Components.utils.import("resource://system-monitor-modules/lib/jsdeferred.js", {});
-      this._Deferred = Deferred;
-    }
-    return this._Deferred;
-  },
-  _Deferred : null,
 
   get prefs() {
     if (!this._prefs) {
@@ -79,10 +71,9 @@ var SystemMonitorService = {
       item.init();
     }
     var self = this;
-    this.Deferred
-        .next(function() {
-            self.resizableToolbarItem.insertSplitters(window);
-        });
+    setTimeout(function() {
+      self.resizableToolbarItem.insertSplitters(window);
+    }, 0);
   },
 
   destroyToolbarItems : function SystemMonitorService_destroyToolbarItems() {
@@ -141,7 +132,7 @@ var SystemMonitorService = {
 
     var self = this;
     this.confirmInsertToolbarItems()
-        .next(function(aInsert) {
+        .then(function(aInsert) {
           for each (let item in autoInsertedItems) {
             self.prefs.setPref(self.DOMAIN+item+".initialShow", true);
           }
@@ -151,29 +142,27 @@ var SystemMonitorService = {
           bar.setAttribute("currentset", newset);
           document.persist(bar.id, "currentset");
           if ("BrowserToolboxCustomizeDone" in window) { // non-Australis Firefox (Firefox 28 and olders)
-            self.Deferred.next(function() {
+            setTimeout(function() {
               BrowserToolboxCustomizeDone(true);
               self.initToolbarItems();
-            });
+            }, 0);
           }
           else if ("MailToolboxCustomizeDone" in window) { // Thunderbird
-            self.Deferred.next(function() {
+            setTimeout(function() {
               MailToolboxCustomizeDone(null, 'CustomizeMailToolbar');
               self.initToolbarItems();
-            });
+            }, 0);
           }
           else { // Australis Firefox (Firefox 29 and later)
-            self.Deferred.next(function() {
+            setTimeout(function() {
               self.initToolbarItems();
-            });
+            }, 0);
           }
         });
   },
   confirmInsertToolbarItems : function SystemMonitorService_confirmInsertToolbarItems() {
     if (!('gBrowser' in window)) { // Thunderbird
-      return this.Deferred.next(function() {
-        return false;
-      });
+      return Promise.resolve(false);
     }
     var ns = {};
     Components.utils.import("resource://system-monitor-modules/lib/confirmWithTab.js", ns);
@@ -187,7 +176,7 @@ var SystemMonitorService = {
                this.bundle.getString("initialshow_confirm_no")
              ]
            })
-           .next(function(aButtonIndex) {
+           .then(function(aButtonIndex) {
              return aButtonIndex == 0;
            });
   },

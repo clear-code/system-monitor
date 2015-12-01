@@ -1,7 +1,7 @@
 /**
- * @fileOverview Tab Related Confirmation Library for Firefox 3.5 or later
+ * @fileOverview Tab Related Confirmation Library for Firefox 31 or later
  * @author       YUKI "Piro" Hiroshi
- * @version      9
+ * @version      10
  * Basic usage:
  *
  * @example
@@ -18,9 +18,9 @@
  *     value    : 'treestyletab-undo-close-tree', // the internal key (optional)
  *     buttons  : ['Yes', 'No'],                  // button labels
  *     checkbox : checkbox,                       // checkbox definition (optional)
- *     cancelEvents : ['SSTabRestoring']          // events to cancel this deferred (optional)
+ *     cancelEvents : ['SSTabRestoring']          // events to reject this promise (optional)
  *   })
- *   .next(function(aButtonIndex) {
+ *   .then(function(aButtonIndex) {
  *     // the next callback receives the index of the clicked button.
  *     switch (aButtonIndex) {
  *       case 0: // Yes
@@ -35,17 +35,15 @@
  *     var checked = checkbox.checked;
  *     ...
  *   })
- *   .error(function(aError) {
+ *   .catch(function(aError) {
  *     // if the tab is closed, or any event in the cancelEvents array
  *     // is fired, then an exception is raised.
  *     ...
  *   });
  *
  * @license
- *   The MIT License, Copyright (c) 2010-2011 YUKI "Piro" Hiroshi
- *   http://github.com/piroor/fxaddonlibs/blob/master/license.txt
- * @url http://github.com/piroor/fxaddonlibs/blob/master/confirmWithTab.js
- * @url http://github.com/piroor/fxaddonlibs
+ *   The MIT License, Copyright (c) 2010-2015 YUKI "Piro" Hiroshi
+ * @url http://github.com/piroor/fxaddonlib-confirm-tab
  */
 
 if (typeof window == 'undefined')
@@ -65,18 +63,12 @@ if (typeof namespace == 'undefined') {
 	}
 }
 
-// This can be extended by JSDeferred.
-// See: https://github.com/cho45/jsdeferred
-try {
-	if (typeof namespace.Deferred == 'undefined')
-		Components.utils.import('resource://system-monitor-modules/lib/jsdeferred.js', namespace);
-}
-catch(e) {
-}
+Components.utils.import('resource://gre/modules/Timer.jsm');
+Components.utils.import('resource://gre/modules/Promise.jsm');
 
 var confirmWithTab;
 (function() {
-	const currentRevision = 9;
+	const currentRevision = 10;
 
 	var loadedRevision = 'confirmWithTab' in namespace ?
 			namespace.confirmWithTab.revision :
@@ -89,12 +81,6 @@ var confirmWithTab;
 	const Cc = Components.classes;
 	const Ci = Components.interfaces;
 
-	function next(aCallback) {
-		Cc['@mozilla.org/timer;1']
-			.createInstance(Ci.nsITimer)
-			.init(aCallback, 0, Ci.nsITimer.TYPE_ONE_SHOT);
-	}
-
 	function normalizeOptions(aOptions) {
 		// we should accept single button type popup
 		if (!aOptions.buttons && aOptions.button)
@@ -105,20 +91,12 @@ var confirmWithTab;
 	confirmWithTab = function confirmWithTab(aOptions) 
 	{
 		var options = normalizeOptions(aOptions);
-		var deferred = namespace.Deferred ?
-						new namespace.Deferred() :
-						{ // fake deferred
-							next : next,
-							call : function(aValue) { options.callback && options.callback.call(aOptions, aValue); },
-							fail : function(aError) { options.onerror && options.onerror.call(aOptions, aError); }
-						};
 
 		if (!options.buttons) {
-			return deferred
-					.next(function() {
-						throw new Error('confirmWithTab requires any button!');
-					});
+			return Promise.reject(new Error('confirmWithTab requires any button!'));
 		}
+
+		return new Promise((function(aResolve, aReject) {
 
 		var done = false;
 		var checkbox;
@@ -188,7 +166,7 @@ var confirmWithTab;
 							callback  : function() {
 								done = true;
 								try {
-									deferred.call(aIndex);
+									aResolve(aIndex);
 								}
 								finally {
 									postProcess();
@@ -228,7 +206,7 @@ var confirmWithTab;
 						if (aEvent.type != 'DOMNodeRemoved')
 							notification.close();
 						if (!done)
-							deferred.fail(aEvent);
+							aReject(aEvent);
 					}
 					finally {
 						postProcess();
@@ -241,32 +219,9 @@ var confirmWithTab;
 			notification.parentNode.addEventListener('DOMNodeRemoved', handleEvent, false);
 		};
 
-		if (namespace.Deferred) {
-			namespace.Deferred.next(showBar);
-			return deferred;
-		}
-		else {
-			next(showBar);
+		setTimeout(showBar, 0);
 
-			let originalCall = deferred.call;
-			deferred.call = function(aButtonIndex) {
-				try {
-					originalCall(aButtonIndex);
-				}
-				finally {
-					postProcess();
-				}
-			};
-			let originalFail = deferred.fail;
-			deferred.fail = function(aError) {
-				try {
-					originalFail(aError);
-				}
-				finally {
-					postProcess();
-				}
-			};
-		}
+		}).bind(this));
 	};
 
 	function getTabBrowserFromChild(aTabBrowserChild)
