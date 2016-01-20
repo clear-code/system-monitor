@@ -9,7 +9,7 @@ var SystemMonitorService = {
   items : [],
 
   log : function SystemMonitorService_log(aMessage) {
-    if (this.prefs.getPref(this.DOMAIN + "debug.content")
+    if (this.prefs.getPref(this.DOMAIN + "debug.content"))
       dump(aMessage + "\n");
   },
 

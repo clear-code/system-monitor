@@ -35,7 +35,7 @@ const DOMAIN = clSystem.DOMAIN;
 const TOPIC_BASE = "SystemMonitor:";
 
 function log(aMessage) {
-  if (prefs.getPref('extensions.system-monitor@clear-code.com.debug.ui')
+  if (prefs.getPref('extensions.system-monitor@clear-code.com.debug.ui'))
     dump(aMessage+'\n');
 }
 
