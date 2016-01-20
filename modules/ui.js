@@ -1,7 +1,3 @@
-// var Application = Components.classes["@mozilla.org/fuel/application;1"].getService(Components.interfaces.fuelIApplication);
-// function dump(s) { Application.console.log(s); }
-// function log(s) { dump(s + "\n"); }
-
 // for debugging
 const DISABLE_DRAW = false;
 const DISABLE_GRADIENT = false;
@@ -38,6 +34,10 @@ const gSystem = new clSystem();
 const DOMAIN = clSystem.DOMAIN;
 const TOPIC_BASE = "SystemMonitor:";
 
+function log(aMessage) {
+  if (prefs.getPref('extensions.system-monitor@clear-code.com.debug.ui')
+    dump(aMessage+'\n');
+}
 
 function defineProperties(aTarget, aProperties) {
   Object.keys(aProperties).forEach(function(aProperty) {
@@ -384,7 +384,7 @@ SystemMonitorSimpleGraphItem.prototype = Object.create(SystemMonitorItem.prototy
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
     var gradient = context.createLinearGradient(0, canvas.height, 0, 0);
-dump('createGradient createLinearGradient(0, '+canvas.height+', 0, 0)\n');
+log('createGradient createLinearGradient(0, '+canvas.height+', 0, 0)');
     var lastPosition = aColors.length - 1;
     aColors.forEach(function(aColor, aIndex) {
       gradient.addColorStop(aIndex / lastPosition, aColors[aIndex]);
@@ -448,9 +448,9 @@ dump('createGradient createLinearGradient(0, '+canvas.height+', 0, 0)\n');
       this.observing = true;
     }
     catch(e) {
-      dump("system-monitor: start failed\n"+
+      log("system-monitor: start failed\n"+
            "  type: "+this.type+"\n"+
-           "  error:\n"+e.toString().replace(/^/gm, "    ")+"\n");
+           "  error:\n"+e.toString().replace(/^/gm, "    "));
       this.drawDisabled();
     }
   },
@@ -466,9 +466,9 @@ dump('createGradient createLinearGradient(0, '+canvas.height+', 0, 0)\n');
       this.stopObserve();
     }
     catch(e) {
-      dump("system-monitor: stop failed\n"+
+      log("system-monitor: stop failed\n"+
            "  type: "+this.type+"\n"+
-           "  error:\n"+e.toString().replace(/^/gm, "    ")+"\n");
+           "  error:\n"+e.toString().replace(/^/gm, "    "));
       this.drawDisabled();
     }
     this.observing = false;
@@ -559,16 +559,16 @@ dump('createGradient createLinearGradient(0, '+canvas.height+', 0, 0)\n');
     var canvas = this.canvas;
     var context = canvas.getContext("2d");
 saved++;
-dump('clearAll save ('+saved+' / '+restored+')\n');
+log('clearAll save ('+saved+' / '+restored+')');
     context.save();
-dump('clearAll clearRect('+[0, 0, canvas.width, canvas.height]+')\n');
+log('clearAll clearRect('+[0, 0, canvas.width, canvas.height]+')');
     context.clearRect(0, 0, canvas.width, canvas.height);
-dump('clearAll fillStyle='+this.backgroundGradientStyle+'\n');
+log('clearAll fillStyle='+this.backgroundGradientStyle+'');
     context.fillStyle = this.backgroundGradientStyle;
-dump('clearAll fillRect('+[0, 0, canvas.width, canvas.height]+')\n');
+log('clearAll fillRect('+[0, 0, canvas.width, canvas.height]+')');
     context.fillRect(0, 0, canvas.width, canvas.height);
 restored++;
-dump('clearAll restore ('+saved+' / '+restored+')\n');
+log('clearAll restore ('+saved+' / '+restored+')');
     context.restore();
   },
 
@@ -584,7 +584,7 @@ dump('clearAll restore ('+saved+' / '+restored+')\n');
    var aEndY   = aParameters.endY;
    var aOffsetBeginY = aParameters.offsetBeginY || 0;
    var aWidth  = aParameters.width;
-dump('drawVerticalLine params = '+JSON.stringify({
+log('drawVerticalLine params = '+JSON.stringify({
 x: aX,
 maxY: aMaxY,
 beginY: aBeginY,
@@ -592,7 +592,7 @@ endY:aEndY,
 offsetBeginY:aOffsetBeginY,
 width:aWidth
 
-})+'\n');
+}));
 
    // On Mac OS X, a zero-length line wrongly covers whole the canvas!
     if (aBeginY - aOffsetBeginY == aEndY)
@@ -600,39 +600,39 @@ width:aWidth
 
     var context = this.canvas.getContext("2d");
 saved++;
-dump('drawVerticalLine save ('+saved+' / '+restored+')\n');
+log('drawVerticalLine save ('+saved+' / '+restored+')');
     context.save();
 
-dump('drawVerticalLine translate('+[Math.floor(aX)+(aWidth/2), aMaxY - aEndY]+')\n');
+log('drawVerticalLine translate('+[Math.floor(aX)+(aWidth/2), aMaxY - aEndY]+')');
     context.translate(Math.floor(aX)+(aWidth/2), aMaxY - aEndY);
     var yScale = Math.abs(aEndY - aBeginY) / aMaxY
-dump('drawVerticalLine scale('+[1, yScale]+')\n');
+log('drawVerticalLine scale('+[1, yScale]+')');
     context.scale(1, yScale);
 
     var length = aMaxY;
     if (aOffsetBeginY > 0)
       length = Math.abs(aEndY - aOffsetBeginY) / (yScale || 1);
 
-dump('drawVerticalLine strokeStyle='+aStyle+'\n');
+log('drawVerticalLine strokeStyle='+aStyle);
     context.strokeStyle = aStyle;
 
-dump('drawVerticalLine beginPath\n');
+log('drawVerticalLine beginPath');
     context.beginPath();
-dump('drawVerticalLine lineWidth='+(aWidth || 1.0)+'\n');
+log('drawVerticalLine lineWidth='+(aWidth || 1.0));
     context.lineWidth = aWidth || 1.0;
-dump('drawVerticalLine strokeStyle=square\n');
+log('drawVerticalLine strokeStyle=square');
     context.lineCap = "square";
-dump('drawVerticalLine moveTo('+[0, 0]+')\n');
+log('drawVerticalLine moveTo('+[0, 0]+')');
     context.moveTo(0, 0);
-dump('drawVerticalLine lineTo('+[0, length]+')\n');
+log('drawVerticalLine lineTo('+[0, length]+')');
     context.lineTo(0, length);
-dump('drawVerticalLine closePath\n');
+log('drawVerticalLine closePath');
     context.closePath();
-dump('drawVerticalLine stroke\n');
+log('drawVerticalLine stroke');
     context.stroke();
 
 restored++;
-dump('drawVerticalLine restore ('+saved+' / '+restored+')\n');
+log('drawVerticalLine restore ('+saved+' / '+restored+')');
     context.restore();
   },
 
@@ -643,9 +643,9 @@ dump('drawVerticalLine restore ('+saved+' / '+restored+')\n');
 
     var context = this.canvas.getContext("2d");
 saved++;
-dump('drawSeparators save ('+saved+' / '+restored+')\n');
+log('drawSeparators save ('+saved+' / '+restored+')');
     context.save();
-dump('drawSeparators globalAlpha=0.5\n');
+log('drawSeparators globalAlpha=0.5');
     context.globalAlpha = 0.5;
     var count = this.multiplexCount;
     var width = (aMaxX / count) - 1;
@@ -661,7 +661,7 @@ dump('drawSeparators globalAlpha=0.5\n');
       });
     }
 restored++;
-dump('drawSeparators restore ('+saved+' / '+restored+')\n');
+log('drawSeparators restore ('+saved+' / '+restored+')');
     context.restore();
   },
 
@@ -685,9 +685,9 @@ dump('drawSeparators restore ('+saved+' / '+restored+')\n');
 
     var context = this.canvas.getContext("2d");
 saved++;
-dump('drawGraphMultiplexedBar save ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBar save ('+saved+' / '+restored+')');
     context.save();
-dump('drawGraphMultiplexedBar globalAlpha=1\n');
+log('drawGraphMultiplexedBar globalAlpha=1');
     context.globalAlpha = 1;
     if (this.style & STYLE_STACKED) {
       this.drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY);
@@ -707,7 +707,7 @@ dump('drawGraphMultiplexedBar globalAlpha=1\n');
       });
     }
 restored++;
-dump('drawGraphMultiplexedBar restore ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBar restore ('+saved+' / '+restored+')');
     context.restore();
   },
   drawGraphMultiplexedBarStacked : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarStacked(aValues, aX, aMaxX, aMaxY) {
@@ -716,7 +716,7 @@ dump('drawGraphMultiplexedBar restore ('+saved+' / '+restored+')\n');
 
     var context = this.canvas.getContext("2d");
 saved++;
-dump('drawGraphMultiplexedBarStacked save ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarStacked save ('+saved+' / '+restored+')');
     context.save();
 
     var count     = this.multiplexCount;
@@ -744,7 +744,7 @@ dump('drawGraphMultiplexedBarStacked save ('+saved+' / '+restored+')\n');
     }
 
 restored++;
-dump('drawGraphMultiplexedBarStacked restore ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarStacked restore ('+saved+' / '+restored+')');
     context.restore();
   },
   drawGraphMultiplexedBarLayered : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarLayered(aValues, aX, aMaxX, aMaxY) {
@@ -753,7 +753,7 @@ dump('drawGraphMultiplexedBarStacked restore ('+saved+' / '+restored+')\n');
 
     var context = this.canvas.getContext("2d");
 saved++;
-dump('drawGraphMultiplexedBarLayered save ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarLayered save ('+saved+' / '+restored+')');
     context.save();
 
     var count    = this.multiplexCount;
@@ -764,7 +764,7 @@ dump('drawGraphMultiplexedBarLayered save ('+saved+' / '+restored+')\n');
     for (let i = 0; i < count; i++) {
       let value = aValues[i];
       let endY = aMaxY * value;
-dump('drawGraphMultiplexedBarLayered globalAlpha='+(minAlpha + ((1 - minAlpha) / (i + 1)))+'\n');
+log('drawGraphMultiplexedBarLayered globalAlpha='+(minAlpha + ((1 - minAlpha) / (i + 1))));
       context.globalAlpha = minAlpha + ((1 - minAlpha) / (i + 1));
       this.drawGraphBar({
         style:  this.foregroundGradientStyle,
@@ -777,7 +777,7 @@ dump('drawGraphMultiplexedBarLayered globalAlpha='+(minAlpha + ((1 - minAlpha) /
     }
 
 restored++;
-dump('drawGraphMultiplexedBarLayered restore ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarLayered restore ('+saved+' / '+restored+')');
     context.restore();
   },
   drawGraphMultiplexedBarSeparated : function SystemMonitorSimpleGraph_drawGraphMultiplexedBarSeparated(aValues, aX, aMaxX, aMaxY) {
@@ -786,7 +786,7 @@ dump('drawGraphMultiplexedBarLayered restore ('+saved+' / '+restored+')\n');
 
     var context = this.canvas.getContext("2d");
 saved++;
-dump('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')');
     context.save();
 
     var count    = this.multiplexCount;
@@ -795,9 +795,9 @@ dump('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')\n');
       let value = aValues[i];
       let endY = aMaxY * value;
 saved++;
-dump('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarSeparated save ('+saved+' / '+restored+')');
       context.save();
-dump('drawGraphMultiplexedBarSeparated translate('+[(width + 1) * i, 0]+')\n');
+log('drawGraphMultiplexedBarSeparated translate('+[(width + 1) * i, 0]+')');
       context.translate((width + 1) * i, 0);
       this.drawGraphBar({
         style:  this.foregroundGradientStyle,
@@ -807,12 +807,12 @@ dump('drawGraphMultiplexedBarSeparated translate('+[(width + 1) * i, 0]+')\n');
         endY:   endY
       });
 restored++;
-dump('drawGraphMultiplexedBarSeparated restore ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarSeparated restore ('+saved+' / '+restored+')');
       context.restore();
     }
 
 restored++;
-dump('drawGraphMultiplexedBarSeparated restore ('+saved+' / '+restored+')\n');
+log('drawGraphMultiplexedBarSeparated restore ('+saved+' / '+restored+')');
     context.restore();
   },
 

@@ -1,14 +1,17 @@
 Components.utils.import("resource://system-monitor-modules/ui.js");
 Components.utils.import("resource://gre/modules/Promise.jsm");
 
-// function log(s) { dump(s + "\n"); }
-
 var SystemMonitorService = {
   DOMAIN : SystemMonitorCPUItem.DOMAIN,
 
   initialized : false,
   resizing : false,
   items : [],
+
+  log : function SystemMonitorService_log(aMessage) {
+    if (this.prefs.getPref(this.DOMAIN + "debug.content")
+      dump(aMessage + "\n");
+  },
 
   get bundle() {
     return document.getElementById("system-monitor-bundle");

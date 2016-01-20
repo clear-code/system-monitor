@@ -54,3 +54,7 @@ pref("extensions.system-monitor@clear-code.com.network-usage.color.redZone", "#F
 pref("extensions.system-monitor@clear-code.com.network-usage.redZone", 65536); // 64 * 1024 (64kbps)
 pref("extensions.system-monitor@clear-code.com.network-usage.logscale", false);
 pref("extensions.system-monitor@clear-code.com.network-usage.style", 257);
+
+pref("extensions.system-monitor@clear-code.com.debug.content", false);
+pref("extensions.system-monitor@clear-code.com.debug.ShutdownListener", false);
+pref("extensions.system-monitor@clear-code.com.debug.ui", false);
