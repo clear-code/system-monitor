@@ -1,3 +1,5 @@
+Download link: https://addons.mozilla.org/firefox/addon/system-monitor/
+
 # How to build XPI package
 
 ## Ubuntu 12.04LTS
